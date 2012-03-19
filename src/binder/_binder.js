@@ -8,8 +8,7 @@ var BINDER = (function () {
         makeObservable = {{makeObservable}},
         makeObservableList = {{makeObservableList}},
         makeProperty = {{makeProperty}},
-        makeBinding = {{makeBinding}},
-        templating = {{templating}};
+        makeBinding = {{makeBinding}};
 
     return {
         util: util,
@@ -18,7 +17,6 @@ var BINDER = (function () {
         makeObservableList: makeObservableList,
         makeProperty: makeProperty,
         makeBinding: makeBinding,
-        templating: templating,
         toObject: function (o, excludeDependentProperties) {
             var i,
                 len,
