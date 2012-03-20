@@ -1122,9 +1122,9 @@ var BINDER = (function () {
         
             return makeObservableList;
         }(util, makeList, makeObservable)),
-        makeProperty = (function (util, makeList, makeObservable, makeObservableList) {
+        makeProperty = (function (util, makeList, makeObservable, makeObservableList, window) {
             'use strict';
-            /*global 'util', 'makeList', 'makeObservable', 'makeObservableList'*/
+            /*global 'util', 'makeList', 'makeObservable', 'makeObservableList', 'window'*/
         
             var makeProperty,
                 stack = makeList(),
@@ -1358,7 +1358,9 @@ var BINDER = (function () {
                             origOwner = fn.owner;
         
                         // Temporarily set the owner to the 'this' object.
-                        fn.owner = this;
+                        if (this !== window) {
+                            fn.owner = this;
+                        }
         
                         if (arguments.length) {
                             fn.set(value);
@@ -1397,7 +1399,7 @@ var BINDER = (function () {
             }, makeObservable.interfce);
         
             return makeProperty;
-        }(util, makeList, makeObservable, makeObservableList)),
+        }(util, makeList, makeObservable, makeObservableList, window)),
         makeBinding = (function (util, makeProperty) {
             'use strict';
             /*global 'util', 'makeProperty'*/

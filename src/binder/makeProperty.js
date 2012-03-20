@@ -1,6 +1,6 @@
-(function (util, makeList, makeObservable, makeObservableList) {
+(function (util, makeList, makeObservable, makeObservableList, window) {
     'use strict';
-    /*global 'util', 'makeList', 'makeObservable', 'makeObservableList'*/
+    /*global 'util', 'makeList', 'makeObservable', 'makeObservableList', 'window'*/
 
     var makeProperty,
         stack = makeList(),
@@ -234,7 +234,9 @@
                     origOwner = fn.owner;
 
                 // Temporarily set the owner to the 'this' object.
-                fn.owner = this;
+                if (this !== window) {
+                    fn.owner = this;
+                }
 
                 if (arguments.length) {
                     fn.set(value);
@@ -273,4 +275,4 @@
     }, makeObservable.interfce);
 
     return makeProperty;
-}(util, makeList, makeObservable, makeObservableList));
+}(util, makeList, makeObservable, makeObservableList, window));
