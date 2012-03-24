@@ -69,6 +69,9 @@
 
                 return a !== b;
             },
+            clearMemo: function () {
+                memo = undefined;
+            },
             get: function () {
                 if (!writing) {
                     stack.addDependency(this);
@@ -268,6 +271,7 @@
 
     makeProperty.interfce = util.object.mixin({
         owner: '*',
+        clearMemo: 'function',
         get: 'function',
         set: 'function',
         equals: 'function',
