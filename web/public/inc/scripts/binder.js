@@ -1118,7 +1118,7 @@ var BINDER = (function () {
                 return list;
             };
         
-            makeObservableList = util.object.mixin({}, makeObservable.interfce, makeList.interfce);
+            makeObservableList.interfce = util.object.mixin({}, makeObservable.interfce, makeList.interfce);
         
             return makeObservableList;
         }(util, makeList, makeObservable)),
