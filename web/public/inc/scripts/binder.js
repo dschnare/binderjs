@@ -938,7 +938,7 @@ var BINDER = (function () {
                 subscribe: 'function',
                 throttle: 'function',
                 notify: 'function',
-                dispose: 'dispose'
+                dispose: 'function'
             };
         
             return makeObservable;
