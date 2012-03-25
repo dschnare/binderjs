@@ -51,7 +51,7 @@ var BINDER = (function () {
                                     if (interfce.hasOwnProperty(key)) {
                                         // Property can be any type, but must exist.
                                         if (interfce[key] === '*') {
-                                            if (o[key] === undefined) {
+                                            if (!o.hasOwnProperty(key)) {
                                                 return false;
                                             }
                                         } else {
