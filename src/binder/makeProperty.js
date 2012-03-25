@@ -271,6 +271,8 @@
 
     makeProperty.interfce = util.object.mixin({
         owner: '*',
+        dependencies: 'function',
+        isDependent: 'function',
         clearMemo: 'function',
         get: 'function',
         set: 'function',

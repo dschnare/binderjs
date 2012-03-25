@@ -1193,6 +1193,9 @@ var BINDER = (function () {
         
                         return a !== b;
                     },
+                    clearMemo: function () {
+                        memo = undefined;
+                    },
                     get: function () {
                         if (!writing) {
                             stack.addDependency(this);
@@ -1392,6 +1395,9 @@ var BINDER = (function () {
         
             makeProperty.interfce = util.object.mixin({
                 owner: '*',
+                dependencies: 'function',
+                isDependent: 'function',
+                clearMemo: 'function',
                 get: 'function',
                 set: 'function',
                 equals: 'function',
