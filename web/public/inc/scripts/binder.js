@@ -1506,7 +1506,7 @@ var BINDER = (function () {
                 }
 
                 return js;
-            } else
+            }
 
             if (!isObject(o)) {
                 return o;
