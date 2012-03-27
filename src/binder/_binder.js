@@ -61,12 +61,12 @@ var BINDER = (function (util) {
 
     // Asynchronous modules (AMD) supported.
     if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
-        define(['util'], module);
+        define(['utiljs'], module);
     // Nodejs/CommonJS modules supported.
     } else if (typeof exports === 'object' && exports && typeof require === 'function') {
-        util = require('util');
+        util = require('utiljs');
         util.mixin(exports, module(util));
     } else {
         return module(util);
     }
-}(UTIL));
+}(typeof UTIL === 'object' && UTIL ? UTIL : null));
