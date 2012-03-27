@@ -71,7 +71,7 @@ var BINDER = (function () {
     if (typeof define === 'function' && typeof define.amd === 'object') {
         define(module);
     // Nodejs/CommonJS modules supported.
-    } else if (exports && typeof exports === 'object' && typeof require === 'function') {
+    } else if (typeof exports === 'object' && exports && typeof require === 'function') {
         util.mixin(exports, module);
     } else {
         return module;
