@@ -1,170 +1,187 @@
-(function () {
-    'use strict';
+var UTIL = (function () {
+	'use strict';
 
-    var util = {
-            object: {
-                typeOf: function (o) {
-                    if (o === null) {
-                        return 'null';
-                    }
-                    if (util.object.isArray(o)) {
-                        return 'array';
-                    }
-                    return typeof o;
-                },
-                isObject: function (o) {
-                    return o && util.object.typeOf(o) === 'object';
-                },
-                isArray: (function () {
-                    var toString = Object.prototype.toString;
+	/*global 'define', 'exports', 'require' */
 
-                    return function (o) {
-                        return toString.call(o) === '[object Array]';
-                    };
-                }()),
-                isNil: function (o) {
-                    return o === null || o === undefined;
-                },
-                adheresTo: function (o, interfce) {
-                    var key,
-                        typeofo,
-                        typeofi,
-                        isObject = util.object.isObject,
-                        isArray = util.object.isArray,
-                        toString = util.string.toString,
-                        typeOf = util.object.typeOf;
+	var Object = {}.constructor,
+		isNil = function (o) {
+			return o === null || o === undefined;
+		},
+		isArray = (function () {
+			var toString = Object.prototype.toString;
 
-                    if ((isObject(o) || typeof o === 'function' || isArray(o)) &&
-                            (isObject(interfce) || typeof interfce === 'function' || isArray(interfce))) {
-                        for (key in interfce) {
-                            if (interfce.hasOwnProperty(key)) {
-                                // Property can be any type, but must exist.
-                                if (interfce[key] === '*') {
-                                    if (!o.hasOwnProperty(key)) {
-                                        return false;
-                                    }
-                                } else {
+			return function (o) {
+				return (toString.call(o) === '[object Array]') || (!isNil(o) && typeof o.length === 'number' && typeof o.push === 'function');
+			};
+		}()),
+		typeOf = function (o) {
+			if (o === null) {
+				return 'null';
+			}
+			if (isArray(o)) {
+				return 'array';
+			}
+			return typeof o;
+		},
+		isObject = function (o) {
+			return o && typeOf(o) === 'object';
+		},
+		str = function (o) {
+			return o === undefined || o === null ? '' : o.toString();
+		},
+		mixin = function (o) {
+			var len = arguments.length,
+				i,
+				arg,
+				key;
 
-                                    if (typeOf(o[key]) !== typeOf(interfce[key]) &&
-                                            typeOf(o[key]) !== toString(interfce[key])) {
-                                        return false;
-                                    }
-                                }
-                            }
-                        }
+			if (len === 0 || !o) {
+				throw new Error('Expected at least one object as an argument.');
+			}
 
-                        return true;
-                    }
+			for (i = 1; i < len; i += 1) {
+				arg = arguments[i];
 
-                    typeofo = typeOf(o);
-                    typeofi = typeOf(interfce);
+				if (!isNil(arg)) {
+					for (key in arg) {
+						if (arg.hasOwnProperty(key)) {
+							o[key] = arg[key];
+						}
+					}
+				}
+			}
 
-                    return typeofo === typeofi;
-                },
-                mixin: function (o) {
-                    var isNil = util.object.isNil,
-                        len = arguments.length,
-                        i,
-                        arg,
-                        key;
+			return o;
+		},
+		util = {
+			typeOf: typeOf,
+			isObject: isObject,
+			isArray: isArray,
+			isNil: isNil,
+			mixin: mixin,
+			str: str,
+			respondsTo: function (o, method) {
+				return o && typeof o[method] === 'function';
+			},
+			adheresTo: function (o, interfce) {
+				var key,
+					typeofo,
+					typeofi;
 
-                    if (len === 0 || !o) {
-                        return o;
-                    }
+				if ((isObject(o) || typeof o === 'function' || isArray(o)) &&
+						(isObject(interfce) || typeof interfce === 'function' || isArray(interfce))) {
+					for (key in interfce) {
+						if (interfce.hasOwnProperty(key)) {
+							// Property can be any type, but must exist.
+							if (interfce[key] === '*') {
+								if (!o.hasOwnProperty(key)) {
+									return false;
+								}
+							} else {
 
-                    for (i = 1; i < len; i += 1) {
-                        arg = arguments[i];
+								if (typeOf(o[key]) !== typeOf(interfce[key]) &&
+										typeOf(o[key]) !== str(interfce[key])) {
+									return false;
+								}
+							}
+						}
+					}
 
-                        if (!isNil(arg)) {
-                            for (key in arg) {
-                                if (arg.hasOwnProperty(key)) {
-                                    o[key] = arg[key];
-                                }
-                            }
-                        }
-                    }
+					return true;
+				}
 
-                    return o;
-                },
-                create: (function () {
-                    var F = function () {};
+				typeofo = typeOf(o);
+				typeofi = typeOf(interfce);
 
-                    return function (o) {
-                        F.prototype = o;
-                        return new F();
-                    };
-                }())
-            },
-            string: {
-                toString: function (o) {
-                    return o === undefined || o === null ? '' : o.toString();
-                },
-                trim: function (str) {
-                    var i = 0,
-                        c = str.charAt(i);
+				return typeofo === typeofi;
+			},
+			create: (function () {
+				var F = function () {};
 
-                    while (c) {
-                        if (c > ' ') {
-                            str = str.substring(i);
-                            break;
-                        }
+				return function (o) {
+					if (!o) {
+						throw new Error('Expected an object as an argument.');
+					}
+					F.prototype = o;
+					return new F();
+				};
+			}()),
+			trim: function (str) {
+				str = str ? str.toString() : '';
 
-                        i += 1;
-                        c = str.charAt(i);
-                    }
+				var i = 0,
+					c = str.charAt(i);
 
-                    i = str.length;
+				while (c) {
+					if (c > ' ') {
+						str = str.substring(i);
+						break;
+					}
 
-                    while (i) {
-                        i -= 1;
-                        c = str.charAt(i);
+					i += 1;
+					c = str.charAt(i);
+				}
 
-                        if (c > ' ') {
-                            str = str.substring(0, i + 1);
-                            break;
-                        }
-                    }
+				i = str.length;
 
-                    return str;
-                },
-                format: function (str) {
-                    var s = util.string.toString(str),
-                        args = arguments,
-                        argCount = args.length,
-                        i = s.length,
-                        c = null,
-                        n = 0,
-                        k = 0,
-                        next = function () {
-                            i -= 1;
-                            c = s.charAt(i);
-                            return c;
-                        };
+				while (i) {
+					i -= 1;
+					c = str.charAt(i);
 
-                    while (next()) {
-                        if (c === '}') {
-                            k = i + 1;
-                            next();
-                            n = '';
+					if (c > ' ') {
+						str = str.substring(0, i + 1);
+						break;
+					}
+				}
 
-                            while (c >= '0' && c <= '9') {
-                                n = c + n;
-                                next();
-                            }
+				return str;
+			},
+			format: function (s) {
+				var string = str(s),
+					args = arguments,
+					argCount = args.length,
+					i = string.length,
+					c = null,
+					n = 0,
+					k = 0,
+					next = function () {
+						i -= 1;
+						c = string.charAt(i);
+						return c;
+					};
 
-                            if (c === '{') {
-                                n = parseInt(n, 10) + 1;
-                                if (n < argCount) {
-                                    s = s.substring(0, i) + args[n] + s.substring(k);
-                                }
-                            }
-                        }
-                    }
+				while (next()) {
+					if (c === '}') {
+						k = i + 1;
+						next();
+						n = '';
 
-                    return s;
-                }
-            }
-        };
+						while (c >= '0' && c <= '9') {
+							n = c + n;
+							next();
+						}
 
-    return util;
+						if (c === '{') {
+							n = parseInt(n, 10) + 1;
+
+							if (n < argCount) {
+								string = string.substring(0, i) + args[n] + string.substring(k);
+							}
+						}
+					}
+				}
+
+				return string;
+			}
+		};
+
+	// Asynchronous modules (AMD) supported.
+	if (typeof define === 'function' && typeof define.amd === 'object') {
+		define(util);
+	// Nodejs/CommonJS modules supported.
+	} else if (exports && typeof exports === 'object' && typeof require === 'function') {
+		util.mixin(exports, util);
+	} else {
+		return util;
+	}
 }());

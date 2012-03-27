@@ -6,7 +6,7 @@
         var slice = ([]).slice,
             list = makeList.apply(undefined, slice.call(arguments));
 
-        util.object.mixin(list, makeObservable());
+        util.mixin(list, makeObservable());
         list.remove = (function (base) {
             return function () {
                 var origLen = this.length;
@@ -173,7 +173,7 @@
         return list;
     };
 
-    makeObservableList.interfce = util.object.mixin({}, makeObservable.interfce, makeList.interfce);
+    makeObservableList.interfce = util.mixin({}, makeObservable.interfce, makeList.interfce);
 
     return makeObservableList;
 }(util, makeList, makeObservable));

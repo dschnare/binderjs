@@ -108,24 +108,24 @@
                 return dependencies.length !== 0;
             },
             toString: function () {
-                return util.object.toString(this.get());
+                return util.toString(this.get());
             },
             valueOf : function () {
                 var value = this.get();
-                return util.object.isNil(value) ? value : value.valueOf();
+                return util.isNil(value) ? value : value.valueOf();
             }
         };
 
-        util.object.mixin(property, makeObservable());
+        util.mixin(property, makeObservable());
 
         // Initialization.
         (function () {
             var value,
                 self = property,
                 lazy = false,
-                isObject = util.object.isObject,
-                isArray = util.object.isArray,
-                adheresTo = util.object.adheresTo;
+                isObject = util.isObject,
+                isArray = util.isArray,
+                adheresTo = util.adheresTo;
 
             self.owner = undefined;
 
@@ -253,7 +253,7 @@
                 return ret;
             };
 
-            util.object.mixin(fn, property);
+            util.mixin(fn, property);
         }());
 
         // We can return either the property (object) or fn (functional property).
@@ -269,7 +269,7 @@
         return property;
     };
 
-    makeProperty.interfce = util.object.mixin({
+    makeProperty.interfce = util.mixin({
         owner: '*',
         dependencies: 'function',
         isDependent: 'function',

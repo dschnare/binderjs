@@ -26,7 +26,7 @@
                 otherIndex: otherIndex,
                 toString: function () {
                     var s = "{status: {0}, item: {1}, index: {2}, otherItem: {3}, otherIndex: {4}}";
-                    return util.string.format(s, status, item, index, otherItem, otherIndex);
+                    return util.format(s, status, item, index, otherItem, otherIndex);
                 }
             };
         },
@@ -34,7 +34,7 @@
             var list = [];
 
             list.getItemOperators = function () {
-                return util.object.create(defaultItemOperators);
+                return util.create(defaultItemOperators);
             };
 
             // HTML5 specification.
@@ -374,7 +374,7 @@
                     b = otherList,
                     operators;
 
-                if (!util.object.isArray(otherList)) {
+                if (!util.isArray(otherList)) {
                     return false;
                 }
                 if (a === b) {
@@ -407,7 +407,7 @@
                     b = otherList,
                     operators;
 
-                if (!util.object.isArray(otherList)) {
+                if (!util.isArray(otherList)) {
                     return false;
                 }
                 if (a === b) {
@@ -601,7 +601,7 @@
             (function (args) {
                 var argcount = args.length;
 
-                if (argcount === 1 && util.object.isArray(o)) {
+                if (argcount === 1 && util.isArray(o)) {
                     list.push.apply(list, o);
                 } else if (argcount) {
                     list.push.apply(list, list.slice.call(args));

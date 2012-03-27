@@ -4,25 +4,218 @@ Keywords: javascript,binding,bind,property,list,observer,observable
 License: MIT ( http://www.opensource.org/licenses/mit-license.php )
 Repo: https://github.com/dschnare/binderjs
 */
-var BINDER = (function (util) {
+var BINDER = (function () {
     'use strict';
 
     var Array = ([]).constructor,
         Object = ({}).constructor,
+        util = (function () {
+            var define = null,
+                exports = null,
+                require = null;
+
+            var UTIL = (function () {
+            	/*global 'define', 'exports', 'require' */
+
+            	var Object = {}.constructor,
+            		isNil = function (o) {
+            			return o === null || o === undefined;
+            		},
+            		isArray = (function () {
+            			var toString = Object.prototype.toString;
+
+            			return function (o) {
+            				return (toString.call(o) === '[object Array]') || (!isNil(o) && typeof o.length === 'number' && typeof o.push === 'function');
+            			};
+            		}()),
+            		typeOf = function (o) {
+            			if (o === null) {
+            				return 'null';
+            			}
+            			if (isArray(o)) {
+            				return 'array';
+            			}
+            			return typeof o;
+            		},
+            		isObject = function (o) {
+            			return o && typeOf(o) === 'object';
+            		},
+            		str = function (o) {
+            			return o === undefined || o === null ? '' : o.toString();
+            		},
+            		mixin = function (o) {
+            			var len = arguments.length,
+            				i,
+            				arg,
+            				key;
+
+            			if (len === 0 || !o) {
+            				throw new Error('Expected at least one object as an argument.');
+            			}
+
+            			for (i = 1; i < len; i += 1) {
+            				arg = arguments[i];
+
+            				if (!isNil(arg)) {
+            					for (key in arg) {
+            						if (arg.hasOwnProperty(key)) {
+            							o[key] = arg[key];
+            						}
+            					}
+            				}
+            			}
+
+            			return o;
+            		},
+            		util = {
+            			typeOf: typeOf,
+            			isObject: isObject,
+            			isArray: isArray,
+            			isNil: isNil,
+            			mixin: mixin,
+            			str: str,
+            			respondsTo: function (o, method) {
+            				return o && typeof o[method] === 'function';
+            			},
+            			adheresTo: function (o, interfce) {
+            				var key,
+            					typeofo,
+            					typeofi;
+
+            				if ((isObject(o) || typeof o === 'function' || isArray(o)) &&
+            						(isObject(interfce) || typeof interfce === 'function' || isArray(interfce))) {
+            					for (key in interfce) {
+            						if (interfce.hasOwnProperty(key)) {
+            							// Property can be any type, but must exist.
+            							if (interfce[key] === '*') {
+            								if (!o.hasOwnProperty(key)) {
+            									return false;
+            								}
+            							} else {
+
+            								if (typeOf(o[key]) !== typeOf(interfce[key]) &&
+            										typeOf(o[key]) !== str(interfce[key])) {
+            									return false;
+            								}
+            							}
+            						}
+            					}
+
+            					return true;
+            				}
+
+            				typeofo = typeOf(o);
+            				typeofi = typeOf(interfce);
+
+            				return typeofo === typeofi;
+            			},
+            			create: (function () {
+            				var F = function () {};
+
+            				return function (o) {
+            					if (!o) {
+            						throw new Error('Expected an object as an argument.');
+            					}
+            					F.prototype = o;
+            					return new F();
+            				};
+            			}()),
+            			trim: function (str) {
+            				str = str ? str.toString() : '';
+
+            				var i = 0,
+            					c = str.charAt(i);
+
+            				while (c) {
+            					if (c > ' ') {
+            						str = str.substring(i);
+            						break;
+            					}
+
+            					i += 1;
+            					c = str.charAt(i);
+            				}
+
+            				i = str.length;
+
+            				while (i) {
+            					i -= 1;
+            					c = str.charAt(i);
+
+            					if (c > ' ') {
+            						str = str.substring(0, i + 1);
+            						break;
+            					}
+            				}
+
+            				return str;
+            			},
+            			format: function (s) {
+            				var string = str(s),
+            					args = arguments,
+            					argCount = args.length,
+            					i = string.length,
+            					c = null,
+            					n = 0,
+            					k = 0,
+            					next = function () {
+            						i -= 1;
+            						c = string.charAt(i);
+            						return c;
+            					};
+
+            				while (next()) {
+            					if (c === '}') {
+            						k = i + 1;
+            						next();
+            						n = '';
+
+            						while (c >= '0' && c <= '9') {
+            							n = c + n;
+            							next();
+            						}
+
+            						if (c === '{') {
+            							n = parseInt(n, 10) + 1;
+
+            							if (n < argCount) {
+            								string = string.substring(0, i) + args[n] + string.substring(k);
+            							}
+            						}
+            					}
+            				}
+
+            				return string;
+            			}
+            		};
+
+            	// Asynchronous modules (AMD) supported.
+            	if (typeof define === 'function' && typeof define.amd === 'object') {
+            		define(util);
+            	// Nodejs/CommonJS modules supported.
+            	} else if (exports && typeof exports === 'object' && typeof require === 'function') {
+            		util.mixin(exports, util);
+            	} else {
+            		return util;
+            	}
+            }());
+
+            return UTIL;
+        }()),
         makeList = (function (util) {
             /*global 'util'*/
-        
+
             var defaultItemOperators = {
                     equals: function (a, b) {
                         a = a ? a.valueOf() : a;
                         b = b ? b.valueOf() : b;
-        
+
                         return a === b;
                     },
                     changed: function (a, b) {
                         a = a ? a.valueOf() : a;
                         b = b ? b.valueOf() : b;
-        
+
                         return false;
                     }
                 },
@@ -42,18 +235,18 @@ var BINDER = (function (util) {
                 },
                 makeList = function (o) {
                     var list = [];
-        
+
                     list.getItemOperators = function () {
                         return util.create(defaultItemOperators);
                     };
-        
+
                     // HTML5 specification.
                     list.indexOf = list.indexOf || function (item, fromIndex) {
                         var i,
                             len = this.length;
-        
+
                         fromIndex = isNaN(fromIndex) ? 0 : fromIndex;
-        
+
                         if (len === 0) {
                             return -1;
                         }
@@ -66,13 +259,13 @@ var BINDER = (function (util) {
                         if (fromIndex < 0) {
                             fromIndex = 0;
                         }
-        
+
                         for (i = fromIndex; i < len; i += 1) {
                             if (this[i] === item) {
                                 return i;
                             }
                         }
-        
+
                         return -1;
                     };
                     list.lastIndexOf = list.lastIndexOf || function (item, fromIndex) {
@@ -81,27 +274,27 @@ var BINDER = (function (util) {
                             min = function (a, b) {
                                 return a < b ? a : b;
                             };
-        
+
                         if (len === 0) {
                             return -1;
                         }
-        
+
                         fromIndex = isNaN(fromIndex) ? len : fromIndex;
-        
+
                         if (fromIndex >= 0) {
                             fromIndex = min(fromIndex, len - 1);
                         }
                         if (fromIndex < 0) {
                             fromIndex = len + fromIndex;
                         }
-        
+
                         for (i = fromIndex; i >= 0; i -= 1) {
                             if (this[i] === item) {
                                 item = null;
                                 return i;
                             }
                         }
-        
+
                         item = null;
                         return -1;
                     };
@@ -110,30 +303,30 @@ var BINDER = (function (util) {
                             len = this.length,
                             k = len - 1,
                             mid = parseInt(len / 2, 10);
-        
+
                         while (i < mid) {
                             this[k] = this[i];
                             k -= 1;
                             i += 1;
                         }
-        
+
                         return this;
                     };
                     list.map = list.map || function (callback, thisObj) {
                         var i,
                             len = this.length,
                             result = [];
-        
+
                         if (typeof callback !== 'function') {
                             throw new Error('TypeError');
                         }
-        
+
                         for (i = 0; i < len; i += 1) {
                             if (this.hasOwnProperty(i)) {
                                 result[i] = callback.call(thisObj, this[i], i, this);
                             }
                         }
-        
+
                         return result;
                     };
                     list.filter = list.filter || function (callback, thisObj) {
@@ -141,11 +334,11 @@ var BINDER = (function (util) {
                             v,
                             len = this.length,
                             result = [];
-        
+
                         if (typeof callback !== 'function') {
                             throw new Error('TypeError');
                         }
-        
+
                         for (i = 0; i < len; i += 1) {
                             if (this.hasOwnProperty(i)) {
                                 v = this[i];
@@ -154,17 +347,17 @@ var BINDER = (function (util) {
                                 }
                             }
                         }
-        
+
                         return result;
                     };
                     list.forEach = list.forEach || function (callback, thisObj) {
                         var i,
                             len = this.length;
-        
+
                         if (typeof callback !== 'function') {
                             throw new Error('TypeError');
                         }
-        
+
                         for (i = 0; i < len; i += 1) {
                             if (this.hasOwnProperty(i)) {
                                 callback.call(thisObj, this[i], i, this);
@@ -176,41 +369,41 @@ var BINDER = (function (util) {
                             i,
                             acc,
                             present;
-        
+
                         if (typeof callback !== 'function') {
                             throw new Error('TypeError');
                         }
                         if (len === 0 && arguments.length === 1) {
                             throw new Error('TypeError');
                         }
-        
+
                         if (arguments.length === 2) {
                             acc = initialValue;
                         } else {
                             present = false;
                             i = 0;
-        
+
                             while (!present && i < len) {
                                 present = this.hasOwnProperty(i);
-        
+
                                 if (present) {
                                     acc = this[i];
                                 }
-        
+
                                 i += 1;
                             }
                         }
-        
+
                         while (i < len) {
                             present = this.hasOwnProperty(i);
-        
+
                             if (present) {
                                 acc = callback.call(undefined, acc, this[i], i, this);
                             }
-        
+
                             i += 1;
                         }
-        
+
                         return acc;
                     };
                     list.reduceRight = list.reduceRight || function (callback, initialValue) {
@@ -218,51 +411,51 @@ var BINDER = (function (util) {
                             i,
                             acc,
                             present;
-        
+
                         if (typeof callback !== 'function') {
                             throw new Error('TypeError');
                         }
                         if (len === 0 && arguments.length === 1) {
                             throw new Error('TypeError');
                         }
-        
+
                         if (arguments.length === 2) {
                             acc = initialValue;
                         } else {
                             present = false;
                             i = len - 1;
-        
+
                             while (!present && i >= 0) {
                                 present = this.hasOwnProperty(i);
-        
+
                                 if (present) {
                                     acc = this[i];
                                 }
-        
+
                                 i -= 1;
                             }
                         }
-        
+
                         while (i >= 0) {
                             present = this.hasOwnProperty(i);
-        
+
                             if (present) {
                                 acc = callback.call(undefined, acc, this[i], i, this);
                             }
-        
+
                             i -= 1;
                         }
-        
+
                         return acc;
                     };
                     list.some = list.some || function (callback, thisObj) {
                         var len = this.length,
                             i;
-        
+
                         if (typeof callback !== 'function') {
                             throw new Error('TypeError');
                         }
-        
+
                         for (i = 0; i < len; i += 1) {
                             if (this.hasOwnProperty(i)) {
                                 if (callback.call(thisObj, this[i], i, this)) {
@@ -270,17 +463,17 @@ var BINDER = (function (util) {
                                 }
                             }
                         }
-        
+
                         return false;
                     };
                     list.every = list.every || function (callback, thisObj) {
                         var len = this.length,
                             i;
-        
+
                         if (typeof callback !== 'function') {
                             throw new Error('TypeError');
                         }
-        
+
                         for (i = 0; i < len; i += 1) {
                             if (this.hasOwnProperty(i)) {
                                 if (!callback.call(thisObj, this[i], i, this)) {
@@ -288,10 +481,10 @@ var BINDER = (function (util) {
                                 }
                             }
                         }
-        
+
                         return true;
                     };
-        
+
                     // Custom Functionality.
                     list.contains = function (item) {
                         return this.indexOf(item) >= 0;
@@ -299,19 +492,19 @@ var BINDER = (function (util) {
                     list.occurances = function (item) {
                         var i = this.indexOf(item),
                             count = 0;
-        
+
                         while (i >= 0) {
                             count += 1;
                             i = this.indexOf(item, i + 1);
                         }
-        
+
                         return count;
                     };
                     list.distinct = function () {
                         var i = this.length,
                             distinct = [],
                             item;
-        
+
                         while (i) {
                             i -= 1;
                             item = this[i];
@@ -319,17 +512,17 @@ var BINDER = (function (util) {
                                 distinct.push(item);
                             }
                         }
-        
+
                         return distinct;
                     };
                     list.first = function (callback, thisObj) {
                         var i,
                             len = this.length;
-        
+
                         if (typeof callback !== 'function') {
                             throw new Error('TypeError');
                         }
-        
+
                         for (i = 0; i < len; i += 1) {
                             if (this.hasOwnProperty(i)) {
                                 if (callback.call(thisObj, this[i], i, this)) {
@@ -337,16 +530,16 @@ var BINDER = (function (util) {
                                 }
                             }
                         }
-        
+
                         return undefined;
                     };
                     list.last = function (callback, thisObj) {
                         var i = this.length;
-        
+
                         if (typeof callback !== 'function') {
                             throw new Error('TypeError');
                         }
-        
+
                         while (i) {
                             i -= 1;
                             if (this.hasOwnProperty(i)) {
@@ -355,17 +548,17 @@ var BINDER = (function (util) {
                                 }
                             }
                         }
-        
+
                         return undefined;
                     };
                     list.find = function (callback, thisObj) {
                         var i,
                             len = this.length;
-        
+
                         if (typeof callback !== 'function') {
                             throw new Error('TypeError');
                         }
-        
+
                         for (i = 0; i < len; i += 1) {
                             if (this.hasOwnProperty(i)) {
                                 if (callback.call(thisObj, this[i], i, this)) {
@@ -373,7 +566,7 @@ var BINDER = (function (util) {
                                 }
                             }
                         }
-        
+
                         return {item: undefined, index: -1};
                     };
                     list.equals = function (otherList, equals) {
@@ -383,7 +576,7 @@ var BINDER = (function (util) {
                             a = this,
                             b = otherList,
                             operators;
-        
+
                         if (!util.isArray(otherList)) {
                             return false;
                         }
@@ -393,20 +586,20 @@ var BINDER = (function (util) {
                         if (a.length !== b.length) {
                             return false;
                         }
-        
+
                         alen = a.length;
                         blen = b.length;
                         operators = makeList.getItemOperators(this);
                         equals = typeof equals === 'function' ? equals : function () {
                             return operators.equals.apply(operators, arguments);
                         };
-        
+
                         for (i = 0; i < alen && i < blen; i += 1) {
                             if (!equals(a[i], b[i])) {
                                 return false;
                             }
                         }
-        
+
                         return true;
                     };
                     list.changed = function (otherList, equals, changed) {
@@ -416,7 +609,7 @@ var BINDER = (function (util) {
                             a = this,
                             b = otherList,
                             operators;
-        
+
                         if (!util.isArray(otherList)) {
                             return false;
                         }
@@ -426,7 +619,7 @@ var BINDER = (function (util) {
                         if (a.length !== b.length) {
                             return true;
                         }
-        
+
                         operators = makeList.getItemOperators(this);
                         equals = typeof equals === 'function' ? equals : function () {
                             return operators.equals.apply(operators, arguments);
@@ -434,7 +627,7 @@ var BINDER = (function (util) {
                         changed = typeof changed === 'function' ? changed : function () {
                             return operators.changed.apply(operators, arguments);
                         };
-        
+
                         alen = a.length;
                         blen = b.length;
                         for (i = 0; i < alen && i < blen; i += 1) {
@@ -442,7 +635,7 @@ var BINDER = (function (util) {
                                 return true;
                             }
                         }
-        
+
                         return false;
                     };
                     list.compare = function (otherList, equals, changed) {
@@ -454,7 +647,7 @@ var BINDER = (function (util) {
                             find = this.find,
                             callback,
                             result;
-        
+
                         operators = makeList.getItemOperators(this);
                         equals = typeof equals === 'function' ? equals : function () {
                             return operators.equals.apply(operators, arguments);
@@ -465,12 +658,12 @@ var BINDER = (function (util) {
                         callback = function (it) {
                             return equals(item, it);
                         };
-        
+
                         len = this.length;
                         for (i = 0; i < len; i += 1) {
                             item = this[i];
                             result = find.call(otherList, callback);
-        
+
                             if (result.item === undefined) {
                                 differences.push(makeCompareResult("deleted", item, i));
                             } else {
@@ -481,18 +674,18 @@ var BINDER = (function (util) {
                                 }
                             }
                         }
-        
+
                         len = otherList.length;
                         for (i = 0; i < len; i += 1) {
                             item = otherList[i];
-        
+
                             if (this.find(callback).item === undefined) {
                                 differences.push(makeCompareResult("added", undefined, -1, item, i));
                             }
                         }
-        
+
                         item = otherList = equals = changed = null;
-        
+
                         return differences;
                     };
                     list.merge = function (otherList, equals, changed) {
@@ -505,20 +698,20 @@ var BINDER = (function (util) {
                             d,
                             i,
                             diff;
-        
+
                         operators = makeList.getItemOperators(this);
                         d = this.compare(otherList, equals, changed);
                         i = d.length;
-        
+
                         this.length = otherList.length;
-        
+
                         // For sanity we use the equality operator again on each item
                         // that has been marked as not being 'added'.
-        
+
                         while (i) {
                             i -= 1;
                             diff = d[i];
-        
+
                             switch (diff.status) {
                             case "added":
                                 this[diff.otherIndex] = diff.otherItem;
@@ -542,7 +735,7 @@ var BINDER = (function (util) {
                                 break;
                             }
                         }
-        
+
                         this.collapse();
                     };
                     list.remove = function () {
@@ -550,11 +743,11 @@ var BINDER = (function (util) {
                             k,
                             arg,
                             len = arguments.length;
-        
+
                         for (i = 0; i < len; i += 1) {
                             arg = arguments[i];
                             k = this.length;
-        
+
                             while (k) {
                                 k -= 1;
                                 if (this[k] === arg) {
@@ -575,7 +768,7 @@ var BINDER = (function (util) {
                     };
                     list.collapse = function () {
                         var i = this.length;
-        
+
                         while (i) {
                             i -= 1;
                             if (!this.hasOwnProperty(i)) {
@@ -605,36 +798,36 @@ var BINDER = (function (util) {
                             }
                         }
                     };
-        
-        
+
+
                     // Initialization.
                     (function (args) {
                         var argcount = args.length;
-        
+
                         if (argcount === 1 && util.isArray(o)) {
                             list.push.apply(list, o);
                         } else if (argcount) {
                             list.push.apply(list, list.slice.call(args));
                         }
                     }(arguments));
-        
+
                     return list;
                 };
-        
+
             // Guarantees valid item operators.
             makeList.getItemOperators = function (list) {
                 var operators = list.getItemOperators();
-        
+
                 if (typeof operators.equals !== 'function') {
                     operators.equals = defaultItemOperators.equals;
                 }
                 if (typeof operators.changed !== 'function') {
                     operators.changed = defaultItemOperators.changed;
                 }
-        
+
                 return operators;
             };
-        
+
             makeList.interfce = {
                 concat: 'function',
                 indexOf: 'function',
@@ -677,20 +870,20 @@ var BINDER = (function (util) {
                 peek: 'function',
                 insert: 'function'
             };
-        
+
             return makeList;
         }(util)),
         makeObservable = (function (makeList, setTimeout) {
             /*global 'makeList', 'setTimeout'*/
-        
+
             var notify = function (self, observers) {
                     var i,
                         observer,
                         len = observers.length;
-        
+
                     for (i = 0; i < len; i += 1) {
                         observer = observers[i];
-        
+
                         if (observer) {
                             if (typeof observer === 'function') {
                                 observer(self);
@@ -715,14 +908,14 @@ var BINDER = (function (util) {
                             subscribe: function (observer) {
                                 if (observer && !observers.contains(observer)) {
                                     observers.push(observer);
-        
+
                                     return {
                                         dispose: function () {
                                             observers.remove(observer);
                                         }
                                     };
                                 }
-        
+
                                 return {
                                     dispose: function () {}
                                 };
@@ -735,13 +928,13 @@ var BINDER = (function (util) {
                             },
                             notify: function () {
                                 var self = this;
-        
+
                                 if (blocked || notifying) {
                                     return;
                                 }
-        
+
                                 notifying = true;
-        
+
                                 if (throttleDuration > 0) {
                                     setTimeout(function () {
                                         notify(self, observers);
@@ -756,10 +949,10 @@ var BINDER = (function (util) {
                                 observers.clear();
                             }
                         };
-        
+
                     return observable;
                 };
-        
+
             makeObservable.interfce = {
                 block: 'function',
                 unblock: 'function',
@@ -768,25 +961,25 @@ var BINDER = (function (util) {
                 notify: 'function',
                 dispose: 'function'
             };
-        
+
             return makeObservable;
         }(makeList, setTimeout)),
         makeObservableList = (function (util, makeList, makeObservable) {
             /*global 'util', 'makeList', 'makeObservable'*/
-        
+
             var makeObservableList = function () {
                 var slice = ([]).slice,
                     list = makeList.apply(undefined, slice.call(arguments));
-        
+
                 util.mixin(list, makeObservable());
                 list.remove = (function (base) {
                     return function () {
                         var origLen = this.length;
-        
+
                         this.block();
                         base.apply(this, slice.call(arguments));
                         this.unblock();
-        
+
                         if (origLen !== this.length) {
                             this.notify();
                         }
@@ -795,11 +988,11 @@ var BINDER = (function (util) {
                 list.clear = (function (base) {
                     return function () {
                         var origLen = this.length;
-        
+
                         this.block();
                         base.call(this);
                         this.unblock();
-        
+
                         if (origLen !== this.length) {
                             this.notify();
                         }
@@ -808,11 +1001,11 @@ var BINDER = (function (util) {
                 list.collapse = (function (base) {
                     return function () {
                         var origLen = this.length;
-        
+
                         this.block();
                         base.call(this);
                         this.unblock();
-        
+
                         if (origLen !== this.length) {
                             this.notify();
                         }
@@ -843,27 +1036,27 @@ var BINDER = (function (util) {
                 list.reverse = (function (base) {
                     return function () {
                         var result;
-        
+
                         this.block();
                         result = base.call(this);
                         this.unblock();
                         this.notify();
-        
+
                         return result;
                     };
                 }(list.reverse));
                 list.pop = (function (base) {
                     return function () {
                         var origLen = this.length, result;
-        
+
                         this.block();
                         result = base.call(this);
                         this.unblock();
-        
+
                         if (origLen !== this.length) {
                             this.notify();
                         }
-        
+
                         return result;
                     };
                 }(list.pop));
@@ -871,15 +1064,15 @@ var BINDER = (function (util) {
                     return function () {
                         var origLen = this.length,
                             result;
-        
+
                         this.block();
                         result = base.apply(this, slice.call(arguments));
                         this.unblock();
-        
+
                         if (origLen !== this.length) {
                             this.notify();
                         }
-        
+
                         return result;
                     };
                 }(list.push));
@@ -887,15 +1080,15 @@ var BINDER = (function (util) {
                     return function () {
                         var origLen = this.length,
                             result;
-        
+
                         this.block();
                         result = base.call(this);
                         this.unblock();
-        
+
                         if (origLen !== this.length) {
                             this.notify();
                         }
-        
+
                         return result;
                     };
                 }(list.shift));
@@ -903,15 +1096,15 @@ var BINDER = (function (util) {
                     return function () {
                         var origLen = this.length,
                             result;
-        
+
                         this.block();
                         result = base.apply(this, slice.call(arguments));
                         this.unblock();
-        
+
                         if (origLen !== this.length) {
                             this.notify();
                         }
-        
+
                         return result;
                     };
                 }(list.unshift));
@@ -925,33 +1118,33 @@ var BINDER = (function (util) {
                     return function () {
                         var origLen = this.length,
                             result;
-        
+
                         this.block();
                         result = base.apply(this, slice.call(arguments));
                         this.unblock();
-        
+
                         if (origLen !== this.length) {
                             this.notify();
                         }
-        
+
                         return result;
                     };
                 }(list.splice));
-        
+
                 if (arguments.length) {
                     list.notify();
                 }
-        
+
                 return list;
             };
-        
+
             makeObservableList.interfce = util.mixin({}, makeObservable.interfce, makeList.interfce);
-        
+
             return makeObservableList;
         }(util, makeList, makeObservable)),
         makeProperty = (function (util, makeList, makeObservable, makeObservableList, window) {
             /*global 'util', 'makeList', 'makeObservable', 'makeObservableList', 'window'*/
-        
+
             var makeProperty,
                 stack = makeList(),
                 // Flag to indicate that properties can only add themselves as
@@ -961,7 +1154,7 @@ var BINDER = (function (util) {
                 // owner then the property called would be marked as a dependency.
                 // This value is never changed at runtime.
                 strictDependencies = false;
-        
+
             stack.pushProperty = function (property) {
                 if (this.length) {
                     if (!strictDependencies || this.peek().owner === property.owner) {
@@ -978,7 +1171,7 @@ var BINDER = (function (util) {
                     }
                 }
             };
-        
+
             makeProperty = function (options) {
                 var writing = false,
                     dependencies = makeList(),
@@ -992,31 +1185,31 @@ var BINDER = (function (util) {
                         memo = undefined;
                         property.notify();
                     };
-        
+
                 dependencies.add = function (prop) {
                     if (!this.contains(prop)) {
                         this.push(prop);
                         subscriptions.push(prop.subscribe(observer));
                     }
                 };
-        
+
                 property = {
                     equals: function (b) {
                         var a = this.get();
                         b = makeProperty.get(b);
-        
+
                         a = a ? a.valueOf() : a;
                         b = b ? b.valueOf() : b;
-        
+
                         return a === b;
                     },
                     changed: function (b) {
                         var a = this.get();
                         b = makeProperty.get(b);
-        
+
                         a = a ? a.valueOf() : a;
                         b = b ? b.valueOf() : b;
-        
+
                         return a !== b;
                     },
                     clearMemo: function () {
@@ -1027,27 +1220,27 @@ var BINDER = (function (util) {
                             stack.addDependency(this);
                             stack.pushProperty(this);
                         }
-        
+
                         var result = memo === undefined ? getter.call(this.owner) : memo;
                         memo = result;
-        
+
                         if (stack[stack.length - 1] === this) {
                             stack.pop();
                         }
-        
+
                         return result;
                     },
                     set: function (value) {
                         // Check if the property is writable.
                         if (typeof setter === 'function') {
                             writing = true;
-        
+
                             if (!this.equals(value) || this.changed(value)) {
                                 memo = undefined;
                                 setter.call(this.owner, value);
                                 this.notify();
                             }
-        
+
                             writing = false;
                         }
                     },
@@ -1065,9 +1258,9 @@ var BINDER = (function (util) {
                         return util.isNil(value) ? value : value.valueOf();
                     }
                 };
-        
+
                 util.mixin(property, makeObservable());
-        
+
                 // Initialization.
                 (function () {
                     var value,
@@ -1076,9 +1269,9 @@ var BINDER = (function (util) {
                         isObject = util.isObject,
                         isArray = util.isArray,
                         adheresTo = util.adheresTo;
-        
+
                     self.owner = undefined;
-        
+
                     // Just a getter function.
                     if (typeof options === 'function') {
                         getter = options;
@@ -1101,15 +1294,15 @@ var BINDER = (function (util) {
                         } else {
                             value = options;
                         }
-        
+
                         // Make all Arrays into ObservableLists.
                         if (isArray(value) && !adheresTo(value, makeObservable.interfce)) {
                             value = makeObservableList(value);
-        
+
                             // For array values the equals and changed operators
                             // specified in the options are opertors for testing items in the list
                             // not for operating on individual lists themselves.
-        
+
                             // Override the item operators for the newly created ObservableList
                             // so that the item operators are taken from the options.
                             value.getItemOperators = (function (equals, changed) {
@@ -1117,7 +1310,7 @@ var BINDER = (function (util) {
                                     return {equals: equals, changed: changed};
                                 };
                             }(self.equals, self.changed));
-        
+
                             self.equals = function (b) {
                                 b = makeProperty.get(b);
                                 return value.equals(b);
@@ -1127,19 +1320,19 @@ var BINDER = (function (util) {
                                 return value.changed(b);
                             };
                         }
-        
+
                         // If the value is observable then we observe it for notifications.
                         if (value && typeof value.subscribe === 'function' && typeof value.dispose === 'function') {
                             subscriptions.push(value.subscribe(observer));
                         }
-        
+
                         getter = function () {
                             return value;
                         };
                         setter = function (v) {
                             if (adheresTo(value, makeList.interfce)) {
                                 value.clear();
-        
+
                                 if (isArray(v)) {
                                     value.push.apply(value, v);
                                 } else {
@@ -1149,7 +1342,7 @@ var BINDER = (function (util) {
                                 while (value.length) {
                                     value.pop();
                                 }
-        
+
                                 if (isArray(v)) {
                                     value.push.apply(value, v);
                                 } else {
@@ -1160,7 +1353,7 @@ var BINDER = (function (util) {
                             }
                         };
                     }
-        
+
                     self.dispose = (function (base) {
                         return function () {
                             while (subscriptions.length) {
@@ -1172,7 +1365,7 @@ var BINDER = (function (util) {
                             base.call(this);
                         };
                     }(self.dispose));
-        
+
                     // Watch dependent properties automatically
                     // if they are not 'lazy'. If we are lazy then
                     // dependent properties will not be tracked until
@@ -1180,36 +1373,36 @@ var BINDER = (function (util) {
                     if (!lazy) {
                         self.get();
                     }
-        
+
                     // Create the functional property 'fn'.
                     fn = function (value) {
                         var ret,
                             origOwner = fn.owner;
-        
+
                         // Temporarily set the owner to the 'this' object.
                         if (this !== window) {
                             fn.owner = this;
                         }
-        
+
                         if (arguments.length) {
                             fn.set(value);
                             ret = this;
                         } else {
                             ret = fn.get();
                         }
-        
+
                         fn.owner = origOwner;
-        
+
                         return ret;
                     };
-        
+
                     util.mixin(fn, property);
                 }());
-        
+
                 // We can return either the property (object) or fn (functional property).
                 return fn;
             };
-        
+
             // Convenience method to retrieve the value of the specified property.
             // If the specified property is not a property then returns property.
             makeProperty.get = function (property) {
@@ -1218,7 +1411,7 @@ var BINDER = (function (util) {
                 }
                 return property;
             };
-        
+
             makeProperty.interfce = util.mixin({
                 owner: '*',
                 dependencies: 'function',
@@ -1229,30 +1422,30 @@ var BINDER = (function (util) {
                 equals: 'function',
                 changed: 'function'
             }, makeObservable.interfce);
-        
+
             return makeProperty;
         }(util, makeList, makeObservable, makeObservableList, window)),
         makeBinding = (function (util, makeProperty) {
             /*global 'util', 'makeProperty'*/
-        
+
             var makeBinding = function (source, sink, type) {
                 var propertyInterface = makeProperty.interfce,
                     subscriptions = [],
                     subscription;
-        
+
                 type = type || 'twoway';
                 type = util.str(type);
                 type = type.toLowerCase();
-        
+
                 if (!util.adheresTo(source, propertyInterface)) {
                     throw new Error('Binding source must be a observable property. ' + source);
                 }
                 if (!util.adheresTo(sink, propertyInterface)) {
                     throw new Error('Binding sink must be a observable property. ' + sink);
                 }
-        
+
                 sink.set(source.get());
-        
+
                 switch (type) {
                 case 'oneway':
                     subscription = source.subscribe(function () {
@@ -1265,16 +1458,16 @@ var BINDER = (function (util) {
                         sink.set(source.get());
                     });
                     subscriptions.push(subscription);
-        
+
                     subscription = sink.subscribe(function () {
                         source.set(sink.get());
                     });
                     subscriptions.push(subscription);
                     break;
                 }
-        
+
                 subscription = null;
-        
+
                 return {
                     type: function () {
                         return type;
@@ -1292,14 +1485,14 @@ var BINDER = (function (util) {
                     }
                 };
             };
-        
+
             makeBinding.interfce = {
                 type: 'function',
                 source: 'function',
                 sink: 'function',
                 dispose: 'function'
             };
-        
+
             return makeBinding;
         }(util, makeProperty)),
         toObject = function (o, excludeDependentProperties) {
@@ -1342,25 +1535,23 @@ var BINDER = (function (util) {
 
             return js;
         },
-        module = function (util) {
-            return {
-                makeList: makeList,
-                makeObservable: makeObservable,
-                makeObservableList: makeObservableList,
-                makeProperty: makeProperty,
-                makeBinding: makeBinding,
-                toObject: toObject
-            };
+        module = {
+            util: util,
+            makeList: makeList,
+            makeObservable: makeObservable,
+            makeObservableList: makeObservableList,
+            makeProperty: makeProperty,
+            makeBinding: makeBinding,
+            toObject: toObject
         };
 
     // Asynchronous modules (AMD) supported.
     if (typeof define === 'function' && typeof define.amd === 'object') {
-        define(['util'], module);
+        define(module);
     // Nodejs/CommonJS modules supported.
-    } else if (exports && typeof exports === 'object' && typeof require === 'function') {
-        util = require('util');
-        util.mixin(exports, module(util));
+    } else if (typeof exports === 'object' && exports && typeof require === 'function') {
+        util.mixin(exports, module);
     } else {
-        return module(util);
+        return module;
     }
-}(UTIL));
+}());

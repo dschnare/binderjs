@@ -8,13 +8,13 @@
             subscription;
 
         type = type || 'twoway';
-        type = util.string.toString(type);
+        type = util.str(type);
         type = type.toLowerCase();
 
-        if (!util.object.adheresTo(source, propertyInterface)) {
+        if (!util.adheresTo(source, propertyInterface)) {
             throw new Error('Binding source must be a observable property. ' + source);
         }
-        if (!util.object.adheresTo(sink, propertyInterface)) {
+        if (!util.adheresTo(sink, propertyInterface)) {
             throw new Error('Binding sink must be a observable property. ' + sink);
         }
 

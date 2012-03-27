@@ -1,8 +1,17 @@
-var BINDER = (function (util) {
+var BINDER = (function () {
     'use strict';
 
     var Array = ([]).constructor,
         Object = ({}).constructor,
+        util = (function () {
+            var define = null,
+                exports = null,
+                require = null;
+
+            {{util}};
+
+            return UTIL;
+        }()),
         makeList = {{makeList}},
         makeObservable = {{makeObservable}},
         makeObservableList = {{makeObservableList}},
@@ -48,25 +57,23 @@ var BINDER = (function (util) {
 
             return js;
         },
-        module = function (util) {
-            return {
-                makeList: makeList,
-                makeObservable: makeObservable,
-                makeObservableList: makeObservableList,
-                makeProperty: makeProperty,
-                makeBinding: makeBinding,
-                toObject: toObject
-            };
+        module = {
+            util: util,
+            makeList: makeList,
+            makeObservable: makeObservable,
+            makeObservableList: makeObservableList,
+            makeProperty: makeProperty,
+            makeBinding: makeBinding,
+            toObject: toObject
         };
 
     // Asynchronous modules (AMD) supported.
     if (typeof define === 'function' && typeof define.amd === 'object') {
-        define(['util'], module);
+        define(module);
     // Nodejs/CommonJS modules supported.
     } else if (exports && typeof exports === 'object' && typeof require === 'function') {
-        util = require('util');
-        util.mixin(exports, module(util));
+        util.mixin(exports, module);
     } else {
-        return module(util);
+        return module;
     }
-}(UTIL));
+}());
