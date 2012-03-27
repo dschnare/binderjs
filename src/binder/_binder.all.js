@@ -68,7 +68,7 @@ var BINDER = (function () {
         };
 
     // Asynchronous modules (AMD) supported.
-    if (typeof define === 'function' && typeof define.amd === 'object') {
+    if (typeof define === 'function' && typeof define.amd === 'object' && define.amd) {
         define(module);
     // Nodejs/CommonJS modules supported.
     } else if (typeof exports === 'object' && exports && typeof require === 'function') {
