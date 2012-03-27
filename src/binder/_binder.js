@@ -1,6 +1,8 @@
 var BINDER = (function (util) {
     'use strict';
 
+    /*global 'UTIL', 'define', 'exports', 'require'*/
+
     var Array = ([]).constructor,
         Object = ({}).constructor,
         makeList = {{makeList}},
@@ -35,14 +37,16 @@ var BINDER = (function (util) {
             }
 
             for (key in o) {
-                value = o[key];
+                if (o[key] !== undefined) {
+                    value = o[key];
 
-                if (adheresTo(value, propertyInterface)) {
-                    if (!(value.isDependent() && excludeDependentProperties)) {
-                        js[key] = toObject(value.get());
+                    if (adheresTo(value, propertyInterface)) {
+                        if (!(value.isDependent() && excludeDependentProperties)) {
+                            js[key] = toObject(value.get());
+                        }
+                    } else {
+                        js[key] = value;
                     }
-                } else {
-                    js[key] = value;
                 }
             }
 
