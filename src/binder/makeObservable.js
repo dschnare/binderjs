@@ -1,6 +1,6 @@
 (function (makeList, setTimeout) {
     'use strict';
-    /*global 'makeList', 'setTimeout'*/
+    /*global 'makeList', 'setTimeout', 'clearTimeout'*/
 
     var notify = function (self, observers) {
             var i,
@@ -24,6 +24,7 @@
                 throttleDuration = 0,
                 notifying = false,
                 blocked = false,
+                throttleId = -1,
                 observable = {
                     block: function () {
                         blocked = true;
@@ -62,7 +63,7 @@
                         notifying = true;
 
                         if (throttleDuration > 0) {
-                            setTimeout(function () {
+                            throttleId = setTimeout(function () {
                                 notify(self, observers);
                                 notifying = false;
                             }, throttleDuration);
@@ -73,6 +74,7 @@
                     },
                     dispose: function () {
                         observers.clear();
+                        clearTimeout(throttleId);
                     }
                 };
 

@@ -58,7 +58,7 @@ var BINDER = (function () {
             return js;
         },
         module = {
-            util: util,
+            utiljs: util,
             makeList: makeList,
             makeObservable: makeObservable,
             makeObservableList: makeObservableList,

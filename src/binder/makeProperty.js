@@ -108,7 +108,7 @@
                 return dependencies.length !== 0;
             },
             toString: function () {
-                return util.toString(this.get());
+                return util.str(this.get());
             },
             valueOf : function () {
                 var value = this.get();
@@ -132,8 +132,8 @@
             // Just a getter function.
             if (typeof options === 'function') {
                 getter = options;
-            // {get[, set, lazy, changed, equals, owner]}
-            } else if (isObject(options) && (typeof options.get === 'function' || typeof options.set === 'function')) {
+            // {get, [set, lazy, changed, equals, owner]}
+            } else if (isObject(options) && typeof options.get === 'function') {
                 lazy = options.lazy;
                 getter = options.get;
                 setter = typeof options.set === 'function' ? options.set : null;
@@ -141,7 +141,7 @@
                 self.changed = typeof options.changed === 'function' ? options.changed : self.changed;
                 self.owner = options.owner;
             } else {
-                // {value[, changed, equqls, owner]}
+                // {value, [changed, equals, owner]}
                 if (isObject(options)) {
                     self.equals = typeof options.equals === 'function' ? options.equals : self.equals;
                     self.changed = typeof options.changed === 'function' ? options.changed : self.changed;

@@ -9,8 +9,8 @@
  *
  * <p>Test suites are objects that consist of several tests. Each test suite has its methods enumerated
  * and only the methods with no formal arguments will be recognized as tests. Besides tests, a suite can
- * have the following life cycle methods: Setup; called once before each test is executed with the test name,
- * Destroy; called once after each test has executed with the test name, SetupSuite; called once before
+ * have the following life cycle methods: SetupSuite; called once before each test is executed with the test name,
+ * DestroySuite; called once after each test has executed with the test name, SetupSuite; called once before
  * any test has executed, DestroySuite; called once after all tests have been executed. Note that the life-
  * cycle methods can be all lowercase, mixed camelcase, or even have '_' separating their words.</p>
  *
@@ -18,7 +18,7 @@
  * to create test suites with. When a test harness is executed, all test suites are executed in the
  * order they were specified.</p>
  */
-var unit = (function(browserConsole, document) {
+var UNIT = (function(browserConsole, document) {
     var utill, Array, Object, TEST_MESSAGE, console, AssertionError;
 
     Array = ([]).constructor;
@@ -39,7 +39,7 @@ var unit = (function(browserConsole, document) {
                     result = o !== undefined && o !== null && len !== 0;
 
                 for (i = 0; result && i < len; i += 1) {
-                    methodName = methodNames[i] === undefined ? methodNames[i].toString() : '';
+                    methodName = methodNames[i] !== undefined && methodNames[i] !== null ? methodNames[i].toString() : '';
 
                     if (typeof o[methodName] !== 'function') {
                         result = false;
@@ -377,8 +377,8 @@ var unit = (function(browserConsole, document) {
 	}
 
 	function log(message, passed) {
-		if (typeof unit.log === "function") {
-			unit.log(message, passed);
+		if (typeof UNIT.log === "function") {
+			UNIT.log(message, passed);
 		}
 	}
 
@@ -511,7 +511,7 @@ var unit = (function(browserConsole, document) {
 
 			// ensure we have gotten an even number of arguments
 			if (len === 0 || len % 2 !== 0) {
-				throw new Error("unit.makeTestHarness::Expected a name and a list of name:instance pairs to create test suites from.");
+				throw new Error("UNIT.makeTestHarness::Expected a name and a list of name:instance pairs to create test suites from.");
 			}
 
 			// make the test suites
@@ -558,7 +558,7 @@ var unit = (function(browserConsole, document) {
                     m = p.toLowerCase();
 
 					if (m.indexOf("setup") !== 0 && m.indexOf("destroy") !== 0) {
-						tests.push(unit.makeTest(p, util.fn.bind(f, instance)));
+						tests.push(UNIT.makeTest(p, util.fn.bind(f, instance)));
 					}
 				}
 			}
@@ -649,7 +649,7 @@ var unit = (function(browserConsole, document) {
 		makeTest: function(name, func) {
 			if (!(typeof name === "string" || !(name instanceof String)) ||
                 typeof func !== "function" || func.length !== 0) {
-				throw new Error("unit.makeTest: Expected name, and a function that takes 0 arguments.");
+				throw new Error("UNIT.makeTest: Expected name, and a function that takes 0 arguments.");
 			}
 
 			return {

@@ -771,7 +771,7 @@ var BINDER = (function () {
         
                         while (i) {
                             i -= 1;
-                            if (!this.hasOwnProperty(i)) {
+                            if (this[i] === undefined) {
                                 this.splice(i, 1);
                             }
                         }
@@ -874,7 +874,7 @@ var BINDER = (function () {
             return makeList;
         }(util)),
         makeObservable = (function (makeList, setTimeout) {
-            /*global 'makeList', 'setTimeout'*/
+            /*global 'makeList', 'setTimeout', 'clearTimeout'*/
         
             var notify = function (self, observers) {
                     var i,
@@ -898,6 +898,7 @@ var BINDER = (function () {
                         throttleDuration = 0,
                         notifying = false,
                         blocked = false,
+                        throttleId = -1,
                         observable = {
                             block: function () {
                                 blocked = true;
@@ -936,7 +937,7 @@ var BINDER = (function () {
                                 notifying = true;
         
                                 if (throttleDuration > 0) {
-                                    setTimeout(function () {
+                                    throttleId = setTimeout(function () {
                                         notify(self, observers);
                                         notifying = false;
                                     }, throttleDuration);
@@ -947,6 +948,7 @@ var BINDER = (function () {
                             },
                             dispose: function () {
                                 observers.clear();
+                                clearTimeout(throttleId);
                             }
                         };
         
@@ -1251,7 +1253,7 @@ var BINDER = (function () {
                         return dependencies.length !== 0;
                     },
                     toString: function () {
-                        return util.toString(this.get());
+                        return util.str(this.get());
                     },
                     valueOf : function () {
                         var value = this.get();
@@ -1275,8 +1277,8 @@ var BINDER = (function () {
                     // Just a getter function.
                     if (typeof options === 'function') {
                         getter = options;
-                    // {get[, set, lazy, changed, equals, owner]}
-                    } else if (isObject(options) && (typeof options.get === 'function' || typeof options.set === 'function')) {
+                    // {get, [set, lazy, changed, equals, owner]}
+                    } else if (isObject(options) && typeof options.get === 'function') {
                         lazy = options.lazy;
                         getter = options.get;
                         setter = typeof options.set === 'function' ? options.set : null;
@@ -1284,7 +1286,7 @@ var BINDER = (function () {
                         self.changed = typeof options.changed === 'function' ? options.changed : self.changed;
                         self.owner = options.owner;
                     } else {
-                        // {value[, changed, equqls, owner]}
+                        // {value, [changed, equals, owner]}
                         if (isObject(options)) {
                             self.equals = typeof options.equals === 'function' ? options.equals : self.equals;
                             self.changed = typeof options.changed === 'function' ? options.changed : self.changed;
@@ -1536,7 +1538,7 @@ var BINDER = (function () {
             return js;
         },
         module = {
-            util: util,
+            utiljs: util,
             makeList: makeList,
             makeObservable: makeObservable,
             makeObservableList: makeObservableList,

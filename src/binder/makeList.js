@@ -568,7 +568,7 @@
 
                 while (i) {
                     i -= 1;
-                    if (!this.hasOwnProperty(i)) {
+                    if (this[i] === undefined) {
                         this.splice(i, 1);
                     }
                 }
