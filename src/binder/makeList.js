@@ -2,7 +2,8 @@
     'use strict';
     /*global 'util'*/
 
-    var defaultItemOperators = {
+    var Array = ([]).constructor,
+        defaultItemOperators = {
             equals: function (a, b) {
                 a = a ? a.valueOf() : a;
                 b = b ? b.valueOf() : b;
@@ -99,10 +100,13 @@
                 var i = 0,
                     len = this.length,
                     k = len - 1,
-                    mid = parseInt(len / 2, 10);
+                    mid = parseInt((len / 2).toFixed(0), 10),
+                    temp;
 
                 while (i < mid) {
+                    temp = this[k];
                     this[k] = this[i];
+                    this[i] = temp;
                     k -= 1;
                     i += 1;
                 }
@@ -110,9 +114,9 @@
                 return this;
             };
             list.map = list.map || function (callback, thisObj) {
-                var i,
+                var i = 0,
                     len = this.length,
-                    result = [];
+                    result = new Array(len);
 
                 if (typeof callback !== 'function') {
                     throw new Error('TypeError');
@@ -163,7 +167,7 @@
             };
             list.reduce = list.reduce || function (callback, initialValue) {
                 var len = this.length,
-                    i,
+                    i = 0,
                     acc,
                     present;
 
@@ -205,7 +209,7 @@
             };
             list.reduceRight = list.reduceRight || function (callback, initialValue) {
                 var len = this.length,
-                    i,
+                    i = len - 1,
                     acc,
                     present;
 
@@ -220,7 +224,6 @@
                     acc = initialValue;
                 } else {
                     present = false;
-                    i = len - 1;
 
                     while (!present && i >= 0) {
                         present = this.hasOwnProperty(i);
@@ -306,7 +309,7 @@
                     i -= 1;
                     item = this[i];
                     if (this.occurances(item) === 1) {
-                        distinct.push(item);
+                        distinct.unshift(item);
                     }
                 }
 
@@ -585,7 +588,10 @@
                 return this[this.length - 1];
             };
             list.insert = function (index, item) {
-                if (index >= 0 && index <= this.length + 1) {
+                if (index > this.length + 1) {
+                    index = this.length + 1;
+                }
+                if (index >= 0) {
                     if (index === this.length + 1) {
                         this.push(item);
                     } else if (this.hasOwnProperty(index)) {

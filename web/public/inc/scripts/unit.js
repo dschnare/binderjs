@@ -9,10 +9,11 @@
  *
  * <p>Test suites are objects that consist of several tests. Each test suite has its methods enumerated
  * and only the methods with no formal arguments will be recognized as tests. Besides tests, a suite can
- * have the following life cycle methods: SetupSuite; called once before each test is executed with the test name,
- * DestroySuite; called once after each test has executed with the test name, SetupSuite; called once before
- * any test has executed, DestroySuite; called once after all tests have been executed. Note that the life-
- * cycle methods can be all lowercase, mixed camelcase, or even have '_' separating their words.</p>
+ * have the following life cycle methods: setupTest; called once before each test is executed with the test name,
+ * destroyTest; called once after each test has executed with the test name, setupSuite; called once before
+ * any test has executed, destroySuite; called once after all tests have been executed. Additionally,
+ * each test can have a "setup[testName]" and a "destroy[testName]" that will override the generic setup and
+ * destroy functions for one specific test.</p>
  *
  * <p>Test harnesses are a set of test suites. Test harnesses are created by passing several objects
  * to create test suites with. When a test harness is executed, all test suites are executed in the
@@ -387,11 +388,19 @@ var UNIT = (function(browserConsole, document) {
     }
     function setupTest(suite, testName) {
         var testName = "setup" + testName.charAt(0).toUpperCase() + testName.substring(1);
-        if (typeof suite[testName] === "function") suite[testName]();
+        if (typeof suite[testName] === "function") {
+            suite[testName]();
+        } else if (typeof suite.setupTest === 'function') {
+            suite.setupTest();
+        }
     }
     function destroyTest(suite, testName) {
         var testName = "destroy" + testName.charAt(0).toUpperCase() + testName.substring(1);
-        if (typeof suite[testName] === "function") suite[testName]();
+        if (typeof suite[testName] === "function") {
+            suite[testName]();
+        } else if (typeof suite.destroyTest === 'function') {
+            suite.destroyTest();
+        }
     }
     function destroySuite(suite) {
         if (typeof suite.destroySuite === "function") suite.destroySuite();
