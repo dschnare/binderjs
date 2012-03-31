@@ -797,9 +797,14 @@ var BINDER = (function () {
                         }
                     };
                     list.replaceAt = function (index, item) {
+                        var replaced;
+        
                         if (isFinite(index) && index >= 0 && index < this.length) {
+                            replaced = this[index];
                             this[index] = item;
                         }
+        
+                        return replaced;
                     };
                     list.isEmpty = function () {
                         return this.length === 0;
@@ -1349,12 +1354,11 @@ var BINDER = (function () {
                         self.changed = typeof options.changed === 'function' ? options.changed : self.changed;
                         self.owner = options.owner;
                     } else {
-                        // {value, [changed, equals, owner]}
+                        // {value, [changed, equals]}
                         if (isObject(options)) {
                             self.equals = typeof options.equals === 'function' ? options.equals : self.equals;
                             self.changed = typeof options.changed === 'function' ? options.changed : self.changed;
                             value = options.value;
-                            self.owner = options.owner;
                         // Just the value.
                         } else {
                             value = options;
@@ -1503,10 +1507,10 @@ var BINDER = (function () {
                 type = type.toLowerCase();
         
                 if (!util.adheresTo(source, propertyInterface)) {
-                    throw new Error('Binding source must be a observable property. ' + source);
+                    throw new Error('Binding source must be an observable property. ' + source);
                 }
                 if (!util.adheresTo(sink, propertyInterface)) {
-                    throw new Error('Binding sink must be a observable property. ' + sink);
+                    throw new Error('Binding sink must be an observable property. ' + sink);
                 }
         
                 sink.set(source.get());

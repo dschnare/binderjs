@@ -12,10 +12,10 @@
         type = type.toLowerCase();
 
         if (!util.adheresTo(source, propertyInterface)) {
-            throw new Error('Binding source must be a observable property. ' + source);
+            throw new Error('Binding source must be an observable property. ' + source);
         }
         if (!util.adheresTo(sink, propertyInterface)) {
-            throw new Error('Binding sink must be a observable property. ' + sink);
+            throw new Error('Binding sink must be an observable property. ' + sink);
         }
 
         sink.set(source.get());

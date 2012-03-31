@@ -23,8 +23,6 @@ Binderjs is am object-oriented property-binding API.
 
 Browsers will be added to the list as testing ensues:
 
-*Supports any JavaScript 1.3 environment*
-
 - Chrome
 - FireFox 8+
 - Safari 5.1+

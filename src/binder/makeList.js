@@ -594,9 +594,14 @@
                 }
             };
             list.replaceAt = function (index, item) {
+                var replaced;
+
                 if (isFinite(index) && index >= 0 && index < this.length) {
+                    replaced = this[index];
                     this[index] = item;
                 }
+
+                return replaced;
             };
             list.isEmpty = function () {
                 return this.length === 0;

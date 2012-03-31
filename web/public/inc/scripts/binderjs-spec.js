@@ -2300,8 +2300,218 @@ Repo: https://github.com/dschnare/binderjs
 			/*global 'BINDER', 'UNIT'*/
 		
 			return {
+				setupTest: function () {
+					this.p1 = binder.makeProperty('Mario');
+					this.p2 = binder.makeProperty('Luigi');
+				},
+				destroyTest: function () {
+					if (this.binding) {
+						this.binding.dispose();
+					}
 		
+					delete this.binding;
+					delete this.p1;
+					delete this.p2;
+				},
+				adherenceTest: function () {
+					unit.expectToThrow('makeBinding to throw an error', function () {
+						binder.makeBinding(1, 2);
+					});
+					unit.expectToThrow('makeBinding to throw an error', function () {
+						binder.makeBinding(1, this.p2);
+					});
+					unit.expectToThrow('makeBinding to throw an error', function () {
+						binder.makeBinding(this.p1, 2);
+					});
+				},
+				oneWayBindingTest: function () {
+					this.binding = binder.makeBinding(this.p1, this.p2, 'oneway');
+		
+					unit.expect('the binding to have a type of "oneway"', this.binding.type() === 'oneway');
+					unit.expect('the binding to have a source equal to p1', this.binding.source() === this.p1);
+					unit.expect('the binding to have a sink equal to p2', this.binding.sink() === this.p2);
+					unit.expect('p2 to have a value of "Mario"', 'Mario' === this.p2());
+		
+					this.p1('Luigi');
+		
+					unit.expect('p1 to have a value of "Luigi"', 'Luigi' === this.p1());
+					unit.expect('p2 to have a value of "Luigi"', 'Luigi' === this.p2());
+		
+		
+					this.p2('Mario');
+		
+					unit.expect('p1 to have a value of "Luigi"', 'Luigi' === this.p1());
+					unit.expect('p2 to have a value of "Mario"', 'Mario' === this.p2());
+		
+		
+					this.p1('Toad');
+		
+					unit.expect('p1 to have a value of "Toad"', 'Toad' === this.p1());
+					unit.expect('p2 to have a value of "Toad"', 'Toad' === this.p2());
+				},
+				oneWayBindingTest2: function () {
+					this.binding = binder.makeBinding(this.p1, this.p2, 'OneWAY');
+		
+					unit.expect('the binding to have a type of "oneway"', this.binding.type() === 'oneway');
+					unit.expect('the binding to have a source equal to p1', this.binding.source() === this.p1);
+					unit.expect('the binding to have a sink equal to p2', this.binding.sink() === this.p2);
+					unit.expect('p2 to have a value of "Mario"', 'Mario' === this.p2());
+		
+					this.p1('Luigi');
+		
+					unit.expect('p1 to have a value of "Luigi"', 'Luigi' === this.p1());
+					unit.expect('p2 to have a value of "Luigi"', 'Luigi' === this.p2());
+		
+		
+					this.p2('Mario');
+		
+					unit.expect('p1 to have a value of "Luigi"', 'Luigi' === this.p1());
+					unit.expect('p2 to have a value of "Mario"', 'Mario' === this.p2());
+		
+					this.p1('Toad');
+		
+					unit.expect('p1 to have a value of "Toad"', 'Toad' === this.p1());
+					unit.expect('p2 to have a value of "Toad"', 'Toad' === this.p2());
+				},
+				twoWayBindingTest: function () {
+					this.binding = binder.makeBinding(this.p1, this.p2);
+		
+					unit.expect('the binding to have a type of "twoway"', this.binding.type() === 'twoway');
+					unit.expect('the binding to have a source equal to p1', this.binding.source() === this.p1);
+					unit.expect('the binding to have a sink equal to p2', this.binding.sink() === this.p2);
+					unit.expect('p2 to have a value of "Mario"', 'Mario' === this.p2());
+		
+					this.p1('Luigi');
+		
+					unit.expect('p1 to have a value of "Luigi"', 'Luigi' === this.p1());
+					unit.expect('p2 to have a value of "Luigi"', 'Luigi' === this.p2());
+		
+		
+					this.p2('Princess');
+		
+					unit.expect('p1 to have a value of "Princess"', 'Princess' === this.p1());
+					unit.expect('p2 to have a value of "Princess"', 'Princess' === this.p2());
+		
+		
+					this.p1('Toad');
+		
+					unit.expect('p1 to have a value of "Toad"', 'Toad' === this.p1());
+					unit.expect('p2 to have a value of "Toad"', 'Toad' === this.p2());
+				},
+				twoWayBindingTest2: function () {
+					this.binding = binder.makeBinding(this.p1, this.p2, 'TwoWAY');
+		
+					unit.expect('the binding to have a type of "twoway"', this.binding.type() === 'twoway');
+					unit.expect('the binding to have a source equal to p1', this.binding.source() === this.p1);
+					unit.expect('the binding to have a sink equal to p2', this.binding.sink() === this.p2);
+					unit.expect('p2 to have a value of "Mario"', 'Mario' === this.p2());
+		
+					this.p1('Luigi');
+		
+					unit.expect('p1 to have a value of "Luigi"', 'Luigi' === this.p1());
+					unit.expect('p2 to have a value of "Luigi"', 'Luigi' === this.p2());
+		
+		
+					this.p2('Princess');
+		
+					unit.expect('p1 to have a value of "Princess"', 'Princess' === this.p1());
+					unit.expect('p2 to have a value of "Princess"', 'Princess' === this.p2());
+		
+		
+					this.p1('Toad');
+		
+					unit.expect('p1 to have a value of "Toad"', 'Toad' === this.p1());
+					unit.expect('p2 to have a value of "Toad"', 'Toad' === this.p2());
+				},
+				onceBindingTest: function () {
+					this.binding = binder.makeBinding(this.p1, this.p2, 'once');
+		
+					unit.expect('the binding to have a type of "once"', this.binding.type() === 'once');
+					unit.expect('the binding to have a source equal to p1', this.binding.source() === this.p1);
+					unit.expect('the binding to have a sink equal to p2', this.binding.sink() === this.p2);
+					unit.expect('p2 to have a value of "Mario"', 'Mario' === this.p2());
+		
+					this.p1('Luigi');
+		
+					unit.expect('p1 to have a value of "Luigi"', 'Luigi' === this.p1());
+					unit.expect('p2 to have a value of "Mario"', 'Mario' === this.p2());
+		
+		
+					this.p2('Princess');
+		
+					unit.expect('p1 to have a value of "Luigi"', 'Luigi' === this.p1());
+					unit.expect('p2 to have a value of "Princess"', 'Princess' === this.p2());
+		
+		
+					this.p1('Toad');
+		
+					unit.expect('p1 to have a value of "Toad"', 'Toad' === this.p1());
+					unit.expect('p2 to have a value of "Princess"', 'Princess' === this.p2());
+				},
+				onceBindingTest2: function () {
+					this.binding = binder.makeBinding(this.p1, this.p2, 'ONcE');
+		
+					unit.expect('the binding to have a type of "once"', this.binding.type() === 'once');
+					unit.expect('the binding to have a source equal to p1', this.binding.source() === this.p1);
+					unit.expect('the binding to have a sink equal to p2', this.binding.sink() === this.p2);
+					unit.expect('p2 to have a value of "Mario"', 'Mario' === this.p2());
+		
+					this.p1('Luigi');
+		
+					unit.expect('p1 to have a value of "Luigi"', 'Luigi' === this.p1());
+					unit.expect('p2 to have a value of "Mario"', 'Mario' === this.p2());
+		
+		
+					this.p2('Princess');
+		
+					unit.expect('p1 to have a value of "Luigi"', 'Luigi' === this.p1());
+					unit.expect('p2 to have a value of "Princess"', 'Princess' === this.p2());
+		
+		
+					this.p1('Toad');
+		
+					unit.expect('p1 to have a value of "Toad"', 'Toad' === this.p1());
+					unit.expect('p2 to have a value of "Princess"', 'Princess' === this.p2());
+				}
 			};
+		}(BINDER, UNIT)),
+		toObjectSuite = (function (binder, unit) {
+			/*global 'BINDER', 'UNIT'*/
+		
+			return {
+				toObjectTest: function () {
+					var model = {
+							firstName: binder.makeProperty('Darren'),
+							lastName: binder.makeProperty('Schnare'),
+							skills: binder.makeProperty(['javascript', 'html', 'css', 'ruby'])
+						};
+		
+					model.fullName = binder.makeProperty(function () {
+						return model.firstName + ' ' + model.lastName;
+					});
+		
+					var o = binder.toObject(model);
+		
+					unit.expect('o.firstName to equal "Darren"', o.firstName === 'Darren');
+					unit.expect('o.lastName to equal "Schnare"', o.lastName === 'Schnare');
+					unit.expect('o.fullName to equal "Darren Schnare"', o.fullName === 'Darren Schnare');
+					unit.expect('o.skills to be an Array', binder.utiljs.isArray(o.skills));
+					unit.expect('o.skills to equal [javascript, html, css, ruby]', o.skills.join(',') === 'javascript,html,css,ruby');
+		
+		
+					// Convert to simple JavaScript object
+					// excluding properties with dependencies
+					// (i.e. dependent properties).
+					o = binder.toObject(model, true);
+		
+					unit.expect('o.firstName to equal "Darren"', o.firstName === 'Darren');
+					unit.expect('o.lastName to equal "Schnare"', o.lastName === 'Schnare');
+					unit.expect('o.fullName to be undefined', o.fullName === undefined);
+					unit.expect('o.skills to be an Array', binder.utiljs.isArray(o.skills));
+					unit.expect('o.skills to equal [javascript, html, css, ruby]', o.skills.join(',') === 'javascript,html,css,ruby');
+				}
+			};
+		
 		}(BINDER, UNIT));
 
 	unit.makeTestHarness('Binderjs Test Harness',
@@ -2309,5 +2519,6 @@ Repo: https://github.com/dschnare/binderjs
 		'List Test Suite', listSuite,
 		'ObservableList Test Suite', observableListSuite,
 		'Property Test Suite', propertySuite,
-		'Binding Test Suite', bindingSuite).run();
+		'Binding Test Suite', bindingSuite,
+		'toObject Test Suite', toObjectSuite).run();
 }(BINDER, UNIT));

@@ -141,12 +141,11 @@
                 self.changed = typeof options.changed === 'function' ? options.changed : self.changed;
                 self.owner = options.owner;
             } else {
-                // {value, [changed, equals, owner]}
+                // {value, [changed, equals]}
                 if (isObject(options)) {
                     self.equals = typeof options.equals === 'function' ? options.equals : self.equals;
                     self.changed = typeof options.changed === 'function' ? options.changed : self.changed;
                     value = options.value;
-                    self.owner = options.owner;
                 // Just the value.
                 } else {
                     value = options;
