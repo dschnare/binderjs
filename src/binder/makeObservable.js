@@ -23,14 +23,14 @@
             var observers = makeList(),
                 throttleDuration = 0,
                 notifying = false,
-                blocked = false,
+                blockStack = [],
                 throttleId = -1,
                 observable = {
                     block: function () {
-                        blocked = true;
+                        blockStack.push(true);
                     },
                     unblock: function () {
-                        blocked = false;
+                        blockStack.pop();
                     },
                     subscribe: function (observer) {
                         if (observer && !observers.contains(observer)) {
@@ -56,7 +56,7 @@
                     notify: function () {
                         var self = this;
 
-                        if (blocked || notifying) {
+                        if (blockStack.length || notifying) {
                             return;
                         }
 

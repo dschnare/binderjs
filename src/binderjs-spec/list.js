@@ -431,15 +431,277 @@
         },
         changedTest: function () {
         	unit.expect('list to have an changed() method', typeof this.list.changed === 'function');
+
+        	var b = [1,2,3,1];
+
+        	unit.dontExpect('the list to be different than the second list', this.list.changed(b));
+
+
+        	b.pop();
+
+        	unit.expect('the list to be different than the second list', this.list.changed(b));
+
+
+        	b.push(1);
+
+        	unit.dontExpect('the list to be different than the second list', this.list.changed(b));
+
+
+        	this.list.getItemOperators = function () {
+        		return {
+        			equals: function (a, b) {
+        				return false;
+        			},
+        			changed: function (a, b) {
+        				return true;
+        			}
+        		};
+        	};
+
+        	unit.expect('the list to be different than the second list', this.list.changed(b));
         },
         compareTest: function () {
         	unit.expect('list to have an compare() method', typeof this.list.compare === 'function');
+
+        	var l = [1,2,3,1],
+        		comparison = this.list.compare(l);
+
+        	unit.expect('this list to not be the same list as the comparison result', this.list !== comparison);
+        	unit.expect('the comparison result to have a length of 4', comparison.length === 4);
+
+
+        	comparison = binder.makeList(comparison);
+
+        	unit.expect('all comparison objects to have a status of "retained"', comparison.every(function (item) {
+        		return item.status === 'retained';
+        	}));
+
+
+        	l = [2,3,1];
+        	comparison = binder.makeList(this.list.compare(l));
+
+        	unit.expect('comparison object at index 0 to have a status of "retained"', comparison[0].status === 'retained');
+        	unit.expect('comparison object at index 1 to have a status of "retained"', comparison[1].status === 'retained');
+        	unit.expect('comparison object at index 2 to have a status of "retained"', comparison[2].status === 'retained');
+        	unit.expect('comparison object at index 3 to have a status of "deleted"', comparison[3].status === 'deleted');
+
+
+        	l = [2,4];
+        	comparison = binder.makeList(this.list.compare(l));
+
+        	unit.expect('comparison object at index 0 to have a status of "deleted"', comparison[0].status === 'deleted');
+        	unit.expect('comparison object at index 1 to have a status of "retained"', comparison[1].status === 'retained');
+        	unit.expect('comparison object at index 2 to have a status of "deleted"', comparison[2].status === 'deleted');
+        	unit.expect('comparison object at index 3 to have a status of "deleted"', comparison[3].status === 'deleted');
+        	unit.expect('comparison object at index 3 to have a status of "added"', comparison[4].status === 'added');
+        	unit.expect('comparison object at index 3 to have an otherIndex equal to 1', comparison[4].otherIndex === 1);
+
+
+        	this.list = binder.makeList(
+        		{
+	        		id: 0,
+	        		type: 'fruit'
+        		},
+        		{
+	        		id: 1,
+	        		type: 'vegetable'
+        		},
+        		{
+	        		id: 2,
+	        		type: 'grains'
+        		}
+        	);
+
+        	this.list.getItemOperators = function () {
+        		return {
+        			equals: function (a, b) {
+        				return a.id === b.id;
+        			},
+        			changed: function (a, b) {
+        				return a.type !== b.type;
+        			}
+        		};
+        	};
+
+        	l = [
+        		{
+	        		id: 0,
+	        		type: 'fruit'
+        		},
+        		{
+	        		id: 1,
+	        		type: 'Vegetable'
+        		},
+        		{
+	        		id: 3,
+	        		type: 'meat'
+        		}
+        	];
+
+        	comparison = this.list.compare(l);
+
+        	unit.expect('comparison object at index 0 to have a status of "retained"', comparison[0].status === 'retained');
+        	unit.expect('comparison object at index 1 to have a status of "changed"', comparison[1].status === 'changed');
+        	unit.expect('comparison object at index 2 to have a status of "deleted"', comparison[2].status === 'deleted');
+        	unit.expect('comparison object at index 3 to have a status of "added"', comparison[3].status === 'added');
         },
         mergeTest: function () {
         	unit.expect('list to have an merge() method', typeof this.list.merge === 'function');
+
+        	var a = [1,2,3,1],
+        		l = this.list.merge(a);
+
+        	unit.expect('the merged list to not be the same list as the "this.list"', this.list !== l);
+        	unit.expect('the merged list to contain [1,2,3,1]', l.join(',') === '1,2,3,1');
+
+
+        	a = [2,3];
+        	l = this.list.merge(a);
+
+        	unit.expect('the merged list to contain [2, 3]', l.join(',') === '2,3');
+
+
+        	this.list = binder.makeList(
+        		{
+	        		id: 0,
+	        		type: 'fruit',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		},
+        		{
+	        		id: 1,
+	        		type: 'vegetable',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		},
+        		{
+	        		id: 2,
+	        		type: 'grains',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		}
+        	);
+
+        	this.list.getItemOperators = function () {
+        		return {
+        			equals: function (a, b) {
+        				return a.id === b.id;
+        			},
+        			changed: function (a, b) {
+        				return a.type !== b.type;
+        			}
+        		};
+        	};
+
+        	a = [
+        		{
+	        		id: 0,
+	        		type: 'fruit',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		},
+        		{
+	        		id: 1,
+	        		type: 'Vegetable',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		},
+        		{
+	        		id: 3,
+	        		type: 'meat',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		}
+        	];
+
+        	l = this.list.merge(a);
+
+        	unit.expect('the merged list to contains [friuit, Vegetable, meat]', l.join(',') === 'fruit,Vegetable,meat');
         },
         mergeWithTest: function () {
         	unit.expect('list to have an merveWith() method', typeof this.list.mergeWith === 'function');
+
+        	var a = [1,2,3,1],
+        		l = this.list.mergeWith(a);
+
+        	unit.expect('the result of merging to be undefined', l === undefined);
+        	unit.expect('the list to be unmodified', this.list.join(',') === '1,2,3,1');
+
+
+        	a = [2,3];
+        	this.list.mergeWith(a);
+
+        	unit.expect('the list to contain [2, 3]', this.list.join(',') === '2,3');
+
+
+        	this.list = binder.makeList(
+        		{
+	        		id: 0,
+	        		type: 'fruit',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		},
+        		{
+	        		id: 1,
+	        		type: 'vegetable',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		},
+        		{
+	        		id: 2,
+	        		type: 'grains',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		}
+        	);
+
+        	this.list.getItemOperators = function () {
+        		return {
+        			equals: function (a, b) {
+        				return a.id === b.id;
+        			},
+        			changed: function (a, b) {
+        				return a.type !== b.type;
+        			}
+        		};
+        	};
+
+        	a = [
+        		{
+	        		id: 0,
+	        		type: 'fruit',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		},
+        		{
+	        		id: 1,
+	        		type: 'Vegetable',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		},
+        		{
+	        		id: 3,
+	        		type: 'meat',
+	        		toString: function () {
+	        			return this.type;
+	        		}
+        		}
+        	];
+
+        	this.list.mergeWith(a);
+
+        	unit.expect('the list to contains [friuit, Vegetable, meat]', this.list.join(',') === 'fruit,Vegetable,meat');
         },
         removeTest: function () {
         	unit.expect('list to have an remove() method', typeof this.list.remove === 'function');

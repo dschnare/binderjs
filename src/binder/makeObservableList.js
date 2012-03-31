@@ -9,166 +9,199 @@
         util.mixin(list, makeObservable());
         list.remove = (function (base) {
             return function () {
-                var origLen = this.length;
+                var origLen = this.length, ret;
 
                 this.block();
-                base.apply(this, slice.call(arguments));
+                ret = base.apply(this, slice.call(arguments));
                 this.unblock();
 
                 if (origLen !== this.length) {
                     this.notify();
                 }
+
+                return ret;
             };
         }(list.remove));
-        list.clear = (function (base) {
+        list.removeAt = (function (base) {
             return function () {
-                var origLen = this.length;
+                var origLen = this.length, ret;
 
                 this.block();
-                base.call(this);
+                ret = base.apply(this, slice.call(arguments));
                 this.unblock();
 
                 if (origLen !== this.length) {
                     this.notify();
                 }
+
+                return ret;
+            };
+        }(list.removeAt));
+        list.replaceAt = (function (base) {
+            return function () {
+                var ret;
+
+                this.block();
+                ret = base.apply(this, slice.call(arguments));
+                this.unblock();
+                this.notify();
+
+                return ret;
+            };
+        }(list.replaceAt));
+        list.clear = (function (base) {
+            return function () {
+                var origLen = this.length, ret;
+
+                this.block();
+                ret = base.call(this);
+                this.unblock();
+
+                if (origLen !== this.length) {
+                    this.notify();
+                }
+
+                return ret;
             };
         }(list.clear));
         list.collapse = (function (base) {
             return function () {
-                var origLen = this.length;
+                var origLen = this.length, ret;
 
                 this.block();
-                base.call(this);
+                ret = base.call(this);
                 this.unblock();
 
                 if (origLen !== this.length) {
                     this.notify();
                 }
+
+                return ret;
             };
         }(list.collapse));
         list.insert = (function (base) {
-            return function (index, item) {
+            return function () {
+                var ret;
+
                 this.block();
-                base.call(this, index, item);
+                ret = base.apply(this, slice.call(arguments));
                 this.unblock();
-                this.notify();
+
+                if (ret) {
+                    this.notify();
+                }
+
+                return ret;
             };
         }(list.insert));
         list.mergeWith = (function (base) {
-            return function (otherList, equals, changed) {
+            return function () {
+                var ret;
+
                 this.block();
-                base.call(this, otherList, equals, changed);
+                ret = base.apply(this, slice.call(arguments));
                 this.unblock();
                 this.notify();
+
+                return ret;
             };
         }(list.mergeWith));
-        list.replaceAt = function (index, item) {
-            if (isFinite(index) && index >= 0 && index < this.length) {
-                this[index] = item;
-                this.notify();
-            }
-        };
         list.reverse = (function (base) {
             return function () {
-                var result;
+                var ret;
 
                 this.block();
-                result = base.call(this);
+                ret = base.call(this);
                 this.unblock();
                 this.notify();
 
-                return result;
+                return ret;
             };
         }(list.reverse));
         list.pop = (function (base) {
             return function () {
-                var origLen = this.length, result;
+                var origLen = this.length, ret;
 
                 this.block();
-                result = base.call(this);
+                ret = base.call(this);
                 this.unblock();
 
                 if (origLen !== this.length) {
                     this.notify();
                 }
 
-                return result;
+                return ret;
             };
         }(list.pop));
         list.push = (function (base) {
             return function () {
-                var origLen = this.length,
-                    result;
+                var origLen = this.length, ret;
 
                 this.block();
-                result = base.apply(this, slice.call(arguments));
+                ret = base.apply(this, slice.call(arguments));
                 this.unblock();
 
                 if (origLen !== this.length) {
                     this.notify();
                 }
 
-                return result;
+                return ret;
             };
         }(list.push));
         list.shift = (function (base) {
             return function () {
-                var origLen = this.length,
-                    result;
+                var origLen = this.length, ret;
 
                 this.block();
-                result = base.call(this);
+                ret = base.call(this);
                 this.unblock();
 
                 if (origLen !== this.length) {
                     this.notify();
                 }
 
-                return result;
+                return ret;
             };
         }(list.shift));
         list.unshift = (function (base) {
             return function () {
-                var origLen = this.length,
-                    result;
+                var origLen = this.length, ret;
 
                 this.block();
-                result = base.apply(this, slice.call(arguments));
+                ret = base.apply(this, slice.call(arguments));
                 this.unblock();
 
                 if (origLen !== this.length) {
                     this.notify();
                 }
 
-                return result;
+                return ret;
             };
         }(list.unshift));
         list.sort = (function (base) {
             return function () {
-                base.apply(this, slice.call(arguments));
+                var ret = base.apply(this, slice.call(arguments));
+
                 this.notify();
+
+                return ret;
             };
         }(list.sort));
         list.splice = (function (base) {
             return function () {
-                var origLen = this.length,
-                    result;
+                var origLen = this.length, ret;
 
                 this.block();
-                result = base.apply(this, slice.call(arguments));
+                ret = base.apply(this, slice.call(arguments));
                 this.unblock();
 
                 if (origLen !== this.length) {
                     this.notify();
                 }
 
-                return result;
+                return ret;
             };
         }(list.splice));
-
-        if (arguments.length) {
-            list.notify();
-        }
 
         return list;
     };

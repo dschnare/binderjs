@@ -351,7 +351,11 @@
 
                 return undefined;
             };
-            list.find = function (callback, thisObj) {
+            // find(callback)
+            // find(callback, fromIndex)
+            // find(callback, thisObj)
+            // find(callback, fromIndex, thisObj)
+            list.find = function (callback, fromIndex, thisObj) {
                 var i,
                     len = this.length;
 
@@ -359,7 +363,15 @@
                     throw new Error('TypeError');
                 }
 
-                for (i = 0; i < len; i += 1) {
+                if (typeof fromIndex !== 'number' && !thisObj) {
+                    thisObj = fromIndex;
+                }
+
+                if (isNaN(fromIndex) || fromIndex < 0) {
+                    fromIndex = 0;
+                }
+
+                for (i = fromIndex; i < len; i += 1) {
                     if (this.hasOwnProperty(i)) {
                         if (callback.call(thisObj, this[i], i, this)) {
                             return {item: this[i], index: i};
@@ -448,6 +460,7 @@
                     callback,
                     result;
 
+                otherList = makeList(otherList);
                 operators = makeList.getItemOperators(this);
                 equals = typeof equals === 'function' ? equals : function () {
                     return operators.equals.apply(operators, arguments);
@@ -464,7 +477,7 @@
                     item = this[i];
                     result = find.call(otherList, callback);
 
-                    if (result.item === undefined) {
+                    if (result.index < 0) {
                         differences.push(makeCompareResult("deleted", item, i));
                     } else {
                         if (changed(item, result.item)) {
@@ -472,15 +485,19 @@
                         } else {
                             differences.push(makeCompareResult("retained", item, i, result.item, result.index));
                         }
+
+                        delete otherList[result.index];
                     }
                 }
 
                 len = otherList.length;
                 for (i = 0; i < len; i += 1) {
-                    item = otherList[i];
+                    if (otherList.hasOwnProperty(i)) {
+                        item = otherList[i];
 
-                    if (this.find(callback).item === undefined) {
-                        differences.push(makeCompareResult("added", undefined, -1, item, i));
+                        if (this.find(callback).index < 0) {
+                            differences.push(makeCompareResult("added", undefined, -1, item, i));
+                        }
                     }
                 }
 
@@ -590,7 +607,10 @@
             list.insert = function (index, item) {
                 if (index > this.length + 1) {
                     index = this.length + 1;
+                } else if (index < 0) {
+                    index = 0;
                 }
+
                 if (index >= 0) {
                     if (index === this.length + 1) {
                         this.push(item);
@@ -599,7 +619,11 @@
                     } else {
                         this[index] = item;
                     }
+
+                    return true;
                 }
+
+                return false;
             };
 
 

@@ -363,7 +363,11 @@ var BINDER = (function (util) {
         
                         return undefined;
                     };
-                    list.find = function (callback, thisObj) {
+                    // find(callback)
+                    // find(callback, fromIndex)
+                    // find(callback, thisObj)
+                    // find(callback, fromIndex, thisObj)
+                    list.find = function (callback, fromIndex, thisObj) {
                         var i,
                             len = this.length;
         
@@ -371,7 +375,15 @@ var BINDER = (function (util) {
                             throw new Error('TypeError');
                         }
         
-                        for (i = 0; i < len; i += 1) {
+                        if (typeof fromIndex !== 'number' && !thisObj) {
+                            thisObj = fromIndex;
+                        }
+        
+                        if (isNaN(fromIndex) || fromIndex < 0) {
+                            fromIndex = 0;
+                        }
+        
+                        for (i = fromIndex; i < len; i += 1) {
                             if (this.hasOwnProperty(i)) {
                                 if (callback.call(thisObj, this[i], i, this)) {
                                     return {item: this[i], index: i};
@@ -460,6 +472,7 @@ var BINDER = (function (util) {
                             callback,
                             result;
         
+                        otherList = makeList(otherList);
                         operators = makeList.getItemOperators(this);
                         equals = typeof equals === 'function' ? equals : function () {
                             return operators.equals.apply(operators, arguments);
@@ -476,7 +489,7 @@ var BINDER = (function (util) {
                             item = this[i];
                             result = find.call(otherList, callback);
         
-                            if (result.item === undefined) {
+                            if (result.index < 0) {
                                 differences.push(makeCompareResult("deleted", item, i));
                             } else {
                                 if (changed(item, result.item)) {
@@ -484,15 +497,19 @@ var BINDER = (function (util) {
                                 } else {
                                     differences.push(makeCompareResult("retained", item, i, result.item, result.index));
                                 }
+        
+                                delete otherList[result.index];
                             }
                         }
         
                         len = otherList.length;
                         for (i = 0; i < len; i += 1) {
-                            item = otherList[i];
+                            if (otherList.hasOwnProperty(i)) {
+                                item = otherList[i];
         
-                            if (this.find(callback).item === undefined) {
-                                differences.push(makeCompareResult("added", undefined, -1, item, i));
+                                if (this.find(callback).index < 0) {
+                                    differences.push(makeCompareResult("added", undefined, -1, item, i));
+                                }
                             }
                         }
         
@@ -602,7 +619,10 @@ var BINDER = (function (util) {
                     list.insert = function (index, item) {
                         if (index > this.length + 1) {
                             index = this.length + 1;
+                        } else if (index < 0) {
+                            index = 0;
                         }
+        
                         if (index >= 0) {
                             if (index === this.length + 1) {
                                 this.push(item);
@@ -611,7 +631,11 @@ var BINDER = (function (util) {
                             } else {
                                 this[index] = item;
                             }
+        
+                            return true;
                         }
+        
+                        return false;
                     };
         
         
@@ -712,14 +736,14 @@ var BINDER = (function (util) {
                     var observers = makeList(),
                         throttleDuration = 0,
                         notifying = false,
-                        blocked = false,
+                        blockStack = [],
                         throttleId = -1,
                         observable = {
                             block: function () {
-                                blocked = true;
+                                blockStack.push(true);
                             },
                             unblock: function () {
-                                blocked = false;
+                                blockStack.pop();
                             },
                             subscribe: function (observer) {
                                 if (observer && !observers.contains(observer)) {
@@ -745,7 +769,7 @@ var BINDER = (function (util) {
                             notify: function () {
                                 var self = this;
         
-                                if (blocked || notifying) {
+                                if (blockStack.length || notifying) {
                                     return;
                                 }
         
@@ -791,166 +815,199 @@ var BINDER = (function (util) {
                 util.mixin(list, makeObservable());
                 list.remove = (function (base) {
                     return function () {
-                        var origLen = this.length;
+                        var origLen = this.length, ret;
         
                         this.block();
-                        base.apply(this, slice.call(arguments));
+                        ret = base.apply(this, slice.call(arguments));
                         this.unblock();
         
                         if (origLen !== this.length) {
                             this.notify();
                         }
+        
+                        return ret;
                     };
                 }(list.remove));
-                list.clear = (function (base) {
+                list.removeAt = (function (base) {
                     return function () {
-                        var origLen = this.length;
+                        var origLen = this.length, ret;
         
                         this.block();
-                        base.call(this);
+                        ret = base.apply(this, slice.call(arguments));
                         this.unblock();
         
                         if (origLen !== this.length) {
                             this.notify();
                         }
+        
+                        return ret;
+                    };
+                }(list.removeAt));
+                list.replaceAt = (function (base) {
+                    return function () {
+                        var ret;
+        
+                        this.block();
+                        ret = base.apply(this, slice.call(arguments));
+                        this.unblock();
+                        this.notify();
+        
+                        return ret;
+                    };
+                }(list.replaceAt));
+                list.clear = (function (base) {
+                    return function () {
+                        var origLen = this.length, ret;
+        
+                        this.block();
+                        ret = base.call(this);
+                        this.unblock();
+        
+                        if (origLen !== this.length) {
+                            this.notify();
+                        }
+        
+                        return ret;
                     };
                 }(list.clear));
                 list.collapse = (function (base) {
                     return function () {
-                        var origLen = this.length;
+                        var origLen = this.length, ret;
         
                         this.block();
-                        base.call(this);
+                        ret = base.call(this);
                         this.unblock();
         
                         if (origLen !== this.length) {
                             this.notify();
                         }
+        
+                        return ret;
                     };
                 }(list.collapse));
                 list.insert = (function (base) {
-                    return function (index, item) {
+                    return function () {
+                        var ret;
+        
                         this.block();
-                        base.call(this, index, item);
+                        ret = base.apply(this, slice.call(arguments));
                         this.unblock();
-                        this.notify();
+        
+                        if (ret) {
+                            this.notify();
+                        }
+        
+                        return ret;
                     };
                 }(list.insert));
                 list.mergeWith = (function (base) {
-                    return function (otherList, equals, changed) {
+                    return function () {
+                        var ret;
+        
                         this.block();
-                        base.call(this, otherList, equals, changed);
+                        ret = base.apply(this, slice.call(arguments));
                         this.unblock();
                         this.notify();
+        
+                        return ret;
                     };
                 }(list.mergeWith));
-                list.replaceAt = function (index, item) {
-                    if (isFinite(index) && index >= 0 && index < this.length) {
-                        this[index] = item;
-                        this.notify();
-                    }
-                };
                 list.reverse = (function (base) {
                     return function () {
-                        var result;
+                        var ret;
         
                         this.block();
-                        result = base.call(this);
+                        ret = base.call(this);
                         this.unblock();
                         this.notify();
         
-                        return result;
+                        return ret;
                     };
                 }(list.reverse));
                 list.pop = (function (base) {
                     return function () {
-                        var origLen = this.length, result;
+                        var origLen = this.length, ret;
         
                         this.block();
-                        result = base.call(this);
+                        ret = base.call(this);
                         this.unblock();
         
                         if (origLen !== this.length) {
                             this.notify();
                         }
         
-                        return result;
+                        return ret;
                     };
                 }(list.pop));
                 list.push = (function (base) {
                     return function () {
-                        var origLen = this.length,
-                            result;
+                        var origLen = this.length, ret;
         
                         this.block();
-                        result = base.apply(this, slice.call(arguments));
+                        ret = base.apply(this, slice.call(arguments));
                         this.unblock();
         
                         if (origLen !== this.length) {
                             this.notify();
                         }
         
-                        return result;
+                        return ret;
                     };
                 }(list.push));
                 list.shift = (function (base) {
                     return function () {
-                        var origLen = this.length,
-                            result;
+                        var origLen = this.length, ret;
         
                         this.block();
-                        result = base.call(this);
+                        ret = base.call(this);
                         this.unblock();
         
                         if (origLen !== this.length) {
                             this.notify();
                         }
         
-                        return result;
+                        return ret;
                     };
                 }(list.shift));
                 list.unshift = (function (base) {
                     return function () {
-                        var origLen = this.length,
-                            result;
+                        var origLen = this.length, ret;
         
                         this.block();
-                        result = base.apply(this, slice.call(arguments));
+                        ret = base.apply(this, slice.call(arguments));
                         this.unblock();
         
                         if (origLen !== this.length) {
                             this.notify();
                         }
         
-                        return result;
+                        return ret;
                     };
                 }(list.unshift));
                 list.sort = (function (base) {
                     return function () {
-                        base.apply(this, slice.call(arguments));
+                        var ret = base.apply(this, slice.call(arguments));
+        
                         this.notify();
+        
+                        return ret;
                     };
                 }(list.sort));
                 list.splice = (function (base) {
                     return function () {
-                        var origLen = this.length,
-                            result;
+                        var origLen = this.length, ret;
         
                         this.block();
-                        result = base.apply(this, slice.call(arguments));
+                        ret = base.apply(this, slice.call(arguments));
                         this.unblock();
         
                         if (origLen !== this.length) {
                             this.notify();
                         }
         
-                        return result;
+                        return ret;
                     };
                 }(list.splice));
-        
-                if (arguments.length) {
-                    list.notify();
-                }
         
                 return list;
             };
