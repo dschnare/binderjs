@@ -1,6 +1,6 @@
 # Overview
 
-Binderjs is am object-oriented property-binding API.
+Binderjs is am object-oriented property-binding API. See the [reference](https://github.com/dschnare/binderjs/blob/master/Reference.md) for usage and API reference.
 
 # Features
 
