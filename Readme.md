@@ -4,6 +4,10 @@ Binderjs is am object-oriented property-binding API.
 
 # Features
 
+- Dynamic property dependency tracking
+- EcmaScript-5-firendly list implementation
+- Property binding with 'oneway' and 'twoway' behaviour
+
 # Build System Requirements
 
 - Ruby 1.9.2
