@@ -1212,8 +1212,8 @@ var BINDER = (function () {
         
             return makeObservableList;
         }(util, makeList, makeObservable)),
-        makeProperty = (function (util, makeList, makeObservable, makeObservableList, window) {
-            /*global 'util', 'makeList', 'makeObservable', 'makeObservableList', 'window'*/
+        makeProperty = (function (util, makeList, makeObservable, makeObservableList) {
+            /*global 'util', 'makeList', 'makeObservable', 'makeObservableList'*/
         
             var makeProperty,
                 stack = makeList(),
@@ -1250,7 +1250,6 @@ var BINDER = (function () {
                     getter,
                     memo,
                     property,
-                    fn,
                     observer = function () {
                         memo = undefined;
                         property.notify();
@@ -1263,70 +1262,87 @@ var BINDER = (function () {
                     }
                 };
         
-                property = {
-                    equals: function (b) {
-                        var a = this.get();
-                        b = makeProperty.get(b);
+                property = function (value) {
+                    var ret, origOwner = property.owner;
         
-                        a = a ? a.valueOf() : a;
-                        b = b ? b.valueOf() : b;
-        
-                        return a === b;
-                    },
-                    changed: function (b) {
-                        var a = this.get();
-                        b = makeProperty.get(b);
-        
-                        a = a ? a.valueOf() : a;
-                        b = b ? b.valueOf() : b;
-        
-                        return a !== b;
-                    },
-                    clearMemo: function () {
-                        memo = undefined;
-                    },
-                    get: function () {
-                        if (!writing) {
-                            stack.addDependency(this);
-                            stack.pushProperty(this);
-                        }
-        
-                        var result = memo === undefined ? getter.call(this.owner) : memo;
-                        memo = result;
-        
-                        if (stack[stack.length - 1] === this) {
-                            stack.pop();
-                        }
-        
-                        return result;
-                    },
-                    set: function (value) {
-                        // Check if the property is writable.
-                        if (typeof setter === 'function') {
-                            writing = true;
-        
-                            if (!this.equals(value) || this.changed(value)) {
-                                memo = undefined;
-                                setter.call(this.owner, value);
-                                this.notify();
-                            }
-        
-                            writing = false;
-                        }
-                    },
-                    dependencies: function () {
-                        return dependencies;
-                    },
-                    isDependent: function () {
-                        return dependencies.length !== 0;
-                    },
-                    toString: function () {
-                        return util.str(this.get());
-                    },
-                    valueOf : function () {
-                        var value = this.get();
-                        return util.isNil(value) ? value : value.valueOf();
+                    // Temporarily set the owner to the 'this' object.
+                    if (this !== undefined) {
+                        property.owner = this;
                     }
+        
+                    if (arguments.length) {
+                        property.set(value);
+                        ret = this;
+                    } else {
+                        ret = property.get();
+                    }
+        
+                    property.owner = origOwner;
+        
+                    return ret;
+                };
+                property.equals = function (b) {
+                    var a = this.get();
+                    b = makeProperty.get(b);
+        
+                    a = a ? a.valueOf() : a;
+                    b = b ? b.valueOf() : b;
+        
+                    return a === b;
+                };
+                property.changed = function (b) {
+                    var a = this.get();
+                    b = makeProperty.get(b);
+        
+                    a = a ? a.valueOf() : a;
+                    b = b ? b.valueOf() : b;
+        
+                    return a !== b;
+                };
+                property.clearMemo = function () {
+                    memo = undefined;
+                };
+                property.get = function () {
+                    if (!writing) {
+                        stack.addDependency(this);
+                        stack.pushProperty(this);
+                    }
+        
+                    var result = memo === undefined ? getter.call(this.owner) : memo;
+                    memo = result;
+        
+                    if (stack[stack.length - 1] === this) {
+                        stack.pop();
+                    }
+        
+                    return result;
+                };
+                property.set = function (value) {
+                    // Check if the property is writable.
+                    if (typeof setter === 'function') {
+                        writing = true;
+        
+                        if (!this.equals(value) || this.changed(value)) {
+                            setter.call(this.owner, value);
+                            memo = undefined;
+                            this.notify();
+                        }
+        
+                        writing = false;
+                    }
+                };
+                property.dependencies = function () {
+                    return dependencies;
+                };
+                property.isDependent = function () {
+                    return dependencies.length !== 0;
+                };
+                property.toString = function () {
+                    return util.str(this.get());
+                };
+                property.valueOf = function () {
+                    var value = this.get();
+                    return util.isNil(value) ? value : value.valueOf();
                 };
         
                 util.mixin(property, makeObservable());
@@ -1374,11 +1390,17 @@ var BINDER = (function () {
         
                             // Override the item operators for the newly created ObservableList
                             // so that the item operators are taken from the options.
-                            value.getItemOperators = (function (equals, changed) {
+                            value.getItemOperators = (function (equals, changed, operators) {
+                                equals = typeof equals === 'function' ? equals : operators.equals;
+                                changed = typeof changed === 'function' ? changed : operators.changed;
+        
                                 return function () {
-                                    return {equals: equals, changed: changed};
+                                    return {
+                                        equals: equals,
+                                        changed: changed
+                                    };
                                 };
-                            }(self.equals, self.changed));
+                            }(options.equals, options.changed, makeList.getItemOperators(value)));
         
                             self.equals = function (b) {
                                 b = makeProperty.get(b);
@@ -1440,36 +1462,11 @@ var BINDER = (function () {
                     // dependent properties will not be tracked until
                     // we have been read at least once.
                     if (!lazy) {
-                        self.get();
+                        property.get();
                     }
-        
-                    // Create the functional property 'fn'.
-                    fn = function (value) {
-                        var ret,
-                            origOwner = fn.owner;
-        
-                        // Temporarily set the owner to the 'this' object.
-                        if (this !== window) {
-                            fn.owner = this;
-                        }
-        
-                        if (arguments.length) {
-                            fn.set(value);
-                            ret = this;
-                        } else {
-                            ret = fn.get();
-                        }
-        
-                        fn.owner = origOwner;
-        
-                        return ret;
-                    };
-        
-                    util.mixin(fn, property);
                 }());
         
-                // We can return either the property (object) or fn (functional property).
-                return fn;
+                return property;
             };
         
             // Convenience method to retrieve the value of the specified property.
@@ -1493,7 +1490,7 @@ var BINDER = (function () {
             }, makeObservable.interfce);
         
             return makeProperty;
-        }(util, makeList, makeObservable, makeObservableList, window)),
+        }(util, makeList, makeObservable, makeObservableList)),
         makeBinding = (function (util, makeProperty) {
             /*global 'util', 'makeProperty'*/
         

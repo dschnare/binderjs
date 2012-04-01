@@ -8,6 +8,92 @@ Binderjs is am object-oriented property-binding API. See the [reference](https:/
 - EcmaScript-5-firendly list implementation
 - Property binding with 'oneway' and 'twoway' behaviour
 
+# Sneek Peek
+
+	// Create a person object that has a firstName and lastName property.
+	var person = {
+		firstName: BINDER.makeProperty('Darren'),
+		lastName: BINDER.makeProperty('Schnare'),
+		skills: BINDER.makeProperty(['javascript', 'html', 'css', 'ruby'])
+	};
+
+	// Now give our person object a readonly property, fullName, that
+	// depends on the values of firstName and lastName.
+	person.fullName = BINDER.makeProperty({
+		get: function () {
+			// We can treat properties like simple values
+			// when used in an expression because even
+			// though properties are functions they have their
+			// 'valueOf' and 'toString' methods overriden
+			// to provide the value of the property.
+			return this.firstName + ' ' + this.lastName;
+		},
+		// We have to specify the owner of this property
+		// because we are using 'this' inside the property's
+		// get operator.
+		owner: person
+	});
+
+	// When either of the firstName or lastName are changed
+	// we will be notified and then we can read the value
+	// of fullName and do something with it.
+	person.fullName.subscribe(function (fullName) {
+		document.getElementById('display-name').innerHTML = fullName();
+	});
+
+	// Let's watch our skills too. If they change then we want to do
+	// something with them as well.
+	person.skills.subscribe(function (skills) {
+		document.getElementById('skills').innerHTML = skills().join(', ');
+	});
+
+
+	// So now we have a person model with some data and some observers
+	// on the fullName and skills properties. Let's 'prime-the-pump'
+	// so to speak by forcing our observers on the fullName and skills
+	// properties to be notified and to update the DOM.
+	person.fullName.notify();
+	person.skills.notify();
+
+
+
+	// Sometime later in our code ...
+
+	// Just be setting these properties we cause the fullName
+	// property to be notified of their changes then this change
+	// is relayed to our observer on fullName. The DOM will be
+	// udated each time either of these properties change.
+	person.firstName('Super');
+	person.lastName('Mario');
+
+
+
+	// SIDEBAR: Don't like the functional look of properties? You
+	// can replace all occurances of 'property()' and 'property(value)'
+	// with 'property.get()' and 'property.set(value)' respectively
+	// so it's more clear when a property is accessed vs. mutated.
+
+
+
+	// SIDEBAR: If we had wanted to 'batch' the notifications on the
+	// fullName property so that way the DOM only gets updated
+	// once after both the firstName and lastName properties changed
+	// then we could have done something like this:
+	// person.fullName.block(); -- Block all notifications on fullName
+	// person.firstName('Super'); -- Change firstName
+	// person.lastName('Mario'); -- Change lastName
+	// person.fullName.unblock(); -- Unblock notifications on fullName
+	// person.fullName.notify(); -- Notify only once
+
+
+
+	// Likewise with our list of skills any changes will automatically
+	// be observed and the DOM will be updated. Here we merge a new list of
+	// skills into our existing list of skills so that we get one
+	// change notifiaction and the DOM only gets updated once. This has
+	// the effect of completely replacing our list of skills with a new list.
+	person.skills().mergeWith(['saving princess toadstool', 'beating bowser to a pulp', 'plumbing']);
+
 # Build System Requirements
 
 - Ruby 1.9.2

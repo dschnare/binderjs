@@ -9,7 +9,7 @@
 
 	<script type="text/javascript" src="pathto/binder.all.min.js"></script>
 
-	// do stuff with BINDER	
+	// do stuff with BINDER
 
 **AMD Module:**
 
@@ -19,7 +19,7 @@
 	});
 
 **CommonJS Module:**
-	
+
 	// If not using the all-in-one script then requires the 'utiljs' module to be reachable.
 	var binder = require('binderjs');
 
@@ -61,7 +61,7 @@ Subscribes to the changes of an observable. When the callback or `onNotify` func
 	observer - An object with a onNotify() function.
 	return - A subscription object with a dispose() function.
 
-*observable.notify()*	
+*observable.notify()*
 
 Notifies all subscribers if the observable is not blocked and not being throttled.
 
@@ -87,11 +87,11 @@ Removes a block state from the internal block stack. While the block stack has a
 
 	unblock()
 
-*observable.dispose()*		
+*observable.dispose()*
 
 Removes and disposes all subscribers.
 
-	dispose()		
+	dispose()
 
 ---
 
@@ -102,7 +102,7 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 	makeList()
 	makeList(array)
 	makeList(item,...,item)
-	
+
 	array - An Array or another list to copy items from.
 	... - A variadic list of items to add to the list.
 
@@ -111,7 +111,7 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 *list.indexOf()*
 
 	indexOf(item, [fromIndex])
-	
+
 	item - The item to search for.
 	fromIndex - The index to start the search.
 	return - The index of the item in the list, -1 otherwise.
@@ -127,7 +127,7 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 *list.reverse()*
 
 	reverse()
-	
+
 	return - This list.
 
 *list.map()*
@@ -270,11 +270,11 @@ Method that can be overriden to provide `equals` and `changed` operators that ar
 
 By default the `equals` operator tests for strict equality and the `changed` operator tests for strict inequality. These operators are in place to aid in comparing objects that have uniquely identifiable properties, but also have properties that can be updated. When an operator is called it will be called with the `this` object set to the object returned from `getItemOperators`.
 
-For example: 
+For example:
 
 	// With items of the form:
 	{id: 12, message: 'Hello World', type: 'text'}
-	
+
 	// The operators could look like this:
 	myList.getItemOperators = function () {
 		return {
@@ -293,7 +293,7 @@ For example:
 
 	getItemOperators()
 
-	return - An object with the following properties: equals, changed.	
+	return - An object with the following properties: equals, changed.
 
 *list.equals()*
 
@@ -340,7 +340,7 @@ Produces a new list with the results of merging this list with `otherList`. All 
 All indices from `otherList` are kept in the resulting list.
 
 	merge(otherList)
-	
+
 	otherList - The other list (or Array) to merge against.
 	return - A new collapsed list with the results of the merge.
 
@@ -351,7 +351,7 @@ Merges the `otherList` into this list in-palce. All items that are 'retained' ar
 All indices from `otherList` are kept in the resulting list.
 
 	mergeWith(otherList)
-	
+
 	otherList - The other list (or Array) to merge against.
 
 *list.remove()*
@@ -399,7 +399,7 @@ Retrieves the last item in the list without removing it.
 
 	peek()
 
-*list.insert()*		
+*list.insert()*
 
 Inserts an item at the specified index and increases the length of the list.
 
@@ -413,7 +413,7 @@ If `index` is greater than the list length then `index` is set to `length - 1`.
 	item - The item to insert.
 	return - True if the item was inserted, false otherwise.
 
----			
+---
 
 **binder.makeObservableList()**
 
@@ -477,14 +477,14 @@ A convenience method that will retrieve the value of the specified property if i
 
 *property()*
 
-Retrieves the value of the property. Temporarily the `owner` property of the property is assigned the `this` object if `this` does not equal `window`. The custom `get` operator will be called with the `owner` property as the `this` object.
+Retrieves the value of the property. Temporarily the `owner` property of the property is assigned the `this` object if `this` does not equal `undefined`. The custom `get` operator will be called with the `owner` property as the `this` object.
 
 *property(value)*
 
-Sets the value of the property. Temporarily the `owner` property of the property is assigned the `this` object if `this` does not equal `window`. The custom `set` operator will be called with the `owner` property as the `this` object.
+Sets the value of the property. Temporarily the `owner` property of the property is assigned the `this` object if `this` does not equal `undefined`. The custom `set` operator will be called with the `owner` property as the `this` object.
 
 *property.get()*
-	
+
 Retrieves the value of the property. The custom `get` operator will be called with the `owner` property as the `this` object.
 
 	get()
@@ -563,7 +563,7 @@ A binding alwyas flows data from source to sink when created, but the following 
 	sink - The binderjs property that will be the sink of the binding.
 	type - The type of binding ('once', 'oneway', 'twoway'[default])
 	return - A new binding object.
-	
+
 
 *binding.type()*
 
@@ -594,4 +594,3 @@ Retrieves the binding sink.
 Disposes all subscriptions to the source and sink.
 
 	dispose()
-	
