@@ -5,7 +5,8 @@
 
 	return {
 		toObjectTest: function () {
-			var model = {
+			var o,
+				model = {
 					firstName: binder.makeProperty('Darren'),
 					lastName: binder.makeProperty('Schnare'),
 					skills: binder.makeProperty(['javascript', 'html', 'css', 'ruby'])
@@ -15,7 +16,7 @@
 				return model.firstName + ' ' + model.lastName;
 			});
 
-			var o = binder.toObject(model);
+			o = binder.toObject(model);
 
 			unit.expect('o.firstName to equal "Darren"', o.firstName === 'Darren');
 			unit.expect('o.lastName to equal "Schnare"', o.lastName === 'Schnare');

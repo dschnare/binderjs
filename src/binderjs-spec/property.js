@@ -270,8 +270,9 @@
 			unit.expect('the custom setter to be called', set);
 		},
 		observableValuePropertyTest: function () {
-			var o = binder.makeObservable();
-			var p = binder.makeProperty(o);
+			var o = binder.makeObservable(),
+				p = binder.makeProperty(o),
+				notified;
 
 			unit.expect('"p.toString()" to be equal to the empty string', p.toString() === '');
 			unit.expect('"p.valueOf()" to be equal to undefined', p.valueOf() === undefined);
@@ -293,7 +294,7 @@
 			unit.expect('"p()" to be equal to o', p() === o);
 
 
-			var notified = false;
+			notified = false;
 			p.subscribe(function () {
 				notified = true;
 			});

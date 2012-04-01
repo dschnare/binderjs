@@ -319,7 +319,9 @@ var BINDER = (function () {
                     list.map = list.map || function (callback, thisObj) {
                         var i = 0,
                             len = this.length,
-                            result = new Array(len);
+                            result = [];
+        
+                        result.length = len;
         
                         if (typeof callback !== 'function') {
                             throw new Error('TypeError');
