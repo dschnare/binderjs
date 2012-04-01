@@ -51,7 +51,7 @@ Creates an observable object that can be observed for changes.
 
 	makeObservable()
 
-*observable.subscribe()*
+**observable.subscribe()**
 
 Subscribes to the changes of an observable. When the callback or `onNotify` function are called the observable sending the notification will be passed as an argument. If an observer object does not have an `onNotify` method then the observer object will not subscribe to the observerable.
 
@@ -62,13 +62,13 @@ Subscribes to the changes of an observable. When the callback or `onNotify` func
 	observer - An object with a onNotify() function.
 	return - A subscription object with a dispose() function.
 
-*observable.notify()*
+**observable.notify()**
 
 Notifies all subscribers if the observable is not blocked and not being throttled.
 
 	notify()
 
-*observable.throttle()*
+**observable.throttle()**
 
 Throttles notifications sent to subscribers by placing a timeout between the first call to `notify()` and when the subscribers are actually notified. All subsequent calls to `notify()` will have no effect until the timeout has expired. When the timeout has expired then the subscribers will be notified.
 
@@ -76,19 +76,19 @@ Throttles notifications sent to subscribers by placing a timeout between the fir
 
 	duration - The timeout duration in milliseconds.
 
-*observable.block()*
+**observable.block()**
 
 Pushes a block state onto the internal block stack. While the block stack has at least one block state the observable is said to be blocked and subsequent calls to `notify()` will have no effect.
 
 	block()
 
-*observable.unblock()*
+**observable.unblock()**
 
 Removes a block state from the internal block stack. While the block stack has at least one block state the observable is said to be blocked and subsequent calls to `notify()` will have no effect.
 
 	unblock()
 
-*observable.dispose()*
+**observable.dispose()**
 
 Removes and disposes all subscribers.
 
@@ -109,7 +109,7 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 
 **The following [ES5](http://www.ecma-international.org/publications/standards/Ecma-262.htm) functions are implemented if not present on the native Array (without modifying the Array.prototype):**
 
-*list.indexOf()*
+**list.indexOf()**
 
 	indexOf(item, [fromIndex])
 
@@ -117,7 +117,7 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 	fromIndex - The index to start the search.
 	return - The index of the item in the list, -1 otherwise.
 
-*list.lastIndexOf()*
+**list.lastIndexOf()**
 
 	lastIndexOf(item, [fromIndex])
 
@@ -125,13 +125,13 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 	fromIndex - The index to start the search.
 	return - The index of the item in the list, -1 otherwise.
 
-*list.reverse()*
+**list.reverse()**
 
 	reverse()
 
 	return - This list.
 
-*list.map()*
+**list.map()**
 
 	map(callback, [thisObj])
 
@@ -139,7 +139,7 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 	thisObj - The context to call callback with.
 	return - A new array with the mapped items.
 
-*list.filter()*
+**list.filter()**
 
 	filter(callback, [thisObj])
 
@@ -147,14 +147,14 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 	thisObj - The context to call callback with.
 	return - A new array with the filtered items.
 
-*list.forEach()*
+**list.forEach()**
 
 	forEach(callback, [thisObj])
 
 	callback - The callback to call on each item.
 	thisObj - The context to call callback with.
 
-*list.reduce()*
+**list.reduce()**
 
 	reduce(callback, [initialValue])
 
@@ -162,7 +162,7 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 	initialValue - The initial value to assign to previous.
 	return - The final result of calling callback.
 
-*list.reduceRight()*
+**list.reduceRight()**
 
 	reduceRight(callback, [initialValue])
 
@@ -170,7 +170,7 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 	initialValue - The initial value to assign to previous.
 	return - The final result of calling callback.
 
-*list.some()*
+**list.some()**
 
 	some(callback, [thisObj])
 
@@ -178,7 +178,7 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 	thisObj - The context to call callback with.
 	return - True if callback returns true, false otherwise.
 
-*list.every()*
+**list.every()**
 
 	every(callback, [thisObj])
 
@@ -188,13 +188,13 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 
 **The following methods are added to form the list API:**
 
-*list.collapse()*
+**list.collapse()**
 
 Removes all sparce items in this list. A sparce item is any item that has the value of undefined or whose index does not exist in the list.
 
 	collapse()
 
-*list.contains()*
+**list.contains()**
 
 Determines if the specified item is found in the list. The search is performed using strict equality.
 
@@ -203,7 +203,7 @@ Determines if the specified item is found in the list. The search is performed u
 	item - The item to test for containment.
 	return - True if the item is found in the list, false otherwise.
 
-*list.occurances()*
+**list.occurances()**
 
 Determines the number of occurances an item occurs in the list. The search is performed using strict equality.
 
@@ -212,7 +212,7 @@ Determines the number of occurances an item occurs in the list. The search is pe
 	item - The item to search for.
 	return - The number of times the item occurs in the list.
 
-*list.distinct()*
+**list.distinct()**
 
 Produces an `Array` that contains all items that only occur once in the list.
 
@@ -220,7 +220,7 @@ Produces an `Array` that contains all items that only occur once in the list.
 
 	return - An Array with all items that occur once in the list.
 
-*list.first()*
+**list.first()**
 
 Retrieves the first item where the `callback` returns true. The order of the traversal is ascending order.
 
@@ -232,7 +232,7 @@ Retrieves the first item where the `callback` returns true. The order of the tra
 	thisObj - The context to call callback with.
 	return - The item where the callback returned true, undefined otherwise.
 
-*list.last()*
+**list.last()**
 
 Retrieves the last item where the `callback` returns true. The order of the traversal is descending order.
 
@@ -246,7 +246,7 @@ Retrieves the last item where the `callback` returns true. The order of the trav
 
 	last(callback, [thisOb])
 
-*list.find()*
+**list.find()**
 
 Retrieves the item and index where the `callback` returns true. The order of the traversal is ascending order.
 
@@ -262,7 +262,7 @@ Retrieves the item and index where the `callback` returns true. The order of the
 	fromIndex - The starting index of the traversal.
 	return - An object with the following properties: index, item.
 
-*list.getItemOperators*
+**list.getItemOperators**
 
 Method that can be overriden to provide `equals` and `changed` operators that are to be used when comparing items in the list. The operators have the following signature:
 
@@ -296,7 +296,7 @@ For example:
 
 	return - An object with the following properties: equals, changed.
 
-*list.equals()*
+**list.equals()**
 
 Determines if all items in the `otherList` are in the same order and are equal to the items in this list. Equality is performed by calling the `equals` operator from `getItemOperators`.
 
@@ -305,7 +305,7 @@ Determines if all items in the `otherList` are in the same order and are equal t
 	otherList - The other list (or Array) to compare against.
 	return - True if all items in the other list are equal to the this list, false otherwise.
 
-*list.changed()*
+**list.changed()**
 
 Determines if all items in the `otherList` are in the same order and are equal to the items in this list but have changed. Equality and changed is performed by calling the `equals` and `changed` operators respectively from `getItemOperators`.
 
@@ -314,7 +314,7 @@ Determines if all items in the `otherList` are in the same order and are equal t
 	otherList - The other list (or Array) to compare against.
 	return - True if any item in the ohter list has changed or is not equal to the associated item in this list.
 
-*list.compare()*
+**list.compare()**
 
 Retrieves the comparison results by comparing this list against the `otherList`. The `equals` and `changed` operators from `getItemOperators` are used to determine if items are equal or have changed.
 
@@ -334,7 +334,7 @@ Returns a list with a comparison result for each item in this list. Comparison r
 	otherList - The other list (or Array) to compare against.
 	return - A new list with the comparison results for each item in this list.
 
-*list.merge()*
+**list.merge()**
 
 Produces a new list with the results of merging this list with `otherList`. All items that are 'retained' are unmodified, all items that are 'added' are added, all items that are 'deleted' are removed, all items that are 'changed' are replaced with the newer item.
 
@@ -345,7 +345,7 @@ All indices from `otherList` are kept in the resulting list.
 	otherList - The other list (or Array) to merge against.
 	return - A new collapsed list with the results of the merge.
 
-*list.mergeWith()*
+**list.mergeWith()**
 
 Merges the `otherList` into this list in-palce. All items that are 'retained' are unmodified, all items that are 'added' are added, all items that are 'deleted' are removed, all items that are 'changed' are replaced with the newer item.
 
@@ -355,7 +355,7 @@ All indices from `otherList` are kept in the resulting list.
 
 	otherList - The other list (or Array) to merge against.
 
-*list.remove()*
+**list.remove()**
 
 Removes the specified items from this list. The items are found by using strict equality.
 
@@ -363,7 +363,7 @@ Removes the specified items from this list. The items are found by using strict 
 
 	... - A variadic list of items to remove.
 
-*list.removeAt()*
+**list.removeAt()**
 
 Removes the item at the specified index.
 
@@ -372,13 +372,13 @@ Removes the item at the specified index.
 	index - The index of the item to remove.
 	return - The item removed or undefined if index is out of bounds.
 
-*list.clear()*
+**list.clear()**
 
 Removes all items in the list.
 
 	clear()
 
-*list.replaceAt()*
+**list.replaceAt()**
 
 Replaces the item at the specified index.
 
@@ -388,19 +388,19 @@ Replaces the item at the specified index.
 	item - The new item.
 	return - The item replaced.
 
-*list.isEmpty()*
+**list.isEmpty()**
 
 Determines if the list has a length of zero.
 
 	isEmpty()
 
-*list.peek()*
+**list.peek()**
 
 Retrieves the last item in the list without removing it.
 
 	peek()
 
-*list.insert()*
+**list.insert()**
 
 Inserts an item at the specified index and increases the length of the list.
 
@@ -469,7 +469,7 @@ Properties work best when the value is not a `function`.
 	lazy - Flag indicating that dependencies shouldn't be tracked until first access. Defaults to false.
 	owner - The object the property belongs to. Defaults to undefined.
 
-*makeProperty.get()*
+**makeProperty.get()**
 
 A convenience method that will retrieve the value of the specified property if it is a binderjs property, otherwise returns property.
 
@@ -478,27 +478,27 @@ A convenience method that will retrieve the value of the specified property if i
 	property - A binderjs property or any other value.
 	return - If property is a binderjs property then the value of the property, otherwise property.
 
-*property()*
+**property()**
 
 Retrieves the value of the property. Temporarily the `owner` property of the property is assigned the `this` object if `this` does not equal `undefined`. The custom `get` operator will be called with the `owner` property as the `this` object.
 
-*property(value)*
+**property(value)**
 
 Sets the value of the property. Temporarily the `owner` property of the property is assigned the `this` object if `this` does not equal `undefined`. The custom `set` operator will be called with the `owner` property as the `this` object.
 
-*property.get()*
+**property.get()**
 
 Retrieves the value of the property. The custom `get` operator will be called with the `owner` property as the `this` object.
 
 	get()
 
-*property.set()*
+**property.set()**
 
 Sets the value of the property. The custom `set` operator will be called with the `owner` property as the `this` object.
 
 	set(value)
 
-*property.dependecnies()*
+**property.dependecnies()**
 
 Retrieves the reference to the list of properties this property is dependent on. This list should not be modified.
 
@@ -506,7 +506,7 @@ Retrieves the reference to the list of properties this property is dependent on.
 
 	return - List of properties.
 
-*property.equals()*
+**property.equals()**
 
 Determines if this property value equals the specified value.
 
@@ -525,7 +525,7 @@ For example:
 	value - An object or binderjs property to compare.
 	return - True if the value is equal to the property's value.
 
-*property.changed()*
+**property.changed()**
 
 Determines if this property value equals the specified value and the value represents a change.
 
@@ -548,25 +548,25 @@ For example:
 
 	value - An object or binderjs property to compare.
 
-*property.clearMemo()*
+**property.clearMemo()**
 
 Since all properties are memoized, repeated calls to the `get` operator will result in only one calculation. All other calls will return the memoized value. This method will clear the memoized value and force the next call to the `get` operator to perform a calculation.
 
 	clearMemo()
 
-*property.isDependent()*
+**property.isDependent()**
 
 Determines if the property is dependent on other properties.
 
 	isDependent()
 
-*property.toString()*
+**property.toString()**
 
 Returs the value of calling `toString` on the property's value. If the value is `null` or `undefined` then returns the empty string.
 
 	toString()
 
-*property.valueOf()*
+**property.valueOf()**
 
 Returns the value of calling `valueOf` on the property's value.
 
@@ -595,7 +595,7 @@ A binding alwyas flows data from source to sink when created, but the following 
 	return - A new binding object.
 
 
-*binding.type()*
+**binding.type()**
 
 Retrieves the binding type.
 
@@ -603,7 +603,7 @@ Retrieves the binding type.
 
 	return - The type of the binding: 'once', 'oneway', 'twoway'
 
-*binding.source()*
+**binding.source()**
 
 Retrieves the binding source.
 
@@ -611,7 +611,7 @@ Retrieves the binding source.
 
 	return - The source binderjs property for this binding.
 
-*binding.sink()*
+**binding.sink()**
 
 Retrieves the binding sink.
 
@@ -619,7 +619,7 @@ Retrieves the binding sink.
 
 	return - The sink binderjs property for this binding.
 
-*binding.dispose()*
+**binding.dispose()**
 
 Disposes all subscriptions to the source and sink.
 
