@@ -64,13 +64,13 @@ Subscribes to the changes of an observable. When the callback or `onNotify` func
 
 **observable.notify()**
 
-Notifies all subscribers if the observable is not blocked and not being throttled.
+Notifies all observers if the observable is not blocked and not being throttled.
 
 	notify()
 
 **observable.throttle()**
 
-Throttles notifications sent to subscribers by placing a timeout between the first call to `notify()` and when the subscribers are actually notified. All subsequent calls to `notify()` will have no effect until the timeout has expired. When the timeout has expired then the subscribers will be notified.
+Throttles notifications sent to observers by placing a timeout between the first call to `notify()` and when the observers are actually notified. All subsequent calls to `notify()` will have no effect until the timeout has expired. When the timeout has expired then the observers will be notified.
 
 	throttle(duration)
 
@@ -90,7 +90,7 @@ Removes a block state from the internal block stack. While the block stack has a
 
 **observable.dispose()**
 
-Removes and disposes all subscribers.
+Removes and disposes all observers.
 
 	dispose()
 
