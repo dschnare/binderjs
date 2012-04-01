@@ -39,7 +39,8 @@ Converts an object that contains binderjs properties into a plain-old-javascript
 	toObject(o, excludeDependentProperties)
 
 	o - An object with binderjs properties.
-	excludeDependentProperties - Flag that determines if properties with dependencies (i.e. dependent properties) will be excluded.
+	excludeDependentProperties - Flag that determines if properties with dependencies
+									(i.e. dependent properties) will be excluded.
 	return - A new POJO with a shallow copy each property.
 
 ---
@@ -449,6 +450,8 @@ Immediately after the property is created a `get` operation is called on the pro
 
 If the value of the property is an `Array` or `List` then it will be copied into an `ObservableList` and the new list will be the property's value. If the value is already an `ObservableList` then no new list will be created.
 
+If the value is an `Array` or `List` then the `equals` and `changed` operators must be item operators that accept two arguments as opposed to only one for typical property operators. See the `list.getItemOperators` method for more details on item operators. See the `property.equals` and `property.changed` methods for more details on property operators.
+
 If the value is `Observable` then the property will subscribe to the value for changes and relay any notifications.
 
 Properties work best when the value is not a `function`.
@@ -507,6 +510,16 @@ Retrieves the reference to the list of properties this property is dependent on.
 
 Determines if this property value equals the specified value.
 
+The `equals` operator will be called with a single argument to test against.
+
+For example:
+
+	property.equals = function (other) {
+		other = BINDER.makeProperty.get(other);
+		return this.get().id === other.id;
+	};
+
+
 	equals(value)
 
 	value - An object or binderjs property to compare.
@@ -514,7 +527,22 @@ Determines if this property value equals the specified value.
 
 *property.changed()*
 
-Determines if this property value equals the specified value and the value represents a change. When specifying your own `change` operator you should call `equals` first then perform the change calculation only if the `value` is equal to the property's value.
+Determines if this property value equals the specified value and the value represents a change.
+
+The `changed` operator will be called with a single argument to test against.
+
+When specifying your own `change` operator you should call `equals` first then perform the change calculation only if the `value` is equal to the property's value.
+
+For example:
+
+	property.changed = function (other) {
+		if (this.equals(other)) {
+			other = BINDER.makeProperty.get(other);
+			return this.get().type !== other.type;
+		}
+		return false;
+	};
+
 
 	changed(value)
 
@@ -554,8 +582,10 @@ Creates a binding between two disjoint (i.e. completely independent) binderjs pr
 A binding alwyas flows data from source to sink when created, but the following binding types will dictate whether or not data will flow from sink to source:
 
 	once - Only flows data once from source to sink.
-	oneway - Only flows data from source to sink if the source is modified. If the sink is modified then no data flow occurs.
-	twoway [default] - Flows data from source to sink if the source is modified, and flows data from sink to source if the sink is modified.
+	oneway - Only flows data from source to sink if the source is modified.
+				If the sink is modified then no data flow occurs.
+	twoway [default] - Flows data from source to sink if the source is modified,
+						and flows data from sink to source if the sink is modified.
 
 	makeBinding(source, sink, [type])
 
