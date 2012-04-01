@@ -486,7 +486,7 @@ Retrieves the value of the property. Temporarily the `owner` property of the pro
 
 Sets the value of the property. Temporarily the `owner` property of the property is assigned the `this` object if `this` does not equal `undefined`. The custom `set` operator will be called with the `owner` property as the `this` object.
 
-If the value of the property is a `List` and the value being set is not an `Array` then the value will be pushed onto the list, otherwise if the value being set is an `Array` then it will be merged with the list, potentially replacing the list's contents. While this occurs all notifications are temporarily blocked so that only one notification occurs.
+If the value of the property is a `List` and the value being set is not an `Array` then the list will be cleared and the value will be pushed onto the list, otherwise if the value being set is an `Array` then it will be merged with the list, potentially replacing the list's contents. While this occurs all notifications are temporarily blocked so that only one notification occurs.
 
 **property.get()**
 
@@ -498,7 +498,7 @@ Retrieves the value of the property. The custom `get` operator will be called wi
 
 Sets the value of the property. The custom `set` operator will be called with the `owner` property as the `this` object.
 
-If the value of the property is a `List` and the value being set is not an `Array` then the value will be pushed onto the list, otherwise if the property value is a `List` and the value being set is an `Array` then it will be merged with the list, potentially replacing the list's contents. While this occurs all notifications are temporarily blocked so that only one notification occurs.
+If the value of the property is a `List` and the value being set is not an `Array` then the list will be cleared and the value will be pushed onto the list, otherwise if the value being set is an `Array` then it will be merged with the list, potentially replacing the list's contents. While this occurs all notifications are temporarily blocked so that only one notification occurs.
 
 	set(value)
 

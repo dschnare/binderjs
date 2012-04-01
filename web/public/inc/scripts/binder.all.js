@@ -1430,17 +1430,19 @@ var BINDER = (function () {
                         };
                         setter = function (v) {
                             if (adheresTo(value, makeList.interfce)) {
+                                value.clear();
+        
                                 if (isArray(v)) {
-                                    value.mergeWith(v);
+                                    value.push.apply(value, v);
                                 } else {
                                     value.push(v);
                                 }
                             } else if (isArray(value)) {
-                                if (isArray(v)) {
-                                    while (value.length) {
-                                        value.pop();
-                                    }
+                                while (value.length) {
+                                    value.pop();
+                                }
         
+                                if (isArray(v)) {
                                     value.push.apply(value, v);
                                 } else {
                                     value.push(v);
