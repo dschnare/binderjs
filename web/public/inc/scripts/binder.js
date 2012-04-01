@@ -1132,8 +1132,14 @@ var BINDER = (function (util) {
                         writing = true;
         
                         if (!this.equals(value) || this.changed(value)) {
+                            // We block just in case our value is an ObservableList
+                            // or something that is observable that will also trigger
+                            // a notification when it is changed. This will occur
+                            // if the property's value is an ObservableList.
+                            this.block();
                             setter.call(this.owner, value);
                             memo = undefined;
+                            this.unblock();
                             this.notify();
                         }
         
@@ -1231,19 +1237,17 @@ var BINDER = (function (util) {
                         };
                         setter = function (v) {
                             if (adheresTo(value, makeList.interfce)) {
-                                value.clear();
-        
                                 if (isArray(v)) {
-                                    value.push.apply(value, v);
+                                    value.mergeWith(v);
                                 } else {
                                     value.push(v);
                                 }
                             } else if (isArray(value)) {
-                                while (value.length) {
-                                    value.pop();
-                                }
-        
                                 if (isArray(v)) {
+                                    while (value.length) {
+                                        value.pop();
+                                    }
+        
                                     value.push.apply(value, v);
                                 } else {
                                     value.push(v);
