@@ -9,1418 +9,1419 @@ var BINDER = (function (util) {
 
     /*global 'UTIL', 'define', 'exports', 'require'*/
 
-    var Array = ([]).constructor,
-        Object = ({}).constructor,
-        makeList = (function (util) {
-            /*global 'util'*/
-        
+    var module = function (util) {
             var Array = ([]).constructor,
-                defaultItemOperators = {
-                    equals: function (a, b) {
-                        a = a ? a.valueOf() : a;
-                        b = b ? b.valueOf() : b;
-        
-                        return a === b;
-                    },
-                    changed: function (a, b) {
-                        a = a ? a.valueOf() : a;
-                        b = b ? b.valueOf() : b;
-        
-                        return false;
-                    }
-                },
-                makeCompareResult = function (status, item, index, otherItem, otherIndex) {
-                    return {
-                        status: status,
-                        item: item,
-                        value: item,
-                        index: index,
-                        otherItem: otherItem,
-                        otherIndex: otherIndex,
-                        toString: function () {
-                            var s = "{status: {0}, item: {1}, index: {2}, otherItem: {3}, otherIndex: {4}}";
-                            return util.format(s, status, item, index, otherItem, otherIndex);
-                        }
-                    };
-                },
-                makeList = function (o) {
-                    var list = [];
-        
-                    list.getItemOperators = function () {
-                        return util.create(defaultItemOperators);
-                    };
-        
-                    // HTML5 specification.
-                    list.indexOf = list.indexOf || function (item, fromIndex) {
-                        var i,
-                            len = this.length;
-        
-                        fromIndex = isNaN(fromIndex) ? 0 : fromIndex;
-        
-                        if (len === 0) {
-                            return -1;
-                        }
-                        if (fromIndex >= len) {
-                            return -1;
-                        }
-                        if (fromIndex < 0) {
-                            fromIndex = len + fromIndex;
-                        }
-                        if (fromIndex < 0) {
-                            fromIndex = 0;
-                        }
-        
-                        for (i = fromIndex; i < len; i += 1) {
-                            if (this[i] === item) {
-                                return i;
-                            }
-                        }
-        
-                        return -1;
-                    };
-                    list.lastIndexOf = list.lastIndexOf || function (item, fromIndex) {
-                        var i,
-                            len = this.length,
-                            min = function (a, b) {
-                                return a < b ? a : b;
-                            };
-        
-                        if (len === 0) {
-                            return -1;
-                        }
-        
-                        fromIndex = isNaN(fromIndex) ? len : fromIndex;
-        
-                        if (fromIndex >= 0) {
-                            fromIndex = min(fromIndex, len - 1);
-                        }
-                        if (fromIndex < 0) {
-                            fromIndex = len + fromIndex;
-                        }
-        
-                        for (i = fromIndex; i >= 0; i -= 1) {
-                            if (this[i] === item) {
-                                item = null;
-                                return i;
-                            }
-                        }
-        
-                        item = null;
-                        return -1;
-                    };
-                    list.reverse = list.reverse || function () {
-                        var i = 0,
-                            len = this.length,
-                            k = len - 1,
-                            mid = parseInt((len / 2).toFixed(0), 10),
-                            temp;
-        
-                        while (i < mid) {
-                            temp = this[k];
-                            this[k] = this[i];
-                            this[i] = temp;
-                            k -= 1;
-                            i += 1;
-                        }
-        
-                        return this;
-                    };
-                    list.map = list.map || function (callback, thisObj) {
-                        var i = 0,
-                            len = this.length,
-                            result = [];
-        
-                        result.length = len;
-        
-                        if (typeof callback !== 'function') {
-                            throw new Error('TypeError');
-                        }
-        
-                        for (i = 0; i < len; i += 1) {
-                            if (this.hasOwnProperty(i)) {
-                                result[i] = callback.call(thisObj, this[i], i, this);
-                            }
-                        }
-        
-                        return result;
-                    };
-                    list.filter = list.filter || function (callback, thisObj) {
-                        var i,
-                            v,
-                            len = this.length,
-                            result = [];
-        
-                        if (typeof callback !== 'function') {
-                            throw new Error('TypeError');
-                        }
-        
-                        for (i = 0; i < len; i += 1) {
-                            if (this.hasOwnProperty(i)) {
-                                v = this[i];
-                                if (callback.call(thisObj, v, i, this)) {
-                                    result.push(v);
-                                }
-                            }
-                        }
-        
-                        return result;
-                    };
-                    list.forEach = list.forEach || function (callback, thisObj) {
-                        var i,
-                            len = this.length;
-        
-                        if (typeof callback !== 'function') {
-                            throw new Error('TypeError');
-                        }
-        
-                        for (i = 0; i < len; i += 1) {
-                            if (this.hasOwnProperty(i)) {
-                                callback.call(thisObj, this[i], i, this);
-                            }
-                        }
-                    };
-                    list.reduce = list.reduce || function (callback, initialValue) {
-                        var len = this.length,
-                            i = 0,
-                            acc,
-                            present;
-        
-                        if (typeof callback !== 'function') {
-                            throw new Error('TypeError');
-                        }
-                        if (len === 0 && arguments.length === 1) {
-                            throw new Error('TypeError');
-                        }
-        
-                        if (arguments.length === 2) {
-                            acc = initialValue;
-                        } else {
-                            present = false;
-                            i = 0;
-        
-                            while (!present && i < len) {
-                                present = this.hasOwnProperty(i);
-        
-                                if (present) {
-                                    acc = this[i];
-                                }
-        
-                                i += 1;
-                            }
-                        }
-        
-                        while (i < len) {
-                            present = this.hasOwnProperty(i);
-        
-                            if (present) {
-                                acc = callback.call(undefined, acc, this[i], i, this);
-                            }
-        
-                            i += 1;
-                        }
-        
-                        return acc;
-                    };
-                    list.reduceRight = list.reduceRight || function (callback, initialValue) {
-                        var len = this.length,
-                            i = len - 1,
-                            acc,
-                            present;
-        
-                        if (typeof callback !== 'function') {
-                            throw new Error('TypeError');
-                        }
-                        if (len === 0 && arguments.length === 1) {
-                            throw new Error('TypeError');
-                        }
-        
-                        if (arguments.length === 2) {
-                            acc = initialValue;
-                        } else {
-                            present = false;
-        
-                            while (!present && i >= 0) {
-                                present = this.hasOwnProperty(i);
-        
-                                if (present) {
-                                    acc = this[i];
-                                }
-        
-                                i -= 1;
-                            }
-                        }
-        
-                        while (i >= 0) {
-                            present = this.hasOwnProperty(i);
-        
-                            if (present) {
-                                acc = callback.call(undefined, acc, this[i], i, this);
-                            }
-        
-                            i -= 1;
-                        }
-        
-                        return acc;
-                    };
-                    list.some = list.some || function (callback, thisObj) {
-                        var len = this.length,
-                            i;
-        
-                        if (typeof callback !== 'function') {
-                            throw new Error('TypeError');
-                        }
-        
-                        for (i = 0; i < len; i += 1) {
-                            if (this.hasOwnProperty(i)) {
-                                if (callback.call(thisObj, this[i], i, this)) {
-                                    return true;
-                                }
-                            }
-                        }
-        
-                        return false;
-                    };
-                    list.every = list.every || function (callback, thisObj) {
-                        var len = this.length,
-                            i;
-        
-                        if (typeof callback !== 'function') {
-                            throw new Error('TypeError');
-                        }
-        
-                        for (i = 0; i < len; i += 1) {
-                            if (this.hasOwnProperty(i)) {
-                                if (!callback.call(thisObj, this[i], i, this)) {
-                                    return false;
-                                }
-                            }
-                        }
-        
-                        return true;
-                    };
-        
-                    // Custom Functionality.
-                    list.contains = function (item) {
-                        return this.indexOf(item) >= 0;
-                    };
-                    list.occurances = function (item) {
-                        var i = this.indexOf(item),
-                            count = 0;
-        
-                        while (i >= 0) {
-                            count += 1;
-                            i = this.indexOf(item, i + 1);
-                        }
-        
-                        return count;
-                    };
-                    list.distinct = function () {
-                        var i = this.length,
-                            distinct = [],
-                            item;
-        
-                        while (i) {
-                            i -= 1;
-                            item = this[i];
-                            if (this.occurances(item) === 1) {
-                                distinct.unshift(item);
-                            }
-                        }
-        
-                        return distinct;
-                    };
-                    list.first = function (callback, thisObj) {
-                        var i,
-                            len = this.length;
-        
-                        if (typeof callback !== 'function') {
-                            throw new Error('TypeError');
-                        }
-        
-                        for (i = 0; i < len; i += 1) {
-                            if (this.hasOwnProperty(i)) {
-                                if (callback.call(thisObj, this[i], i, this)) {
-                                    return this[i];
-                                }
-                            }
-                        }
-        
-                        return undefined;
-                    };
-                    list.last = function (callback, thisObj) {
-                        var i = this.length;
-        
-                        if (typeof callback !== 'function') {
-                            throw new Error('TypeError');
-                        }
-        
-                        while (i) {
-                            i -= 1;
-                            if (this.hasOwnProperty(i)) {
-                                if (callback.call(thisObj, this[i], i, this)) {
-                                    return this[i];
-                                }
-                            }
-                        }
-        
-                        return undefined;
-                    };
-                    // find(callback)
-                    // find(callback, fromIndex)
-                    // find(callback, thisObj)
-                    // find(callback, fromIndex, thisObj)
-                    list.find = function (callback, fromIndex, thisObj) {
-                        var i,
-                            len = this.length;
-        
-                        if (typeof callback !== 'function') {
-                            throw new Error('TypeError');
-                        }
-        
-                        if (typeof fromIndex !== 'number' && !thisObj) {
-                            thisObj = fromIndex;
-                        }
-        
-                        if (isNaN(fromIndex) || fromIndex < 0) {
-                            fromIndex = 0;
-                        }
-        
-                        for (i = fromIndex; i < len; i += 1) {
-                            if (this.hasOwnProperty(i)) {
-                                if (callback.call(thisObj, this[i], i, this)) {
-                                    return {item: this[i], index: i};
-                                }
-                            }
-                        }
-        
-                        return {item: undefined, index: -1};
-                    };
-                    list.equals = function (otherList, equals) {
-                        var i,
-                            alen,
-                            blen,
-                            a = this,
-                            b = otherList,
-                            operators;
-        
-                        if (!util.isArray(otherList)) {
-                            return false;
-                        }
-                        if (a === b) {
-                            return true;
-                        }
-                        if (a.length !== b.length) {
-                            return false;
-                        }
-        
-                        alen = a.length;
-                        blen = b.length;
-                        operators = makeList.getItemOperators(this);
-                        equals = typeof equals === 'function' ? equals : function () {
-                            return operators.equals.apply(operators, arguments);
-                        };
-        
-                        for (i = 0; i < alen && i < blen; i += 1) {
-                            if (!equals(a[i], b[i])) {
+                Object = ({}).constructor,
+                makeList = (function (util) {
+                    /*global 'util'*/
+                
+                    var Array = ([]).constructor,
+                        defaultItemOperators = {
+                            equals: function (a, b) {
+                                a = a ? a.valueOf() : a;
+                                b = b ? b.valueOf() : b;
+                
+                                return a === b;
+                            },
+                            changed: function (a, b) {
+                                a = a ? a.valueOf() : a;
+                                b = b ? b.valueOf() : b;
+                
                                 return false;
                             }
-                        }
-        
-                        return true;
-                    };
-                    list.changed = function (otherList, equals, changed) {
-                        var i,
-                            alen,
-                            blen,
-                            a = this,
-                            b = otherList,
-                            operators;
-        
-                        if (!util.isArray(otherList)) {
-                            return false;
-                        }
-                        if (a === b) {
-                            return false;
-                        }
-                        if (a.length !== b.length) {
-                            return true;
-                        }
-        
-                        operators = makeList.getItemOperators(this);
-                        equals = typeof equals === 'function' ? equals : function () {
-                            return operators.equals.apply(operators, arguments);
-                        };
-                        changed = typeof changed === 'function' ? changed : function () {
-                            return operators.changed.apply(operators, arguments);
-                        };
-        
-                        alen = a.length;
-                        blen = b.length;
-                        for (i = 0; i < alen && i < blen; i += 1) {
-                            if (!equals(a[i], b[i]) || changed(a[i], b[i])) {
-                                return true;
-                            }
-                        }
-        
-                        return false;
-                    };
-                    list.compare = function (otherList, equals, changed) {
-                        var operators,
-                            differences = makeList(),
-                            i,
-                            len,
-                            item,
-                            find = this.find,
-                            callback,
-                            result;
-        
-                        otherList = makeList(otherList);
-                        operators = makeList.getItemOperators(this);
-                        equals = typeof equals === 'function' ? equals : function () {
-                            return operators.equals.apply(operators, arguments);
-                        };
-                        changed = typeof changed === 'function' ? changed : function () {
-                            return operators.changed.apply(operators, arguments);
-                        };
-                        callback = function (it) {
-                            return equals(item, it);
-                        };
-        
-                        len = this.length;
-                        for (i = 0; i < len; i += 1) {
-                            item = this[i];
-                            result = find.call(otherList, callback);
-        
-                            if (result.index < 0) {
-                                differences.push(makeCompareResult("deleted", item, i));
-                            } else {
-                                if (changed(item, result.item)) {
-                                    differences.push(makeCompareResult("changed", item, i, result.item, result.index));
+                        },
+                        makeCompareResult = function (status, item, index, otherItem, otherIndex) {
+                            return {
+                                status: status,
+                                item: item,
+                                value: item,
+                                index: index,
+                                otherItem: otherItem,
+                                otherIndex: otherIndex,
+                                toString: function () {
+                                    var s = "{status: {0}, item: {1}, index: {2}, otherItem: {3}, otherIndex: {4}}";
+                                    return util.format(s, status, item, index, otherItem, otherIndex);
+                                }
+                            };
+                        },
+                        makeList = function (o) {
+                            var list = [];
+                
+                            list.getItemOperators = function () {
+                                return util.create(defaultItemOperators);
+                            };
+                
+                            // HTML5 specification.
+                            list.indexOf = list.indexOf || function (item, fromIndex) {
+                                var i,
+                                    len = this.length;
+                
+                                fromIndex = isNaN(fromIndex) ? 0 : fromIndex;
+                
+                                if (len === 0) {
+                                    return -1;
+                                }
+                                if (fromIndex >= len) {
+                                    return -1;
+                                }
+                                if (fromIndex < 0) {
+                                    fromIndex = len + fromIndex;
+                                }
+                                if (fromIndex < 0) {
+                                    fromIndex = 0;
+                                }
+                
+                                for (i = fromIndex; i < len; i += 1) {
+                                    if (this[i] === item) {
+                                        return i;
+                                    }
+                                }
+                
+                                return -1;
+                            };
+                            list.lastIndexOf = list.lastIndexOf || function (item, fromIndex) {
+                                var i,
+                                    len = this.length,
+                                    min = function (a, b) {
+                                        return a < b ? a : b;
+                                    };
+                
+                                if (len === 0) {
+                                    return -1;
+                                }
+                
+                                fromIndex = isNaN(fromIndex) ? len : fromIndex;
+                
+                                if (fromIndex >= 0) {
+                                    fromIndex = min(fromIndex, len - 1);
+                                }
+                                if (fromIndex < 0) {
+                                    fromIndex = len + fromIndex;
+                                }
+                
+                                for (i = fromIndex; i >= 0; i -= 1) {
+                                    if (this[i] === item) {
+                                        item = null;
+                                        return i;
+                                    }
+                                }
+                
+                                item = null;
+                                return -1;
+                            };
+                            list.reverse = list.reverse || function () {
+                                var i = 0,
+                                    len = this.length,
+                                    k = len - 1,
+                                    mid = parseInt((len / 2).toFixed(0), 10),
+                                    temp;
+                
+                                while (i < mid) {
+                                    temp = this[k];
+                                    this[k] = this[i];
+                                    this[i] = temp;
+                                    k -= 1;
+                                    i += 1;
+                                }
+                
+                                return this;
+                            };
+                            list.map = list.map || function (callback, thisObj) {
+                                var i = 0,
+                                    len = this.length,
+                                    result = [];
+                
+                                result.length = len;
+                
+                                if (typeof callback !== 'function') {
+                                    throw new Error('TypeError');
+                                }
+                
+                                for (i = 0; i < len; i += 1) {
+                                    if (this.hasOwnProperty(i)) {
+                                        result[i] = callback.call(thisObj, this[i], i, this);
+                                    }
+                                }
+                
+                                return result;
+                            };
+                            list.filter = list.filter || function (callback, thisObj) {
+                                var i,
+                                    v,
+                                    len = this.length,
+                                    result = [];
+                
+                                if (typeof callback !== 'function') {
+                                    throw new Error('TypeError');
+                                }
+                
+                                for (i = 0; i < len; i += 1) {
+                                    if (this.hasOwnProperty(i)) {
+                                        v = this[i];
+                                        if (callback.call(thisObj, v, i, this)) {
+                                            result.push(v);
+                                        }
+                                    }
+                                }
+                
+                                return result;
+                            };
+                            list.forEach = list.forEach || function (callback, thisObj) {
+                                var i,
+                                    len = this.length;
+                
+                                if (typeof callback !== 'function') {
+                                    throw new Error('TypeError');
+                                }
+                
+                                for (i = 0; i < len; i += 1) {
+                                    if (this.hasOwnProperty(i)) {
+                                        callback.call(thisObj, this[i], i, this);
+                                    }
+                                }
+                            };
+                            list.reduce = list.reduce || function (callback, initialValue) {
+                                var len = this.length,
+                                    i = 0,
+                                    acc,
+                                    present;
+                
+                                if (typeof callback !== 'function') {
+                                    throw new Error('TypeError');
+                                }
+                                if (len === 0 && arguments.length === 1) {
+                                    throw new Error('TypeError');
+                                }
+                
+                                if (arguments.length === 2) {
+                                    acc = initialValue;
                                 } else {
-                                    differences.push(makeCompareResult("retained", item, i, result.item, result.index));
+                                    present = false;
+                                    i = 0;
+                
+                                    while (!present && i < len) {
+                                        present = this.hasOwnProperty(i);
+                
+                                        if (present) {
+                                            acc = this[i];
+                                        }
+                
+                                        i += 1;
+                                    }
                                 }
-        
-                                delete otherList[result.index];
-                            }
-                        }
-        
-                        len = otherList.length;
-                        for (i = 0; i < len; i += 1) {
-                            if (otherList.hasOwnProperty(i)) {
-                                item = otherList[i];
-        
-                                if (this.find(callback).index < 0) {
-                                    differences.push(makeCompareResult("added", undefined, -1, item, i));
+                
+                                while (i < len) {
+                                    present = this.hasOwnProperty(i);
+                
+                                    if (present) {
+                                        acc = callback.call(undefined, acc, this[i], i, this);
+                                    }
+                
+                                    i += 1;
                                 }
-                            }
+                
+                                return acc;
+                            };
+                            list.reduceRight = list.reduceRight || function (callback, initialValue) {
+                                var len = this.length,
+                                    i = len - 1,
+                                    acc,
+                                    present;
+                
+                                if (typeof callback !== 'function') {
+                                    throw new Error('TypeError');
+                                }
+                                if (len === 0 && arguments.length === 1) {
+                                    throw new Error('TypeError');
+                                }
+                
+                                if (arguments.length === 2) {
+                                    acc = initialValue;
+                                } else {
+                                    present = false;
+                
+                                    while (!present && i >= 0) {
+                                        present = this.hasOwnProperty(i);
+                
+                                        if (present) {
+                                            acc = this[i];
+                                        }
+                
+                                        i -= 1;
+                                    }
+                                }
+                
+                                while (i >= 0) {
+                                    present = this.hasOwnProperty(i);
+                
+                                    if (present) {
+                                        acc = callback.call(undefined, acc, this[i], i, this);
+                                    }
+                
+                                    i -= 1;
+                                }
+                
+                                return acc;
+                            };
+                            list.some = list.some || function (callback, thisObj) {
+                                var len = this.length,
+                                    i;
+                
+                                if (typeof callback !== 'function') {
+                                    throw new Error('TypeError');
+                                }
+                
+                                for (i = 0; i < len; i += 1) {
+                                    if (this.hasOwnProperty(i)) {
+                                        if (callback.call(thisObj, this[i], i, this)) {
+                                            return true;
+                                        }
+                                    }
+                                }
+                
+                                return false;
+                            };
+                            list.every = list.every || function (callback, thisObj) {
+                                var len = this.length,
+                                    i;
+                
+                                if (typeof callback !== 'function') {
+                                    throw new Error('TypeError');
+                                }
+                
+                                for (i = 0; i < len; i += 1) {
+                                    if (this.hasOwnProperty(i)) {
+                                        if (!callback.call(thisObj, this[i], i, this)) {
+                                            return false;
+                                        }
+                                    }
+                                }
+                
+                                return true;
+                            };
+                
+                            // Custom Functionality.
+                            list.contains = function (item) {
+                                return this.indexOf(item) >= 0;
+                            };
+                            list.occurances = function (item) {
+                                var i = this.indexOf(item),
+                                    count = 0;
+                
+                                while (i >= 0) {
+                                    count += 1;
+                                    i = this.indexOf(item, i + 1);
+                                }
+                
+                                return count;
+                            };
+                            list.distinct = function () {
+                                var i = this.length,
+                                    distinct = [],
+                                    item;
+                
+                                while (i) {
+                                    i -= 1;
+                                    item = this[i];
+                                    if (this.occurances(item) === 1) {
+                                        distinct.unshift(item);
+                                    }
+                                }
+                
+                                return distinct;
+                            };
+                            list.first = function (callback, thisObj) {
+                                var i,
+                                    len = this.length;
+                
+                                if (typeof callback !== 'function') {
+                                    throw new Error('TypeError');
+                                }
+                
+                                for (i = 0; i < len; i += 1) {
+                                    if (this.hasOwnProperty(i)) {
+                                        if (callback.call(thisObj, this[i], i, this)) {
+                                            return this[i];
+                                        }
+                                    }
+                                }
+                
+                                return undefined;
+                            };
+                            list.last = function (callback, thisObj) {
+                                var i = this.length;
+                
+                                if (typeof callback !== 'function') {
+                                    throw new Error('TypeError');
+                                }
+                
+                                while (i) {
+                                    i -= 1;
+                                    if (this.hasOwnProperty(i)) {
+                                        if (callback.call(thisObj, this[i], i, this)) {
+                                            return this[i];
+                                        }
+                                    }
+                                }
+                
+                                return undefined;
+                            };
+                            // find(callback)
+                            // find(callback, fromIndex)
+                            // find(callback, thisObj)
+                            // find(callback, fromIndex, thisObj)
+                            list.find = function (callback, fromIndex, thisObj) {
+                                var i,
+                                    len = this.length;
+                
+                                if (typeof callback !== 'function') {
+                                    throw new Error('TypeError');
+                                }
+                
+                                if (typeof fromIndex !== 'number' && !thisObj) {
+                                    thisObj = fromIndex;
+                                }
+                
+                                if (isNaN(fromIndex) || fromIndex < 0) {
+                                    fromIndex = 0;
+                                }
+                
+                                for (i = fromIndex; i < len; i += 1) {
+                                    if (this.hasOwnProperty(i)) {
+                                        if (callback.call(thisObj, this[i], i, this)) {
+                                            return {item: this[i], index: i};
+                                        }
+                                    }
+                                }
+                
+                                return {item: undefined, index: -1};
+                            };
+                            list.equals = function (otherList, equals) {
+                                var i,
+                                    alen,
+                                    blen,
+                                    a = this,
+                                    b = otherList,
+                                    operators;
+                
+                                if (!util.isArray(otherList)) {
+                                    return false;
+                                }
+                                if (a === b) {
+                                    return true;
+                                }
+                                if (a.length !== b.length) {
+                                    return false;
+                                }
+                
+                                alen = a.length;
+                                blen = b.length;
+                                operators = makeList.getItemOperators(this);
+                                equals = typeof equals === 'function' ? equals : function () {
+                                    return operators.equals.apply(operators, arguments);
+                                };
+                
+                                for (i = 0; i < alen && i < blen; i += 1) {
+                                    if (!equals(a[i], b[i])) {
+                                        return false;
+                                    }
+                                }
+                
+                                return true;
+                            };
+                            list.changed = function (otherList, equals, changed) {
+                                var i,
+                                    alen,
+                                    blen,
+                                    a = this,
+                                    b = otherList,
+                                    operators;
+                
+                                if (!util.isArray(otherList)) {
+                                    return false;
+                                }
+                                if (a === b) {
+                                    return false;
+                                }
+                                if (a.length !== b.length) {
+                                    return true;
+                                }
+                
+                                operators = makeList.getItemOperators(this);
+                                equals = typeof equals === 'function' ? equals : function () {
+                                    return operators.equals.apply(operators, arguments);
+                                };
+                                changed = typeof changed === 'function' ? changed : function () {
+                                    return operators.changed.apply(operators, arguments);
+                                };
+                
+                                alen = a.length;
+                                blen = b.length;
+                                for (i = 0; i < alen && i < blen; i += 1) {
+                                    if (!equals(a[i], b[i]) || changed(a[i], b[i])) {
+                                        return true;
+                                    }
+                                }
+                
+                                return false;
+                            };
+                            list.compare = function (otherList, equals, changed) {
+                                var operators,
+                                    differences = makeList(),
+                                    i,
+                                    len,
+                                    item,
+                                    find = this.find,
+                                    callback,
+                                    result;
+                
+                                otherList = makeList(otherList);
+                                operators = makeList.getItemOperators(this);
+                                equals = typeof equals === 'function' ? equals : function () {
+                                    return operators.equals.apply(operators, arguments);
+                                };
+                                changed = typeof changed === 'function' ? changed : function () {
+                                    return operators.changed.apply(operators, arguments);
+                                };
+                                callback = function (it) {
+                                    return equals(item, it);
+                                };
+                
+                                len = this.length;
+                                for (i = 0; i < len; i += 1) {
+                                    item = this[i];
+                                    result = find.call(otherList, callback);
+                
+                                    if (result.index < 0) {
+                                        differences.push(makeCompareResult("deleted", item, i));
+                                    } else {
+                                        if (changed(item, result.item)) {
+                                            differences.push(makeCompareResult("changed", item, i, result.item, result.index));
+                                        } else {
+                                            differences.push(makeCompareResult("retained", item, i, result.item, result.index));
+                                        }
+                
+                                        delete otherList[result.index];
+                                    }
+                                }
+                
+                                len = otherList.length;
+                                for (i = 0; i < len; i += 1) {
+                                    if (otherList.hasOwnProperty(i)) {
+                                        item = otherList[i];
+                
+                                        if (this.find(callback).index < 0) {
+                                            differences.push(makeCompareResult("added", undefined, -1, item, i));
+                                        }
+                                    }
+                                }
+                
+                                item = otherList = equals = changed = null;
+                
+                                return differences;
+                            };
+                            list.merge = function (otherList, equals, changed) {
+                                var list = makeList(this);
+                                list.mergeWith(otherList, equals, changed);
+                                return list;
+                            };
+                            list.mergeWith = function (otherList, equals, changed) {
+                                var operators,
+                                    d,
+                                    i,
+                                    diff;
+                
+                                operators = makeList.getItemOperators(this);
+                                d = this.compare(otherList, equals, changed);
+                                i = d.length;
+                
+                                this.length = otherList.length;
+                
+                                // For sanity we use the equality operator again on each item
+                                // that has been marked as not being 'added'.
+                
+                                while (i) {
+                                    i -= 1;
+                                    diff = d[i];
+                
+                                    switch (diff.status) {
+                                    case "added":
+                                        this[diff.otherIndex] = diff.otherItem;
+                                        break;
+                                    case "deleted":
+                                        if (operators.equals(this[diff.index], diff.item)) {
+                                            this[diff.index] = undefined;
+                                        }
+                                        break;
+                                    case "changed":
+                                        if (operators.equals(this[diff.index], diff.item)) {
+                                            this[diff.index] = undefined;
+                                        }
+                                        this[diff.otherIndex] = diff.otherItem;
+                                        break;
+                                    case "retained":
+                                        if (operators.equals(this[diff.index], diff.item)) {
+                                            this[diff.index] = undefined;
+                                        }
+                                        this[diff.otherIndex] = diff.item;
+                                        break;
+                                    }
+                                }
+                
+                                this.collapse();
+                            };
+                            list.remove = function () {
+                                var i,
+                                    k,
+                                    arg,
+                                    len = arguments.length;
+                
+                                for (i = 0; i < len; i += 1) {
+                                    arg = arguments[i];
+                                    k = this.length;
+                
+                                    while (k) {
+                                        k -= 1;
+                                        if (this[k] === arg) {
+                                            this.splice(k, 1);
+                                        }
+                                    }
+                                }
+                            };
+                            list.removeAt = function (index) {
+                                if (isFinite(index) && index >= 0 && index < this.length) {
+                                    return this.splice(index, 1).pop();
+                                }
+                            };
+                            list.clear = function () {
+                                while (this.length) {
+                                    this.pop();
+                                }
+                            };
+                            list.collapse = function () {
+                                var i = this.length;
+                
+                                while (i) {
+                                    i -= 1;
+                                    if (this[i] === undefined) {
+                                        this.splice(i, 1);
+                                    }
+                                }
+                            };
+                            list.replaceAt = function (index, item) {
+                                var replaced;
+                
+                                if (isFinite(index) && index >= 0 && index < this.length) {
+                                    replaced = this[index];
+                                    this[index] = item;
+                                }
+                
+                                return replaced;
+                            };
+                            list.isEmpty = function () {
+                                return this.length === 0;
+                            };
+                            list.peek = function () {
+                                return this[this.length - 1];
+                            };
+                            list.insert = function (index, item) {
+                                if (index > this.length + 1) {
+                                    index = this.length + 1;
+                                } else if (index < 0) {
+                                    index = 0;
+                                }
+                
+                                if (index >= 0) {
+                                    if (index === this.length + 1) {
+                                        this.push(item);
+                                    } else if (this.hasOwnProperty(index)) {
+                                        this.splice(index, 0, item);
+                                    } else {
+                                        this[index] = item;
+                                    }
+                
+                                    return true;
+                                }
+                
+                                return false;
+                            };
+                
+                
+                            // Initialization.
+                            (function (args) {
+                                var argcount = args.length;
+                
+                                if (argcount === 1 && util.isArray(o)) {
+                                    list.push.apply(list, o);
+                                } else if (argcount) {
+                                    list.push.apply(list, list.slice.call(args));
+                                }
+                            }(arguments));
+                
+                            return list;
+                        };
+                
+                    // Guarantees valid item operators.
+                    makeList.getItemOperators = function (list) {
+                        var operators = list.getItemOperators();
+                
+                        if (typeof operators.equals !== 'function') {
+                            operators.equals = defaultItemOperators.equals;
                         }
-        
-                        item = otherList = equals = changed = null;
-        
-                        return differences;
+                        if (typeof operators.changed !== 'function') {
+                            operators.changed = defaultItemOperators.changed;
+                        }
+                
+                        return operators;
                     };
-                    list.merge = function (otherList, equals, changed) {
-                        var list = makeList(this);
-                        list.mergeWith(otherList, equals, changed);
+                
+                    makeList.interfce = {
+                        concat: 'function',
+                        indexOf: 'function',
+                        join: 'function',
+                        lastIndexOf: 'function',
+                        map: 'function',
+                        filter: 'function',
+                        forEach: 'function',
+                        reduce: 'function',
+                        reduceRight: 'function',
+                        reverse: 'function',
+                        some: 'function',
+                        shift: 'function',
+                        slice: 'function',
+                        sort: 'function',
+                        splice: 'function',
+                        every: 'function',
+                        pop: 'function',
+                        push: 'function',
+                        unshift: 'function',
+                        toString: 'function',
+                        //--
+                        contains: 'function',
+                        occurances: 'function',
+                        distinct: 'function',
+                        first: 'function',
+                        last: 'function',
+                        find: 'function',
+                        equals: 'function',
+                        changed: 'function',
+                        compare: 'function',
+                        merge: 'function',
+                        mergeWith: 'function',
+                        remove: 'function',
+                        removeAt: 'function',
+                        clear: 'function',
+                        collapse: 'function',
+                        replaceAt: 'function',
+                        isEmpty: 'function',
+                        peek: 'function',
+                        insert: 'function'
+                    };
+                
+                    return makeList;
+                }(util)),
+                makeObservable = (function (makeList, setTimeout) {
+                    /*global 'makeList', 'setTimeout', 'clearTimeout'*/
+                
+                    var notify = function (self, observers) {
+                            var i,
+                                observer,
+                                len = observers.length;
+                
+                            for (i = 0; i < len; i += 1) {
+                                observer = observers[i];
+                
+                                if (observer) {
+                                    if (typeof observer === 'function') {
+                                        observer(self);
+                                    } else if (typeof observer.onNotify === 'function') {
+                                        observer.onNotify(self);
+                                    }
+                                }
+                            }
+                        },
+                        makeObservable = function () {
+                            var observers = makeList(),
+                                throttleDuration = 0,
+                                notifying = false,
+                                blockStack = [],
+                                throttleId = -1,
+                                observable = {
+                                    block: function () {
+                                        blockStack.push(true);
+                                    },
+                                    unblock: function () {
+                                        blockStack.pop();
+                                    },
+                                    subscribe: function (observer) {
+                                        if (observer && !observers.contains(observer)) {
+                                            observers.push(observer);
+                
+                                            return {
+                                                dispose: function () {
+                                                    observers.remove(observer);
+                                                }
+                                            };
+                                        }
+                
+                                        return {
+                                            dispose: function () {}
+                                        };
+                                    },
+                                    throttle: function (durationInMilliseconds) {
+                                        if (!isFinite(durationInMilliseconds)) {
+                                            durationInMilliseconds = 0;
+                                        }
+                                        throttleDuration = durationInMilliseconds;
+                                    },
+                                    notify: function () {
+                                        var self = this;
+                
+                                        if (blockStack.length || notifying) {
+                                            return;
+                                        }
+                
+                                        notifying = true;
+                
+                                        if (throttleDuration > 0) {
+                                            throttleId = setTimeout(function () {
+                                                notify(self, observers);
+                                                notifying = false;
+                                            }, throttleDuration);
+                                        } else {
+                                            notify(self, observers);
+                                            notifying = false;
+                                        }
+                                    },
+                                    dispose: function () {
+                                        observers.clear();
+                                        clearTimeout(throttleId);
+                                    }
+                                };
+                
+                            return observable;
+                        };
+                
+                    makeObservable.interfce = {
+                        block: 'function',
+                        unblock: 'function',
+                        subscribe: 'function',
+                        throttle: 'function',
+                        notify: 'function',
+                        dispose: 'function'
+                    };
+                
+                    return makeObservable;
+                }(makeList, setTimeout)),
+                makeObservableList = (function (util, makeList, makeObservable) {
+                    /*global 'util', 'makeList', 'makeObservable'*/
+                
+                    var makeObservableList = function () {
+                        var slice = ([]).slice,
+                            list = makeList.apply(undefined, slice.call(arguments));
+                
+                        util.mixin(list, makeObservable());
+                        list.remove = (function (base) {
+                            return function () {
+                                var origLen = this.length, ret;
+                
+                                this.block();
+                                ret = base.apply(this, slice.call(arguments));
+                                this.unblock();
+                
+                                if (origLen !== this.length) {
+                                    this.notify();
+                                }
+                
+                                return ret;
+                            };
+                        }(list.remove));
+                        list.removeAt = (function (base) {
+                            return function () {
+                                var origLen = this.length, ret;
+                
+                                this.block();
+                                ret = base.apply(this, slice.call(arguments));
+                                this.unblock();
+                
+                                if (origLen !== this.length) {
+                                    this.notify();
+                                }
+                
+                                return ret;
+                            };
+                        }(list.removeAt));
+                        list.replaceAt = (function (base) {
+                            return function () {
+                                var ret;
+                
+                                this.block();
+                                ret = base.apply(this, slice.call(arguments));
+                                this.unblock();
+                                this.notify();
+                
+                                return ret;
+                            };
+                        }(list.replaceAt));
+                        list.clear = (function (base) {
+                            return function () {
+                                var origLen = this.length, ret;
+                
+                                this.block();
+                                ret = base.call(this);
+                                this.unblock();
+                
+                                if (origLen !== this.length) {
+                                    this.notify();
+                                }
+                
+                                return ret;
+                            };
+                        }(list.clear));
+                        list.collapse = (function (base) {
+                            return function () {
+                                var origLen = this.length, ret;
+                
+                                this.block();
+                                ret = base.call(this);
+                                this.unblock();
+                
+                                if (origLen !== this.length) {
+                                    this.notify();
+                                }
+                
+                                return ret;
+                            };
+                        }(list.collapse));
+                        list.insert = (function (base) {
+                            return function () {
+                                var ret;
+                
+                                this.block();
+                                ret = base.apply(this, slice.call(arguments));
+                                this.unblock();
+                
+                                if (ret) {
+                                    this.notify();
+                                }
+                
+                                return ret;
+                            };
+                        }(list.insert));
+                        list.mergeWith = (function (base) {
+                            return function () {
+                                var ret;
+                
+                                this.block();
+                                ret = base.apply(this, slice.call(arguments));
+                                this.unblock();
+                                this.notify();
+                
+                                return ret;
+                            };
+                        }(list.mergeWith));
+                        list.reverse = (function (base) {
+                            return function () {
+                                var ret;
+                
+                                this.block();
+                                ret = base.call(this);
+                                this.unblock();
+                                this.notify();
+                
+                                return ret;
+                            };
+                        }(list.reverse));
+                        list.pop = (function (base) {
+                            return function () {
+                                var origLen = this.length, ret;
+                
+                                this.block();
+                                ret = base.call(this);
+                                this.unblock();
+                
+                                if (origLen !== this.length) {
+                                    this.notify();
+                                }
+                
+                                return ret;
+                            };
+                        }(list.pop));
+                        list.push = (function (base) {
+                            return function () {
+                                var origLen = this.length, ret;
+                
+                                this.block();
+                                ret = base.apply(this, slice.call(arguments));
+                                this.unblock();
+                
+                                if (origLen !== this.length) {
+                                    this.notify();
+                                }
+                
+                                return ret;
+                            };
+                        }(list.push));
+                        list.shift = (function (base) {
+                            return function () {
+                                var origLen = this.length, ret;
+                
+                                this.block();
+                                ret = base.call(this);
+                                this.unblock();
+                
+                                if (origLen !== this.length) {
+                                    this.notify();
+                                }
+                
+                                return ret;
+                            };
+                        }(list.shift));
+                        list.unshift = (function (base) {
+                            return function () {
+                                var origLen = this.length, ret;
+                
+                                this.block();
+                                ret = base.apply(this, slice.call(arguments));
+                                this.unblock();
+                
+                                if (origLen !== this.length) {
+                                    this.notify();
+                                }
+                
+                                return ret;
+                            };
+                        }(list.unshift));
+                        list.sort = (function (base) {
+                            return function () {
+                                var ret = base.apply(this, slice.call(arguments));
+                
+                                this.notify();
+                
+                                return ret;
+                            };
+                        }(list.sort));
+                        list.splice = (function (base) {
+                            return function () {
+                                var origLen = this.length, ret;
+                
+                                this.block();
+                                ret = base.apply(this, slice.call(arguments));
+                                this.unblock();
+                
+                                if (origLen !== this.length) {
+                                    this.notify();
+                                }
+                
+                                return ret;
+                            };
+                        }(list.splice));
+                
                         return list;
                     };
-                    list.mergeWith = function (otherList, equals, changed) {
-                        var operators,
-                            d,
-                            i,
-                            diff;
-        
-                        operators = makeList.getItemOperators(this);
-                        d = this.compare(otherList, equals, changed);
-                        i = d.length;
-        
-                        this.length = otherList.length;
-        
-                        // For sanity we use the equality operator again on each item
-                        // that has been marked as not being 'added'.
-        
-                        while (i) {
-                            i -= 1;
-                            diff = d[i];
-        
-                            switch (diff.status) {
-                            case "added":
-                                this[diff.otherIndex] = diff.otherItem;
-                                break;
-                            case "deleted":
-                                if (operators.equals(this[diff.index], diff.item)) {
-                                    this[diff.index] = undefined;
-                                }
-                                break;
-                            case "changed":
-                                if (operators.equals(this[diff.index], diff.item)) {
-                                    this[diff.index] = undefined;
-                                }
-                                this[diff.otherIndex] = diff.otherItem;
-                                break;
-                            case "retained":
-                                if (operators.equals(this[diff.index], diff.item)) {
-                                    this[diff.index] = undefined;
-                                }
-                                this[diff.otherIndex] = diff.item;
-                                break;
+                
+                    makeObservableList.interfce = util.mixin({}, makeObservable.interfce, makeList.interfce);
+                
+                    return makeObservableList;
+                }(util, makeList, makeObservable)),
+                makeProperty = (function (util, makeList, makeObservable, makeObservableList) {
+                    /*global 'util', 'makeList', 'makeObservable', 'makeObservableList'*/
+                
+                    var makeProperty,
+                        stack = makeList(),
+                        // Flag to indicate that properties can only add themselves as
+                        // dependencies iff the property at the top of the stack has
+                        // the same owner. By default this is set to false, meaning that
+                        // if a property were to call another property of a different
+                        // owner then the property called would be marked as a dependency.
+                        // This value is never changed at runtime.
+                        strictDependencies = false;
+                
+                    stack.pushProperty = function (property) {
+                        if (this.length) {
+                            if (!strictDependencies || this.peek().owner === property.owner) {
+                                this.push(property);
                             }
+                        } else {
+                            this.push(property);
                         }
-        
-                        this.collapse();
                     };
-                    list.remove = function () {
-                        var i,
-                            k,
-                            arg,
-                            len = arguments.length;
-        
-                        for (i = 0; i < len; i += 1) {
-                            arg = arguments[i];
-                            k = this.length;
-        
-                            while (k) {
-                                k -= 1;
-                                if (this[k] === arg) {
-                                    this.splice(k, 1);
-                                }
+                    stack.addDependency = function (property) {
+                        if (this.length) {
+                            if (!strictDependencies || this.peek().owner === property.owner) {
+                                this.peek().dependencies().add(property);
                             }
                         }
                     };
-                    list.removeAt = function (index) {
-                        if (isFinite(index) && index >= 0 && index < this.length) {
-                            return this.splice(index, 1).pop();
-                        }
-                    };
-                    list.clear = function () {
-                        while (this.length) {
-                            this.pop();
-                        }
-                    };
-                    list.collapse = function () {
-                        var i = this.length;
-        
-                        while (i) {
-                            i -= 1;
-                            if (this[i] === undefined) {
-                                this.splice(i, 1);
+                
+                    makeProperty = function (options) {
+                        var writing = false,
+                            dependencies = makeList(),
+                            subscriptions = [],
+                            setter,
+                            getter,
+                            memo,
+                            property,
+                            observer = function () {
+                                memo = undefined;
+                                property.notify();
+                            };
+                
+                        dependencies.add = function (prop) {
+                            if (!this.contains(prop)) {
+                                this.push(prop);
+                                subscriptions.push(prop.subscribe(observer));
                             }
-                        }
-                    };
-                    list.replaceAt = function (index, item) {
-                        var replaced;
-        
-                        if (isFinite(index) && index >= 0 && index < this.length) {
-                            replaced = this[index];
-                            this[index] = item;
-                        }
-        
-                        return replaced;
-                    };
-                    list.isEmpty = function () {
-                        return this.length === 0;
-                    };
-                    list.peek = function () {
-                        return this[this.length - 1];
-                    };
-                    list.insert = function (index, item) {
-                        if (index > this.length + 1) {
-                            index = this.length + 1;
-                        } else if (index < 0) {
-                            index = 0;
-                        }
-        
-                        if (index >= 0) {
-                            if (index === this.length + 1) {
-                                this.push(item);
-                            } else if (this.hasOwnProperty(index)) {
-                                this.splice(index, 0, item);
+                        };
+                
+                        property = function (value) {
+                            var ret, origOwner = property.owner;
+                
+                            // Temporarily set the owner to the 'this' object.
+                            if (this !== undefined) {
+                                property.owner = this;
+                            }
+                
+                            if (arguments.length) {
+                                property.set(value);
+                                ret = this;
                             } else {
-                                this[index] = item;
+                                ret = property.get();
                             }
-        
-                            return true;
-                        }
-        
-                        return false;
-                    };
-        
-        
-                    // Initialization.
-                    (function (args) {
-                        var argcount = args.length;
-        
-                        if (argcount === 1 && util.isArray(o)) {
-                            list.push.apply(list, o);
-                        } else if (argcount) {
-                            list.push.apply(list, list.slice.call(args));
-                        }
-                    }(arguments));
-        
-                    return list;
-                };
-        
-            // Guarantees valid item operators.
-            makeList.getItemOperators = function (list) {
-                var operators = list.getItemOperators();
-        
-                if (typeof operators.equals !== 'function') {
-                    operators.equals = defaultItemOperators.equals;
-                }
-                if (typeof operators.changed !== 'function') {
-                    operators.changed = defaultItemOperators.changed;
-                }
-        
-                return operators;
-            };
-        
-            makeList.interfce = {
-                concat: 'function',
-                indexOf: 'function',
-                join: 'function',
-                lastIndexOf: 'function',
-                map: 'function',
-                filter: 'function',
-                forEach: 'function',
-                reduce: 'function',
-                reduceRight: 'function',
-                reverse: 'function',
-                some: 'function',
-                shift: 'function',
-                slice: 'function',
-                sort: 'function',
-                splice: 'function',
-                every: 'function',
-                pop: 'function',
-                push: 'function',
-                unshift: 'function',
-                toString: 'function',
-                //--
-                contains: 'function',
-                occurances: 'function',
-                distinct: 'function',
-                first: 'function',
-                last: 'function',
-                find: 'function',
-                equals: 'function',
-                changed: 'function',
-                compare: 'function',
-                merge: 'function',
-                mergeWith: 'function',
-                remove: 'function',
-                removeAt: 'function',
-                clear: 'function',
-                collapse: 'function',
-                replaceAt: 'function',
-                isEmpty: 'function',
-                peek: 'function',
-                insert: 'function'
-            };
-        
-            return makeList;
-        }(util)),
-        makeObservable = (function (makeList, setTimeout) {
-            /*global 'makeList', 'setTimeout', 'clearTimeout'*/
-        
-            var notify = function (self, observers) {
-                    var i,
-                        observer,
-                        len = observers.length;
-        
-                    for (i = 0; i < len; i += 1) {
-                        observer = observers[i];
-        
-                        if (observer) {
-                            if (typeof observer === 'function') {
-                                observer(self);
-                            } else if (typeof observer.onNotify === 'function') {
-                                observer.onNotify(self);
+                
+                            property.owner = origOwner;
+                
+                            return ret;
+                        };
+                        property.equals = function (b) {
+                            var a = this.get();
+                            b = makeProperty.get(b);
+                
+                            a = a ? a.valueOf() : a;
+                            b = b ? b.valueOf() : b;
+                
+                            return a === b;
+                        };
+                        property.changed = function (b) {
+                            var a = this.get();
+                            b = makeProperty.get(b);
+                
+                            a = a ? a.valueOf() : a;
+                            b = b ? b.valueOf() : b;
+                
+                            return a !== b;
+                        };
+                        property.clearMemo = function () {
+                            memo = undefined;
+                        };
+                        property.get = function () {
+                            if (!writing) {
+                                stack.addDependency(this);
+                                stack.pushProperty(this);
                             }
-                        }
-                    }
-                },
-                makeObservable = function () {
-                    var observers = makeList(),
-                        throttleDuration = 0,
-                        notifying = false,
-                        blockStack = [],
-                        throttleId = -1,
-                        observable = {
-                            block: function () {
-                                blockStack.push(true);
-                            },
-                            unblock: function () {
-                                blockStack.pop();
-                            },
-                            subscribe: function (observer) {
-                                if (observer && !observers.contains(observer)) {
-                                    observers.push(observer);
-        
-                                    return {
-                                        dispose: function () {
-                                            observers.remove(observer);
-                                        }
+                
+                            var result = memo === undefined ? getter.call(this.owner) : memo;
+                            memo = result;
+                
+                            if (stack[stack.length - 1] === this) {
+                                stack.pop();
+                            }
+                
+                            return result;
+                        };
+                        property.set = function (value) {
+                            // Check if the property is writable.
+                            if (typeof setter === 'function') {
+                                writing = true;
+                
+                                if (!this.equals(value) || this.changed(value)) {
+                                    // We block just in case our value is an ObservableList
+                                    // or something that is observable that will also trigger
+                                    // a notification when it is changed. This will occur
+                                    // if the property's value is an ObservableList.
+                                    this.block();
+                                    setter.call(this.owner, value);
+                                    memo = undefined;
+                                    this.unblock();
+                                    this.notify();
+                                }
+                
+                                writing = false;
+                            }
+                        };
+                        property.dependencies = function () {
+                            return dependencies;
+                        };
+                        property.isDependent = function () {
+                            return dependencies.length !== 0;
+                        };
+                        property.toString = function () {
+                            return util.str(this.get());
+                        };
+                        property.valueOf = function () {
+                            var value = this.get();
+                            return util.isNil(value) ? value : value.valueOf();
+                        };
+                
+                        util.mixin(property, makeObservable());
+                
+                        // Initialization.
+                        (function () {
+                            var value,
+                                self = property,
+                                lazy = false,
+                                isObject = util.isObject,
+                                isArray = util.isArray,
+                                adheresTo = util.adheresTo;
+                
+                            self.owner = undefined;
+                
+                            // Just a getter function.
+                            if (typeof options === 'function') {
+                                getter = options;
+                            // {get, [set, lazy, changed, equals, owner]}
+                            } else if (isObject(options) && typeof options.get === 'function') {
+                                lazy = options.lazy;
+                                getter = options.get;
+                                setter = typeof options.set === 'function' ? options.set : null;
+                                self.equals = typeof options.equals === 'function' ? options.equals : self.equals;
+                                self.changed = typeof options.changed === 'function' ? options.changed : self.changed;
+                                self.owner = options.owner;
+                            } else {
+                                // {value, [changed, equals]}
+                                if (isObject(options)) {
+                                    self.equals = typeof options.equals === 'function' ? options.equals : self.equals;
+                                    self.changed = typeof options.changed === 'function' ? options.changed : self.changed;
+                                    value = options.value;
+                                // Just the value.
+                                } else {
+                                    value = options;
+                                }
+                
+                                // Make all Arrays into ObservableLists.
+                                if (isArray(value) && !adheresTo(value, makeObservable.interfce)) {
+                                    value = makeObservableList(value);
+                
+                                    // For array values the equals and changed operators
+                                    // specified in the options are opertors for testing items in the list
+                                    // not for operating on individual lists themselves.
+                
+                                    // Override the item operators for the newly created ObservableList
+                                    // so that the item operators are taken from the options.
+                                    value.getItemOperators = (function (equals, changed, operators) {
+                                        equals = typeof equals === 'function' ? equals : operators.equals;
+                                        changed = typeof changed === 'function' ? changed : operators.changed;
+                
+                                        return function () {
+                                            return {
+                                                equals: equals,
+                                                changed: changed
+                                            };
+                                        };
+                                    }(options.equals, options.changed, makeList.getItemOperators(value)));
+                
+                                    self.equals = function (b) {
+                                        b = makeProperty.get(b);
+                                        return value.equals(b);
+                                    };
+                                    self.changed = function (b) {
+                                        b = makeProperty.get(b);
+                                        return value.changed(b);
                                     };
                                 }
-        
-                                return {
-                                    dispose: function () {}
+                
+                                // If the value is observable then we observe it for notifications.
+                                if (value && typeof value.subscribe === 'function' && typeof value.dispose === 'function') {
+                                    subscriptions.push(value.subscribe(observer));
+                                }
+                
+                                getter = function () {
+                                    return value;
                                 };
+                                setter = function (v) {
+                                    if (adheresTo(value, makeList.interfce)) {
+                                        value.clear();
+                
+                                        if (isArray(v)) {
+                                            value.push.apply(value, v);
+                                        } else {
+                                            value.push(v);
+                                        }
+                                    } else if (isArray(value)) {
+                                        while (value.length) {
+                                            value.pop();
+                                        }
+                
+                                        if (isArray(v)) {
+                                            value.push.apply(value, v);
+                                        } else {
+                                            value.push(v);
+                                        }
+                                    } else if (value !== v) {
+                                        value = v;
+                                    }
+                                };
+                            }
+                
+                            self.dispose = (function (base) {
+                                return function () {
+                                    while (subscriptions.length) {
+                                        subscriptions.pop().dispose();
+                                    }
+                                    while (dependencies.length) {
+                                        dependencies.pop();
+                                    }
+                                    base.call(this);
+                                };
+                            }(self.dispose));
+                
+                            // Watch dependent properties automatically
+                            // if they are not 'lazy'. If we are lazy then
+                            // dependent properties will not be tracked until
+                            // we have been read at least once.
+                            if (!lazy) {
+                                property.get();
+                            }
+                        }());
+                
+                        return property;
+                    };
+                
+                    // Convenience method to retrieve the value of the specified property.
+                    // If the specified property is not a property then returns property.
+                    makeProperty.get = function (property) {
+                        if (property && typeof property.get === 'function') {
+                            return property.get();
+                        }
+                        return property;
+                    };
+                
+                    makeProperty.interfce = util.mixin({
+                        owner: '*',
+                        dependencies: 'function',
+                        isDependent: 'function',
+                        clearMemo: 'function',
+                        get: 'function',
+                        set: 'function',
+                        equals: 'function',
+                        changed: 'function'
+                    }, makeObservable.interfce);
+                
+                    return makeProperty;
+                }(util, makeList, makeObservable, makeObservableList)),
+                makeBinding = (function (util, makeProperty) {
+                    /*global 'util', 'makeProperty'*/
+                
+                    var makeBinding = function (source, sink, type) {
+                        var propertyInterface = makeProperty.interfce,
+                            subscriptions = [],
+                            subscription;
+                
+                        type = type || 'twoway';
+                        type = util.str(type);
+                        type = type.toLowerCase();
+                
+                        if (!util.adheresTo(source, propertyInterface)) {
+                            throw new Error('Binding source must be an observable property. ' + source);
+                        }
+                        if (!util.adheresTo(sink, propertyInterface)) {
+                            throw new Error('Binding sink must be an observable property. ' + sink);
+                        }
+                
+                        sink.set(source.get());
+                
+                        switch (type) {
+                        case 'oneway':
+                            subscription = source.subscribe(function () {
+                                sink.set(source.get());
+                            });
+                            subscriptions.push(subscription);
+                            break;
+                        case 'twoway':
+                            subscription = source.subscribe(function () {
+                                sink.set(source.get());
+                            });
+                            subscriptions.push(subscription);
+                
+                            subscription = sink.subscribe(function () {
+                                source.set(sink.get());
+                            });
+                            subscriptions.push(subscription);
+                            break;
+                        }
+                
+                        subscription = null;
+                
+                        return {
+                            type: function () {
+                                return type;
                             },
-                            throttle: function (durationInMilliseconds) {
-                                if (!isFinite(durationInMilliseconds)) {
-                                    durationInMilliseconds = 0;
-                                }
-                                throttleDuration = durationInMilliseconds;
+                            source: function () {
+                                return source;
                             },
-                            notify: function () {
-                                var self = this;
-        
-                                if (blockStack.length || notifying) {
-                                    return;
-                                }
-        
-                                notifying = true;
-        
-                                if (throttleDuration > 0) {
-                                    throttleId = setTimeout(function () {
-                                        notify(self, observers);
-                                        notifying = false;
-                                    }, throttleDuration);
-                                } else {
-                                    notify(self, observers);
-                                    notifying = false;
-                                }
+                            sink: function () {
+                                return sink;
                             },
                             dispose: function () {
-                                observers.clear();
-                                clearTimeout(throttleId);
+                                while (subscriptions.length) {
+                                    subscriptions.pop().dispose();
+                                }
                             }
                         };
-        
-                    return observable;
-                };
-        
-            makeObservable.interfce = {
-                block: 'function',
-                unblock: 'function',
-                subscribe: 'function',
-                throttle: 'function',
-                notify: 'function',
-                dispose: 'function'
-            };
-        
-            return makeObservable;
-        }(makeList, setTimeout)),
-        makeObservableList = (function (util, makeList, makeObservable) {
-            /*global 'util', 'makeList', 'makeObservable'*/
-        
-            var makeObservableList = function () {
-                var slice = ([]).slice,
-                    list = makeList.apply(undefined, slice.call(arguments));
-        
-                util.mixin(list, makeObservable());
-                list.remove = (function (base) {
-                    return function () {
-                        var origLen = this.length, ret;
-        
-                        this.block();
-                        ret = base.apply(this, slice.call(arguments));
-                        this.unblock();
-        
-                        if (origLen !== this.length) {
-                            this.notify();
-                        }
-        
-                        return ret;
                     };
-                }(list.remove));
-                list.removeAt = (function (base) {
-                    return function () {
-                        var origLen = this.length, ret;
-        
-                        this.block();
-                        ret = base.apply(this, slice.call(arguments));
-                        this.unblock();
-        
-                        if (origLen !== this.length) {
-                            this.notify();
-                        }
-        
-                        return ret;
+                
+                    makeBinding.interfce = {
+                        type: 'function',
+                        source: 'function',
+                        sink: 'function',
+                        dispose: 'function'
                     };
-                }(list.removeAt));
-                list.replaceAt = (function (base) {
-                    return function () {
-                        var ret;
-        
-                        this.block();
-                        ret = base.apply(this, slice.call(arguments));
-                        this.unblock();
-                        this.notify();
-        
-                        return ret;
-                    };
-                }(list.replaceAt));
-                list.clear = (function (base) {
-                    return function () {
-                        var origLen = this.length, ret;
-        
-                        this.block();
-                        ret = base.call(this);
-                        this.unblock();
-        
-                        if (origLen !== this.length) {
-                            this.notify();
-                        }
-        
-                        return ret;
-                    };
-                }(list.clear));
-                list.collapse = (function (base) {
-                    return function () {
-                        var origLen = this.length, ret;
-        
-                        this.block();
-                        ret = base.call(this);
-                        this.unblock();
-        
-                        if (origLen !== this.length) {
-                            this.notify();
-                        }
-        
-                        return ret;
-                    };
-                }(list.collapse));
-                list.insert = (function (base) {
-                    return function () {
-                        var ret;
-        
-                        this.block();
-                        ret = base.apply(this, slice.call(arguments));
-                        this.unblock();
-        
-                        if (ret) {
-                            this.notify();
-                        }
-        
-                        return ret;
-                    };
-                }(list.insert));
-                list.mergeWith = (function (base) {
-                    return function () {
-                        var ret;
-        
-                        this.block();
-                        ret = base.apply(this, slice.call(arguments));
-                        this.unblock();
-                        this.notify();
-        
-                        return ret;
-                    };
-                }(list.mergeWith));
-                list.reverse = (function (base) {
-                    return function () {
-                        var ret;
-        
-                        this.block();
-                        ret = base.call(this);
-                        this.unblock();
-                        this.notify();
-        
-                        return ret;
-                    };
-                }(list.reverse));
-                list.pop = (function (base) {
-                    return function () {
-                        var origLen = this.length, ret;
-        
-                        this.block();
-                        ret = base.call(this);
-                        this.unblock();
-        
-                        if (origLen !== this.length) {
-                            this.notify();
-                        }
-        
-                        return ret;
-                    };
-                }(list.pop));
-                list.push = (function (base) {
-                    return function () {
-                        var origLen = this.length, ret;
-        
-                        this.block();
-                        ret = base.apply(this, slice.call(arguments));
-                        this.unblock();
-        
-                        if (origLen !== this.length) {
-                            this.notify();
-                        }
-        
-                        return ret;
-                    };
-                }(list.push));
-                list.shift = (function (base) {
-                    return function () {
-                        var origLen = this.length, ret;
-        
-                        this.block();
-                        ret = base.call(this);
-                        this.unblock();
-        
-                        if (origLen !== this.length) {
-                            this.notify();
-                        }
-        
-                        return ret;
-                    };
-                }(list.shift));
-                list.unshift = (function (base) {
-                    return function () {
-                        var origLen = this.length, ret;
-        
-                        this.block();
-                        ret = base.apply(this, slice.call(arguments));
-                        this.unblock();
-        
-                        if (origLen !== this.length) {
-                            this.notify();
-                        }
-        
-                        return ret;
-                    };
-                }(list.unshift));
-                list.sort = (function (base) {
-                    return function () {
-                        var ret = base.apply(this, slice.call(arguments));
-        
-                        this.notify();
-        
-                        return ret;
-                    };
-                }(list.sort));
-                list.splice = (function (base) {
-                    return function () {
-                        var origLen = this.length, ret;
-        
-                        this.block();
-                        ret = base.apply(this, slice.call(arguments));
-                        this.unblock();
-        
-                        if (origLen !== this.length) {
-                            this.notify();
-                        }
-        
-                        return ret;
-                    };
-                }(list.splice));
-        
-                return list;
-            };
-        
-            makeObservableList.interfce = util.mixin({}, makeObservable.interfce, makeList.interfce);
-        
-            return makeObservableList;
-        }(util, makeList, makeObservable)),
-        makeProperty = (function (util, makeList, makeObservable, makeObservableList) {
-            /*global 'util', 'makeList', 'makeObservable', 'makeObservableList'*/
-        
-            var makeProperty,
-                stack = makeList(),
-                // Flag to indicate that properties can only add themselves as
-                // dependencies iff the property at the top of the stack has
-                // the same owner. By default this is set to false, meaning that
-                // if a property were to call another property of a different
-                // owner then the property called would be marked as a dependency.
-                // This value is never changed at runtime.
-                strictDependencies = false;
-        
-            stack.pushProperty = function (property) {
-                if (this.length) {
-                    if (!strictDependencies || this.peek().owner === property.owner) {
-                        this.push(property);
-                    }
-                } else {
-                    this.push(property);
-                }
-            };
-            stack.addDependency = function (property) {
-                if (this.length) {
-                    if (!strictDependencies || this.peek().owner === property.owner) {
-                        this.peek().dependencies().add(property);
-                    }
-                }
-            };
-        
-            makeProperty = function (options) {
-                var writing = false,
-                    dependencies = makeList(),
-                    subscriptions = [],
-                    setter,
-                    getter,
-                    memo,
-                    property,
-                    observer = function () {
-                        memo = undefined;
-                        property.notify();
-                    };
-        
-                dependencies.add = function (prop) {
-                    if (!this.contains(prop)) {
-                        this.push(prop);
-                        subscriptions.push(prop.subscribe(observer));
-                    }
-                };
-        
-                property = function (value) {
-                    var ret, origOwner = property.owner;
-        
-                    // Temporarily set the owner to the 'this' object.
-                    if (this !== undefined) {
-                        property.owner = this;
-                    }
-        
-                    if (arguments.length) {
-                        property.set(value);
-                        ret = this;
-                    } else {
-                        ret = property.get();
-                    }
-        
-                    property.owner = origOwner;
-        
-                    return ret;
-                };
-                property.equals = function (b) {
-                    var a = this.get();
-                    b = makeProperty.get(b);
-        
-                    a = a ? a.valueOf() : a;
-                    b = b ? b.valueOf() : b;
-        
-                    return a === b;
-                };
-                property.changed = function (b) {
-                    var a = this.get();
-                    b = makeProperty.get(b);
-        
-                    a = a ? a.valueOf() : a;
-                    b = b ? b.valueOf() : b;
-        
-                    return a !== b;
-                };
-                property.clearMemo = function () {
-                    memo = undefined;
-                };
-                property.get = function () {
-                    if (!writing) {
-                        stack.addDependency(this);
-                        stack.pushProperty(this);
-                    }
-        
-                    var result = memo === undefined ? getter.call(this.owner) : memo;
-                    memo = result;
-        
-                    if (stack[stack.length - 1] === this) {
-                        stack.pop();
-                    }
-        
-                    return result;
-                };
-                property.set = function (value) {
-                    // Check if the property is writable.
-                    if (typeof setter === 'function') {
-                        writing = true;
-        
-                        if (!this.equals(value) || this.changed(value)) {
-                            // We block just in case our value is an ObservableList
-                            // or something that is observable that will also trigger
-                            // a notification when it is changed. This will occur
-                            // if the property's value is an ObservableList.
-                            this.block();
-                            setter.call(this.owner, value);
-                            memo = undefined;
-                            this.unblock();
-                            this.notify();
-                        }
-        
-                        writing = false;
-                    }
-                };
-                property.dependencies = function () {
-                    return dependencies;
-                };
-                property.isDependent = function () {
-                    return dependencies.length !== 0;
-                };
-                property.toString = function () {
-                    return util.str(this.get());
-                };
-                property.valueOf = function () {
-                    var value = this.get();
-                    return util.isNil(value) ? value : value.valueOf();
-                };
-        
-                util.mixin(property, makeObservable());
-        
-                // Initialization.
-                (function () {
-                    var value,
-                        self = property,
-                        lazy = false,
+                
+                    return makeBinding;
+                }(util, makeProperty)),
+                toObject = function (o, excludeDependentProperties) {
+                    var i,
+                        len,
+                        key,
+                        value,
+                        js = {},
                         isObject = util.isObject,
                         isArray = util.isArray,
-                        adheresTo = util.adheresTo;
-        
-                    self.owner = undefined;
-        
-                    // Just a getter function.
-                    if (typeof options === 'function') {
-                        getter = options;
-                    // {get, [set, lazy, changed, equals, owner]}
-                    } else if (isObject(options) && typeof options.get === 'function') {
-                        lazy = options.lazy;
-                        getter = options.get;
-                        setter = typeof options.set === 'function' ? options.set : null;
-                        self.equals = typeof options.equals === 'function' ? options.equals : self.equals;
-                        self.changed = typeof options.changed === 'function' ? options.changed : self.changed;
-                        self.owner = options.owner;
-                    } else {
-                        // {value, [changed, equals]}
-                        if (isObject(options)) {
-                            self.equals = typeof options.equals === 'function' ? options.equals : self.equals;
-                            self.changed = typeof options.changed === 'function' ? options.changed : self.changed;
-                            value = options.value;
-                        // Just the value.
-                        } else {
-                            value = options;
+                        adheresTo = util.adheresTo,
+                        propertyInterface = makeProperty.interfce;
+
+                    if (isArray(o)) {
+                        len = o.length;
+                        js = [];
+
+                        for (i = 0; i < len; i += 1) {
+                            js.push(toObject(o[i]));
                         }
-        
-                        // Make all Arrays into ObservableLists.
-                        if (isArray(value) && !adheresTo(value, makeObservable.interfce)) {
-                            value = makeObservableList(value);
-        
-                            // For array values the equals and changed operators
-                            // specified in the options are opertors for testing items in the list
-                            // not for operating on individual lists themselves.
-        
-                            // Override the item operators for the newly created ObservableList
-                            // so that the item operators are taken from the options.
-                            value.getItemOperators = (function (equals, changed, operators) {
-                                equals = typeof equals === 'function' ? equals : operators.equals;
-                                changed = typeof changed === 'function' ? changed : operators.changed;
-        
-                                return function () {
-                                    return {
-                                        equals: equals,
-                                        changed: changed
-                                    };
-                                };
-                            }(options.equals, options.changed, makeList.getItemOperators(value)));
-        
-                            self.equals = function (b) {
-                                b = makeProperty.get(b);
-                                return value.equals(b);
-                            };
-                            self.changed = function (b) {
-                                b = makeProperty.get(b);
-                                return value.changed(b);
-                            };
-                        }
-        
-                        // If the value is observable then we observe it for notifications.
-                        if (value && typeof value.subscribe === 'function' && typeof value.dispose === 'function') {
-                            subscriptions.push(value.subscribe(observer));
-                        }
-        
-                        getter = function () {
-                            return value;
-                        };
-                        setter = function (v) {
-                            if (adheresTo(value, makeList.interfce)) {
-                                value.clear();
-        
-                                if (isArray(v)) {
-                                    value.push.apply(value, v);
-                                } else {
-                                    value.push(v);
-                                }
-                            } else if (isArray(value)) {
-                                while (value.length) {
-                                    value.pop();
-                                }
-        
-                                if (isArray(v)) {
-                                    value.push.apply(value, v);
-                                } else {
-                                    value.push(v);
-                                }
-                            } else if (value !== v) {
-                                value = v;
-                            }
-                        };
+
+                        return js;
                     }
-        
-                    self.dispose = (function (base) {
-                        return function () {
-                            while (subscriptions.length) {
-                                subscriptions.pop().dispose();
-                            }
-                            while (dependencies.length) {
-                                dependencies.pop();
-                            }
-                            base.call(this);
-                        };
-                    }(self.dispose));
-        
-                    // Watch dependent properties automatically
-                    // if they are not 'lazy'. If we are lazy then
-                    // dependent properties will not be tracked until
-                    // we have been read at least once.
-                    if (!lazy) {
-                        property.get();
+
+                    if (!isObject(o)) {
+                        return o;
                     }
-                }());
-        
-                return property;
-            };
-        
-            // Convenience method to retrieve the value of the specified property.
-            // If the specified property is not a property then returns property.
-            makeProperty.get = function (property) {
-                if (property && typeof property.get === 'function') {
-                    return property.get();
-                }
-                return property;
-            };
-        
-            makeProperty.interfce = util.mixin({
-                owner: '*',
-                dependencies: 'function',
-                isDependent: 'function',
-                clearMemo: 'function',
-                get: 'function',
-                set: 'function',
-                equals: 'function',
-                changed: 'function'
-            }, makeObservable.interfce);
-        
-            return makeProperty;
-        }(util, makeList, makeObservable, makeObservableList)),
-        makeBinding = (function (util, makeProperty) {
-            /*global 'util', 'makeProperty'*/
-        
-            var makeBinding = function (source, sink, type) {
-                var propertyInterface = makeProperty.interfce,
-                    subscriptions = [],
-                    subscription;
-        
-                type = type || 'twoway';
-                type = util.str(type);
-                type = type.toLowerCase();
-        
-                if (!util.adheresTo(source, propertyInterface)) {
-                    throw new Error('Binding source must be an observable property. ' + source);
-                }
-                if (!util.adheresTo(sink, propertyInterface)) {
-                    throw new Error('Binding sink must be an observable property. ' + sink);
-                }
-        
-                sink.set(source.get());
-        
-                switch (type) {
-                case 'oneway':
-                    subscription = source.subscribe(function () {
-                        sink.set(source.get());
-                    });
-                    subscriptions.push(subscription);
-                    break;
-                case 'twoway':
-                    subscription = source.subscribe(function () {
-                        sink.set(source.get());
-                    });
-                    subscriptions.push(subscription);
-        
-                    subscription = sink.subscribe(function () {
-                        source.set(sink.get());
-                    });
-                    subscriptions.push(subscription);
-                    break;
-                }
-        
-                subscription = null;
-        
-                return {
-                    type: function () {
-                        return type;
-                    },
-                    source: function () {
-                        return source;
-                    },
-                    sink: function () {
-                        return sink;
-                    },
-                    dispose: function () {
-                        while (subscriptions.length) {
-                            subscriptions.pop().dispose();
+
+                    for (key in o) {
+                        if (o[key] !== undefined) {
+                            value = o[key];
+
+                            if (adheresTo(value, propertyInterface)) {
+                                if (!(value.isDependent() && excludeDependentProperties)) {
+                                    js[key] = toObject(value.get());
+                                }
+                            } else {
+                                js[key] = value;
+                            }
                         }
                     }
+
+                    return js;
                 };
-            };
-        
-            makeBinding.interfce = {
-                type: 'function',
-                source: 'function',
-                sink: 'function',
-                dispose: 'function'
-            };
-        
-            return makeBinding;
-        }(util, makeProperty)),
-        toObject = function (o, excludeDependentProperties) {
-            var i,
-                len,
-                key,
-                value,
-                js = {},
-                isObject = util.isObject,
-                isArray = util.isArray,
-                adheresTo = util.adheresTo,
-                propertyInterface = makeProperty.interfce;
 
-            if (isArray(o)) {
-                len = o.length;
-                js = [];
-
-                for (i = 0; i < len; i += 1) {
-                    js.push(toObject(o[i]));
-                }
-
-                return js;
-            }
-
-            if (!isObject(o)) {
-                return o;
-            }
-
-            for (key in o) {
-                if (o[key] !== undefined) {
-                    value = o[key];
-
-                    if (adheresTo(value, propertyInterface)) {
-                        if (!(value.isDependent() && excludeDependentProperties)) {
-                            js[key] = toObject(value.get());
-                        }
-                    } else {
-                        js[key] = value;
-                    }
-                }
-            }
-
-            return js;
-        },
-        module = function (util) {
             return {
                 utiljs: util,
                 makeList: makeList,
