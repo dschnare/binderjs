@@ -150,3 +150,7 @@ Inside the `web/public/inc/scripts` directory you will find the following files:
 - binder.min.js - Minified source of the binderjs module
 - binder.all.js - Full source of the binderjs module that has utiljs baked-in
 - binder.all.min.js - Minified source of the binderjs module that has utiljs baked-in
+
+`binder.js/binder.min.js` - Will produce the global object `BINDER` when loaded into a web page. If loaded using a module framework like AMD or CommonJS, then will attempt to require the following dependencies: `utiljs`
+
+`binder.all.js/binder.all.min.js` - Will produce the global object `BINDER` when loaded into a web page. If loaded using a module framework like AMD or CommonJS, then will not attempt to require any dependencies.
