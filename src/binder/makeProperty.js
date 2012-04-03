@@ -193,7 +193,7 @@
                                 changed: changed
                             };
                         };
-                    }(options.equals, options.changed, makeList.getItemOperators(value)));
+                    }(options.equals, options.changed, value.getItemOperators()));
 
                     self.equals = function (b) {
                         b = makeProperty.get(b);

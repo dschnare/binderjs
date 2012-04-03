@@ -217,7 +217,7 @@ var BINDER = (function () {
                         a = a ? a.valueOf() : a;
                         b = b ? b.valueOf() : b;
         
-                        return false;
+                        return a !== b;
                     }
                 },
                 makeCompareResult = function (status, item, index, otherItem, otherIndex) {
@@ -1408,7 +1408,7 @@ var BINDER = (function () {
                                         changed: changed
                                     };
                                 };
-                            }(options.equals, options.changed, makeList.getItemOperators(value)));
+                            }(options.equals, options.changed, value.getItemOperators()));
         
                             self.equals = function (b) {
                                 b = makeProperty.get(b);
