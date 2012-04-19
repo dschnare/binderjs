@@ -32,16 +32,73 @@
 
 The exposed API for utiljs.
 
-**binder.toObject()**
+**binder.toJSON()**
 
-Converts an object that contains binderjs properties into a plain-old-javascript-object (POJO) by performing a shallow copy of all properties and adding them to a new object. If the property is a binderjs property then the property's value will be copied. If `excludeDependentProperties` is `truthy` then any binderjs property that has dependencies will be skipped.
+Converts an object that contains binderjs properties into a plain-old-javascript-object (POJO) by performing a shallow copy of all properties and adding them to a new object. If the property is a binderjs property then the property's value will be copied.
 
-	toObject(o, excludeDependentProperties)
+	toJSON(o, options)
 
 	o - An object with binderjs properties.
-	excludeDependentProperties - Flag that determines if properties with dependencies
-									(i.e. dependent properties) will be excluded.
-	return - A new POJO with a shallow copy each property.
+	options - Options that describe how to treat properties.
+	return - A new POJO with a shallow copy each property, or the specified target model.
+
+	If o is a native type then just the filter function will be invoked if specified.
+
+
+	Options is a nested object structure with the following form:
+
+	{
+		include: [list of property names to include (applies to each item in an Array if the current level is an Array)]
+        exclude: [list of property names to exclude (applies to each item in an Array if the current level is an Array)]
+        filter(json, original): A filter function called on the value just before returning from toJSON().
+        						If the level this filter is specified at is an Array then the filter will be called
+        						for each item in the array.
+        properties: {
+            property: A filter function that will be called with the value
+                    of a property that must return a value, or a nested options object:
+                    include, exclude, filter, properties.
+        }
+	}
+
+**binder.fromJSON()**
+
+Converts a POJO object that to an object with binderjs properties by performing a shallow copy of all properties and adding them to a new object.
+
+	fromJSON(o, options)
+	fromJSON(o, options, target)
+
+	o - A POJO object.
+	options - Options that describe how to create binderjs properties.
+	target - An optional target model to read the properties into.
+
+	If o is a native type then just the filter function will be invoked if specified.
+
+
+	Options is a nested object with the following form:
+
+	{
+		include: [list of property names to include (applies to each item in an Array if the current level is an Array)]
+        exclude: [list of property names to exclude (applies to each item in an Array if the current level is an Array)]
+        copy: [list of property names to simply copy as is (and optionally filter) without creating a binderjs property
+        		(applies to each item in an Array if the current level is an Array)]
+        filter(model, json): A filter function called with the value just before returning from fromJSON().
+        		This is typically used to format primitive values or add custom functions/properties
+        		to a model before returning. If filtering a primitive value then model and json will be equal.
+        		If the level this filter is specified at is an Array then the filter will be called
+        		for each item in the array.
+        properties: {
+            property: {
+                create(model, owner): A function that returns an object that will be used
+                		to create a binder property via binder.makeProperty(). Model is equal
+                		to the value returned from calling fromJSON() recursively and owner is
+                		the owning model to wich the property will be attached.
+                		This is typically used to specify a custom getter/setter
+                		for a binderjs property or a filter for a nested model/object that adds
+                		custom functions.
+                // All other properties are supported: include, exclude, copy, filter, properties.
+            }
+        }
+	}
 
 ---
 

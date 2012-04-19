@@ -2476,41 +2476,202 @@ Repo: https://github.com/dschnare/binderjs
 				}
 			};
 		}(BINDER, UNIT)),
-		toObjectSuite = (function (binder, unit) {
+		toJSONSuite = (function (binder, unit) {
 			/*global 'BINDER', 'UNIT'*/
 		
 			return {
-				toObjectTest: function () {
+				simpleToJSONTest: function () {
 					var o,
 						model = {
 							firstName: binder.makeProperty('Darren'),
 							lastName: binder.makeProperty('Schnare'),
-							skills: binder.makeProperty(['javascript', 'html', 'css', 'ruby'])
+							skills: binder.makeProperty(['javascript', 'html', 'css', 'ruby']),
+							team: [{
+								firstName: binder.makeProperty('Alex'),
+								lastName: binder.makeProperty('Grendo')
+							}, {
+								firstName: binder.makeProperty('Sam'),
+								lastName: binder.makeProperty('Hilto')
+							}, {
+								firstName: binder.makeProperty('James'),
+								lastName: binder.makeProperty('Wazzabi')
+							}]
 						};
 		
 					model.fullName = binder.makeProperty(function () {
 						return model.firstName + ' ' + model.lastName;
 					});
 		
-					o = binder.toObject(model);
+					o = binder.toJSON(model);
 		
 					unit.expect('o.firstName to equal "Darren"', o.firstName === 'Darren');
 					unit.expect('o.lastName to equal "Schnare"', o.lastName === 'Schnare');
 					unit.expect('o.fullName to equal "Darren Schnare"', o.fullName === 'Darren Schnare');
 					unit.expect('o.skills to be an Array', binder.utiljs.isArray(o.skills));
 					unit.expect('o.skills to equal [javascript, html, css, ruby]', o.skills.join(',') === 'javascript,html,css,ruby');
+					unit.expect('o.team to be an Array', binder.utiljs.isArray(o.team));
+					unit.expect('o.team[0].firstName to equal "Alex"', o.team[0].firstName === 'Alex');
+					unit.expect('o.team[0].lastName to equal "Grendo"', o.team[0].lastName === 'Grendo');
+					unit.expect('o.team[1].firstName to equal "Sam"', o.team[1].firstName === 'Sam');
+					unit.expect('o.team[1].lastName to equal "Hilto"', o.team[1].lastName === 'Hilto');
+					unit.expect('o.team[2].firstName to equal "James"', o.team[2].firstName === 'James');
+					unit.expect('o.team[2].lastName to equal "Wazzabi"', o.team[2].lastName === 'Wazzabi');
+				},
+				customToJSONTest: function () {
+					var o,
+						model = {
+							firstName: binder.makeProperty('Darren'),
+							lastName: binder.makeProperty('Schnare'),
+							skills: binder.makeProperty(['javascript', 'html', 'css', 'ruby']),
+							team: [{
+								firstName: binder.makeProperty('Alex'),
+								lastName: binder.makeProperty('Grendo')
+							}, {
+								firstName: binder.makeProperty('Sam'),
+								lastName: binder.makeProperty('Hilto')
+							}, {
+								firstName: binder.makeProperty('James'),
+								lastName: binder.makeProperty('Wazzabi')
+							}]
+						};
 		
+					model.fullName = binder.makeProperty(function () {
+						return model.firstName + ' ' + model.lastName;
+					});
 		
-					// Convert to simple JavaScript object
-					// excluding properties with dependencies
-					// (i.e. dependent properties).
-					o = binder.toObject(model, true);
+					o = binder.toJSON(model, {
+						exclude: ['fullName'],
+						properties: {
+							skills: function (skill) {
+								return skill.charAt(0).toUpperCase() + skill.substring(1);
+							},
+							team: {
+								exclude: ['firstName', 'lastName'],
+								filter: function (json, original) {
+									json.name = original.firstName + ' ' + original.lastName;
+									return json;
+								}
+							}
+						}
+					});
 		
 					unit.expect('o.firstName to equal "Darren"', o.firstName === 'Darren');
 					unit.expect('o.lastName to equal "Schnare"', o.lastName === 'Schnare');
-					unit.expect('o.fullName to be undefined', o.fullName === undefined);
+					unit.expect('o.fullName to equal undefined', o.fullName === undefined);
 					unit.expect('o.skills to be an Array', binder.utiljs.isArray(o.skills));
-					unit.expect('o.skills to equal [javascript, html, css, ruby]', o.skills.join(',') === 'javascript,html,css,ruby');
+					unit.expect('o.skills to equal [Javascript, Html, Css, Ruby]', o.skills.join(',') === 'Javascript,Html,Css,Ruby');
+					unit.expect('o.team to be an Array', binder.utiljs.isArray(o.team));
+					unit.expect('o.team[0].name to equal "Alex Grendo"', o.team[0].name === 'Alex Grendo');
+					unit.expect('o.team[0].firstName to equal undefined', o.team[0].firstName === undefined);
+					unit.expect('o.team[0].lastName to equal undefined', o.team[0].lastName === undefined);
+					unit.expect('o.team[1].name to equal "Sam Hilto"', o.team[1].name === 'Sam Hilto');
+					unit.expect('o.team[1].firstName to equal undefined', o.team[1].firstName === undefined);
+					unit.expect('o.team[1].lastName to equal undefined', o.team[1].lastName === undefined);
+					unit.expect('o.team[2].name to equal "James Wazzabi"', o.team[2].name === 'James Wazzabi');
+					unit.expect('o.team[2].firstName to equal undefined', o.team[2].firstName === undefined);
+					unit.expect('o.team[2].lastName to equal undefined', o.team[2].lastName === undefined);
+				}
+			};
+		
+		}(BINDER, UNIT)),
+		fromJSONSuite = (function (binder, unit) {
+			/*global 'BINDER', 'UNIT'*/
+		
+			return {
+				simpleFromJSONTest: function () {
+					var model,
+						o = {
+							firstName: 'Darren',
+							lastName: 'Schnare',
+							skills: ['javascript', 'html', 'css', 'ruby'],
+							team: [{
+								firstName: 'Alex',
+								lastName: 'Grendo'
+							}, {
+								firstName: 'Sam',
+								lastName: 'Hilto'
+							}, {
+								firstName: 'James',
+								lastName: 'Wazzabi'
+							}]
+						};
+		
+					model = binder.fromJSON(o);
+		
+					unit.expect('model.firstName to be a function', typeof model.firstName === 'function');
+					unit.expect('model.firstName() to equal "Darren"', model.firstName() === 'Darren');
+					unit.expect('model.lastName to be a function', typeof model.lastName === 'function');
+					unit.expect('model.lastName() to equal "Schnare"', model.lastName() === 'Schnare');
+					unit.expect('model.skills to be a function', typeof model.skills === 'function');
+					unit.expect('model.skills() to be an Array', binder.utiljs.isArray(model.skills()));
+					unit.expect('model.skills() to equal [javascript, html, css, ruby]', model.skills().join(',') === 'javascript,html,css,ruby');
+					unit.expect('model.team to be a function', typeof model.team === 'function');
+					unit.expect('model.team() to be an Array', binder.utiljs.isArray(model.team()));
+					unit.expect('model.team()[0].firstName() to equal "Alex"', model.team()[0].firstName() === 'Alex');
+					unit.expect('model.team()[0].lastName() to equal "Grendo"', model.team()[0].lastName() === 'Grendo');
+					unit.expect('model.team()[1].firstName() to equal "Sam"', model.team()[1].firstName() === 'Sam');
+					unit.expect('model.team()[1].lastName() to equal "Hilto"', model.team()[1].lastName() === 'Hilto');
+					unit.expect('model.team()[2].firstName() to equal "James"', model.team()[2].firstName() === 'James');
+					unit.expect('model.team()[2].lastName() to equal "Wazzabi"', model.team()[2].lastName() === 'Wazzabi');
+				},
+				customFromJSONTest: function () {
+					var model,
+						o = {
+							firstName: 'Darren',
+							lastName: 'Schnare',
+							skills: ['javascript', 'html', 'css', 'ruby'],
+							team: [{
+								firstName: 'Alex',
+								lastName: 'Grendo'
+							}, {
+								firstName: 'Sam',
+								lastName: 'Hilto'
+							}, {
+								firstName: 'James',
+								lastName: 'Wazzabi'
+							}]
+						};
+		
+					model = binder.fromJSON(o, {
+						filter: function (model, json) {
+							model.fullName = binder.makeProperty(function () {
+								return model.firstName + ' ' + model.lastName;
+							});
+							return model;
+						},
+						properties: {
+							skills: function (model, json) {
+								return json.charAt(0).toUpperCase() + json.substring(1);
+							},
+							team: {
+								exclude: ['firstName', 'lastName'],
+								filter: function (model, json) {
+									model.name = binder.makeProperty(json.firstName + ' ' + json.lastName);
+									return model;
+								}
+							}
+						}
+					});
+		
+					unit.expect('model.firstName to be a function', typeof model.firstName === 'function');
+					unit.expect('model.firstName() to equal "Darren"', model.firstName() === 'Darren');
+					unit.expect('model.lastName to be a function', typeof model.lastName === 'function');
+					unit.expect('model.lastName() to equal "Schnare"', model.lastName() === 'Schnare');
+					unit.expect('model.fullName() to equal "Darren Schnare"', model.fullName() === 'Darren Schnare');
+					unit.expect('model.skills to be a function', typeof model.skills === 'function');
+					unit.expect('model.skills() to be an Array', binder.utiljs.isArray(model.skills()));
+					unit.expect('model.skills() to equal [Javascript, Html, Css, Ruby]', model.skills().join(',') === 'Javascript,Html,Css,Ruby');
+					unit.expect('model.team to be a function', typeof model.team === 'function');
+					unit.expect('model.team() to be an Array', binder.utiljs.isArray(model.team()));
+					unit.expect('model.team()[0].name() to equal "Alex Grendo"', model.team()[0].name() === 'Alex Grendo');
+					unit.expect('model.team()[0].firstName to equal undefined', model.team()[0].firstName === undefined);
+					unit.expect('model.team()[0].lastName to equal undefined', model.team()[0].lastName === undefined);
+					unit.expect('model.team()[1].name() to equal "Sam Hilto"', model.team()[1].name() === 'Sam Hilto');
+					unit.expect('model.team()[1].firstName to equal undefined', model.team()[1].firstName === undefined);
+					unit.expect('model.team()[1].lastName to equal undefined', model.team()[1].lastName === undefined);
+					unit.expect('model.team()[2].name() to equal "James Wazzabi"', model.team()[2].name() === 'James Wazzabi');
+					unit.expect('model.team()[2].firstName to equal undefined', model.team()[2].firstName === undefined);
+					unit.expect('model.team()[2].lastName to equal undefined', model.team()[2].lastName === undefined);
 				}
 			};
 		
@@ -2522,5 +2683,6 @@ Repo: https://github.com/dschnare/binderjs
 		'ObservableList Test Suite', observableListSuite,
 		'Property Test Suite', propertySuite,
 		'Binding Test Suite', bindingSuite,
-		'toObject Test Suite', toObjectSuite).run();
+		'toJSON Test Suite', toJSONSuite,
+		'fromJSON Test Suite', fromJSONSuite).run();
 }(BINDER, UNIT));

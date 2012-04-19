@@ -11,48 +11,8 @@ var BINDER = (function (util) {
                 makeObservableList = {{makeObservableList}},
                 makeProperty = {{makeProperty}},
                 makeBinding = {{makeBinding}},
-                toObject = function (o, excludeDependentProperties) {
-                    var i,
-                        len,
-                        key,
-                        value,
-                        js = {},
-                        isObject = util.isObject,
-                        isArray = util.isArray,
-                        adheresTo = util.adheresTo,
-                        propertyInterface = makeProperty.interfce;
-
-                    if (isArray(o)) {
-                        len = o.length;
-                        js = [];
-
-                        for (i = 0; i < len; i += 1) {
-                            js.push(toObject(o[i]));
-                        }
-
-                        return js;
-                    }
-
-                    if (!isObject(o)) {
-                        return o;
-                    }
-
-                    for (key in o) {
-                        if (o[key] !== undefined) {
-                            value = o[key];
-
-                            if (adheresTo(value, propertyInterface)) {
-                                if (!(value.isDependent() && excludeDependentProperties)) {
-                                    js[key] = toObject(value.get());
-                                }
-                            } else {
-                                js[key] = value;
-                            }
-                        }
-                    }
-
-                    return js;
-                };
+                toJSON = {{toJSON}},
+                fromJSON = {{fromJSON}};
 
             return {
                 utiljs: util,
@@ -61,7 +21,8 @@ var BINDER = (function (util) {
                 makeObservableList: makeObservableList,
                 makeProperty: makeProperty,
                 makeBinding: makeBinding,
-                toObject: toObject
+                toJSON: toJSON,
+                fromJSON: fromJSON
             };
         };
 

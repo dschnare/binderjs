@@ -6,7 +6,8 @@
 		observableListSuite = {{observableList}},
 		propertySuite = {{property}},
 		bindingSuite = {{binding}},
-		toObjectSuite = {{toObject}};
+		toJSONSuite = {{toJSON}},
+		fromJSONSuite = {{fromJSON}};
 
 	unit.makeTestHarness('Binderjs Test Harness',
 		'Observable Test Suite', observableSuite,
@@ -14,5 +15,6 @@
 		'ObservableList Test Suite', observableListSuite,
 		'Property Test Suite', propertySuite,
 		'Binding Test Suite', bindingSuite,
-		'toObject Test Suite', toObjectSuite).run();
+		'toJSON Test Suite', toJSONSuite,
+		'fromJSON Test Suite', fromJSONSuite).run();
 }(BINDER, UNIT));

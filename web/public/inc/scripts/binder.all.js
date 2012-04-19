@@ -1569,46 +1569,236 @@ var BINDER = (function () {
         
             return makeBinding;
         }(util, makeProperty)),
-        toObject = function (o, excludeDependentProperties) {
-            var i,
-                len,
-                key,
-                value,
-                js = {},
-                isObject = util.isObject,
-                isArray = util.isArray,
-                adheresTo = util.adheresTo,
-                propertyInterface = makeProperty.interfce;
-
-            if (isArray(o)) {
-                len = o.length;
-                js = [];
-
-                for (i = 0; i < len; i += 1) {
-                    js.push(toObject(o[i]));
+        toJSON = (function (util, makeProperty, makeList) {
+        	/*global 'util', 'makeProperty', 'makeList'*/
+        
+        	/*toJSON(model, {
+                include: []
+                exclude: []
+                filter
+                properties: {
+                    property: fn that will be called with the value
+                            of a property and return a new value,
+                            or a nested options object
                 }
-
-                return js;
-            }
-
-            if (!isObject(o)) {
-                return o;
-            }
-
-            for (key in o) {
-                value = o[key];
-
-                if (adheresTo(value, propertyInterface)) {
-                    if (!(value.isDependent() && excludeDependentProperties)) {
-                        js[key] = toObject(value.get());
+            });*/
+        
+        	var toJSON = function (o, options) {
+        			var i,
+        				len,
+        				key,
+        				value,
+        				json,
+        				opt,
+        				empty = {},
+        				isObject = util.isObject,
+        				isArray = util.isArray,
+        				adheresTo = util.adheresTo,
+        				propertyInterface = makeProperty.interfce,
+        				passthru = function (v) {
+        					return v;
+        				},
+        				include,
+        				exclude,
+        				filter;
+        
+        			options = options || empty;
+        
+        			if (typeof options === 'function') {
+        				filter = options;
+        			} else {
+        				filter = options.filter;
+        				filter = typeof filter === 'function' ? filter : passthru;
+        			}
+        
+        			if (isArray(o)) {
+        				json = [];
+        				len = o.length;
+        
+        				for (i = 0; i < len; i += 1) {
+        					json.push(toJSON(o[i], options));
+        				}
+        			} else if (isObject(o)) {
+        				json = {};
+        				include = makeList(options.include || []);
+        				exclude = makeList(options.exclude || []);
+        
+        				for (key in o) {
+        					if (o[key] !== undefined) {
+        						if (include.contains(key) || !exclude.contains(key)) {
+        							value = o[key];
+        							opt = options.properties ? options.properties[key] : empty;
+        
+        							if (adheresTo(value, propertyInterface)) {
+        								json[key] = toJSON(value.get(), opt);
+        							} else {
+        								json[key] = toJSON(value, opt);
+        							}
+        						}
+        					}
+        				}
+        
+        				json = filter(json, o);
+        			} else {
+        				json = filter(o, o);
+        			}
+        
+        			return json;
+        		};
+        
+        	return toJSON;
+        }(util, makeProperty, makeList)),
+        fromJSON = (function (util, makeProperty, makeList) {
+        	/*global 'util', 'makeProperty', 'makeList'*/
+        	/*jslint continue: true*/
+        
+        	/*fromJSON(data, {
+                include: []
+                exclude: []
+                copy: [],
+                filter(value): fn that will be called with the value
+                            created before returning from fromJSON().
+                            Must return the same value or a new value.
+                properties: {
+                    property: {
+                        create(value): fn that returns an object
+                        that will be used to create a binder property.
+                        // All other properties are supported.
                     }
-                } else {
-                    js[key] = value;
                 }
-            }
-
-            return js;
-        },
+            });*/
+        
+        	var fromJSON = function (json, options, target) {
+        			var isArray = util.isArray,
+        				isNil = util.isNil,
+        				isObject = util.isObject,
+        				adheresTo = util.adheresTo,
+        				propertyInterface = makeProperty.interfce,
+        				empty = {},
+        				include,
+        				exclude,
+        				copy,
+        				filter,
+        				create,
+        				passthru = function (v) {
+        					return v;
+        				},
+        				opt,
+        				key,
+        				value,
+        				i,
+        				len,
+        				array,
+        				model,
+        				property;
+        
+        			options = options || empty;
+        
+        			if (typeof options === 'function') {
+        				filter = options;
+        			} else {
+        				filter = options.filter;
+        				filter = typeof filter === 'function' ? filter : passthru;
+        			}
+        
+        			if (isArray(json)) {
+        				model = makeList();
+        				len = json.length;
+        
+        				for (i = 0; i < len; i += 1) {
+        					model.push(fromJSON(json[i], options));
+        				}
+        
+        				if (target) {
+        					if (adheresTo(target, makeList.interfce)) {
+        						target.merge(model);
+        					} else if (isArray(target)) {
+        						target.push.apply(target, model);
+        					} else {
+        						throw new Error('Expected target to be an Array.');
+        					}
+        				}
+        			} else if (isObject(json)) {
+        				model = {};
+        				include = makeList(options.include || []);
+        				exclude = makeList(options.exclude || []);
+        				copy = makeList(options.copy || []);
+        
+        				for (key in json) {
+        					if (json[key] !== undefined && typeof json[key] !== 'function') {
+        						opt = options.properties ? options.properties[key] : empty;
+        						value = json[key];
+        						create = opt ? opt.create : passthru;
+        						create = typeof create === 'function' ? create : passthru;
+        
+        						if (value !== undefined &&
+        								(include.contains(key) || !exclude.contains(key))) {
+        
+        							if (copy.contains(key)) {
+        								if (target) {
+        									if (adheresTo(target[key], propertyInterface)) {
+        										target[key](fromJSON(value, opt));
+        									} else {
+        										target[key] = fromJSON(value, opt);
+        									}
+        								} else {
+        									model[key] = fromJSON(value, opt);
+        								}
+        							} else if (isArray(value)) {
+        								if (target) {
+        									if (adheresTo(target[key], propertyInterface)) {
+        										target[key](fromJSON(value, opt));
+        									} else if (isArray(target[key])) {
+        										fromJSON(value, opt, target[key]);
+        									} else {
+        										property = makeProperty(create(fromJSON(value, opt), target));
+        										target[key] = property;
+        										property.owner = target;
+        									}
+        								} else {
+        									property = makeProperty(create(fromJSON(value, opt), model));
+        									property.owner = model;
+        									model[key] = property;
+        								}
+        							} else if (isObject(value)) {
+        								if (target) {
+        									if (adheresTo(target[key], propertyInterface)) {
+        										target[key](fromJSON(value, opt));
+        									} else {
+        										target[key] = fromJSON(value, opt);
+        									}
+        								} else {
+        									model[key] = fromJSON(value, opt);
+        								}
+        							} else {
+        								if (target) {
+        									if (adheresTo(target[key], propertyInterface)) {
+        										target[key](fromJSON(value, opt));
+        									} else {
+        										property = makeProperty(create(fromJSON(value, opt), target));
+        										target[key] = property;
+        										property.owner = target;
+        									}
+        								} else {
+        									property = makeProperty(create(fromJSON(value, opt), model));
+        									property.owner = model;
+        									model[key] = property;
+        								}
+        							}
+        						}
+        					}
+        				}
+        
+        				model = filter(model, json);
+        			} else {
+        				model = filter(json, json);
+        			}
+        
+        			return target || model;
+        		};
+        
+        	return fromJSON;
+        }(util, makeProperty, makeList)),
         module = {
             utiljs: util,
             makeList: makeList,
@@ -1616,7 +1806,8 @@ var BINDER = (function () {
             makeObservableList: makeObservableList,
             makeProperty: makeProperty,
             makeBinding: makeBinding,
-            toObject: toObject
+            toJSON: toJSON,
+            fromJSON: fromJSON
         };
 
     // Asynchronous modules (AMD) supported.
