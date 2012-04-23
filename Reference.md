@@ -530,6 +530,7 @@ Properties work best when the value is not a `function`.
 	owner - The object the property belongs to. Defaults to undefined.
 
 *Note About Context*
+
  All properties behave like any other JavaScript funtion in that they derive their context based on how they are called. However, when a property is called without an explicit context, the owner of the property will be used. For example (note that is a contrived example):
 
  	var model = {
@@ -564,7 +565,7 @@ Properties work best when the value is not a `function`.
  	nameProperty.clearMemo();
  	nameProperty.get(); // Returns 'Apple'
 
-**makeProperty.get()**
+**binder.makeProperty.get()**
 
 A convenience method that will retrieve the value of the specified property if it is a binderjs property, otherwise returns property.
 
@@ -572,6 +573,8 @@ A convenience method that will retrieve the value of the specified property if i
 
 	property - A binderjs property or any other value.
 	return - If property is a binderjs property then the value of the property, otherwise property.
+
+---
 
 **property()**
 
