@@ -515,6 +515,9 @@ Properties work best when the value is not a `function`.
 
 	makeProperty(value)
 	makeProperty(get)
+	makeProperty(get, owner)
+	makeProperty(get, set)
+	makeProperty(get, set, owner)
 	makeProperty({value, [equals, changed]})
 	makeProperty({get, [set, equals, changed, lazy, owner]})
 
@@ -525,6 +528,41 @@ Properties work best when the value is not a `function`.
 	changed - The changed operator. Defautlts to using strict inequality.
 	lazy - Flag indicating that dependencies shouldn't be tracked until first access. Defaults to false.
 	owner - The object the property belongs to. Defaults to undefined.
+
+*Note About Context*
+ All properties behave like any other JavaScript funtion in that they derive their context based on how they are called. However, when a property is called without an explicit context, the owner of the property will be used. For example (note that is a contrived example):
+
+ 	var model = {
+ 		type: 'fruit'
+ 	};
+	var nameProperty = BINDER.makeProperty(function () {
+		return this.type === 'fruit' ? 'Apple' : 'Tomatoe';
+	}, model);
+
+ 	var model2 = {
+ 		type: 'vegetable'
+ 	};
+
+ 	model.name = nameProperty;
+ 	model2.name = nameProperty;
+
+ 	// The context for 'name' will be the 'model' object.
+ 	model.name(); // Returns 'Apple'
+
+ 	// The context for 'name' will be the 'model2' object.
+ 	nameProperty.clearMemo(); // Clear the memoized value, otherwise will always return 'Apple'.
+ 	model2.name(); // Returns 'Tomatoe'
+
+ 	// In JavaScript the context would typically be inferred to be the 'window' object.
+ 	// However, instead of inferring 'window' BINDER uses the value of the property's
+ 	// 'owner' property, which in this case is the 'model' object.
+ 	nameProperty.clearMemo();
+ 	nameProperty(); // Returns 'Apple'
+ 	// These statements are equivalent the one above.
+ 	nameProperty.clearMemo();
+ 	nameProperty.call(nameProperty.owner); // Returns 'Apple'
+ 	nameProperty.clearMemo();
+ 	nameProperty.get(); // Returns 'Apple'
 
 **makeProperty.get()**
 

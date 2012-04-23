@@ -1244,7 +1244,7 @@ var BINDER = (function () {
                 }
             };
         
-            makeProperty = function (options) {
+            makeProperty = function (options, set, owner) {
                 var writing = false,
                     dependencies = makeList(),
                     subscriptions = [],
@@ -1366,9 +1366,15 @@ var BINDER = (function () {
         
                     self.owner = undefined;
         
-                    // Just a getter function.
+                    // Just a getter function, with optional setter and or owner.
+                    // (getter)
+                    // (getter, owner)
+                    // (getter, setter)
+                    // (getter, setter, owner)
                     if (typeof options === 'function') {
                         getter = options;
+                        setter = typeof set === 'function' ? set : null;
+                        self.owner = typeof set === 'function' ? owner : set;
                     // {get, [set, lazy, changed, equals, owner]}
                     } else if (isObject(options) && typeof options.get === 'function') {
                         lazy = options.lazy;
