@@ -113,9 +113,11 @@ Creates an observable object that can be observed for changes.
 Subscribes to the changes of an observable. When the callback or `onNotify` function are called the observable sending the notification will be passed as an argument. If an observer object does not have an `onNotify` method then the observer object will not subscribe to the observerable.
 
 	subscribe(fn)
+	subscribe(fn, thisObj)
 	subscribe(observer)
 
 	fn - The callback function to have called when the observable has changed.
+	thisObj - The optional 'this' object to use when calling the subscribed callback.
 	observer - An object with a onNotify() function.
 	return - A subscription object with a dispose() function.
 
