@@ -923,7 +923,7 @@ var BINDER = (function () {
         
                         if (observer) {
                             if (typeof observer === 'function') {
-                                observer(self);
+                                observer.call(observer.thisObj, self);
                             } else if (typeof observer.onNotify === 'function') {
                                 observer.onNotify(self);
                             }
@@ -943,8 +943,9 @@ var BINDER = (function () {
                             unblock: function () {
                                 blockStack.pop();
                             },
-                            subscribe: function (observer) {
+                            subscribe: function (observer, thisObj) {
                                 if (observer && !observers.contains(observer)) {
+                                    observer.thisObj = thisObj || undefined;
                                     observers.push(observer);
         
                                     return {
