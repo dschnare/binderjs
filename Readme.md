@@ -59,7 +59,7 @@ Binderjs is am object-oriented property-binding API. See the [reference](https:/
 
 	// Sometime later in our code ...
 
-	// Just be setting these properties we cause the fullName
+	// Just by setting these properties we cause the fullName
 	// property to be notified of their changes then this change
 	// is relayed to our observer on fullName. The DOM will be
 	// udated each time either of these properties change.
