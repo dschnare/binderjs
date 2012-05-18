@@ -1,71 +1,68 @@
-(function (util, makeProperty) {
-    'use strict';
-    /*global 'util', 'makeProperty'*/
+			makeBinding = (function () {
+				var makeBinding = function (source, sink, type) {
+					var propertyInterface = makeProperty["interfce"],
+						subscriptions = [],
+						subscription;
 
-    var makeBinding = function (source, sink, type) {
-        var propertyInterface = makeProperty.interfce,
-            subscriptions = [],
-            subscription;
+					type = type || 'twoway';
+					type = util.str(type);
+					type = type.toLowerCase();
 
-        type = type || 'twoway';
-        type = util.str(type);
-        type = type.toLowerCase();
+					if (!util.adheresTo(source, propertyInterface)) {
+						throw new Error('Binding source must be an observable property. ' + source);
+					}
+					if (!util.adheresTo(sink, propertyInterface)) {
+						throw new Error('Binding sink must be an observable property. ' + sink);
+					}
 
-        if (!util.adheresTo(source, propertyInterface)) {
-            throw new Error('Binding source must be an observable property. ' + source);
-        }
-        if (!util.adheresTo(sink, propertyInterface)) {
-            throw new Error('Binding sink must be an observable property. ' + sink);
-        }
+					sink["set"](source["get"]());
 
-        sink.set(source.get());
+					switch (type) {
+					case 'oneway':
+						subscription = source["subscribe"](function () {
+							sink["set"](source["get"]());
+						});
+						subscriptions.push(subscription);
+						break;
+					case 'twoway':
+						subscription = source["subscribe"](function () {
+							sink["set"](source["get"]());
+						});
+						subscriptions.push(subscription);
 
-        switch (type) {
-        case 'oneway':
-            subscription = source.subscribe(function () {
-                sink.set(source.get());
-            });
-            subscriptions.push(subscription);
-            break;
-        case 'twoway':
-            subscription = source.subscribe(function () {
-                sink.set(source.get());
-            });
-            subscriptions.push(subscription);
+						subscription = sink["subscribe"](function () {
+							source["set"](sink["get"]());
+						});
+						subscriptions.push(subscription);
+						break;
+					}
 
-            subscription = sink.subscribe(function () {
-                source.set(sink.get());
-            });
-            subscriptions.push(subscription);
-            break;
-        }
+					subscription = null;
 
-        subscription = null;
+					return {
+						"type": function () {
+							return type;
+						},
+						"source": function () {
+							return source;
+						},
+						"sink": function () {
+							return sink;
+						},
+						"dispose": function () {
+							while (subscriptions.length) {
+								subscriptions.pop()["dispose"]();
+							}
+						}
+					};
+				};
 
-        return {
-            type: function () {
-                return type;
-            },
-            source: function () {
-                return source;
-            },
-            sink: function () {
-                return sink;
-            },
-            dispose: function () {
-                while (subscriptions.length) {
-                    subscriptions.pop().dispose();
-                }
-            }
-        };
-    };
+				makeBinding["interfce"] = {
+					"type": 'function',
+					"source": 'function',
+					"sink": 'function',
+					"dispose": 'function'
+				};
 
-    makeBinding.interfce = {
-        type: 'function',
-        source: 'function',
-        sink: 'function',
-        dispose: 'function'
-    };
-
-    return makeBinding;
-}(util, makeProperty));
+				return makeBinding;
+			}()),
