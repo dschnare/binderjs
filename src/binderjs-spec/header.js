@@ -1,0 +1,2 @@
+(function (binder) {
+	'use strict';

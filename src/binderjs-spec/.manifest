@@ -1,0 +1,14 @@
+=files=
+{manifest_path}/header.js
+{manifest_path}/binding.js
+{manifest_path}/fromJSON.js
+{manifest_path}/toJSON.js
+{manifest_path}/property.js
+{manifest_path}/observable.js
+{manifest_path}/list.js
+{manifest_path}/observableList.js
+
+=compiler options=
+--compilation_level ADVANCED_OPTIMIZATIONS
+--externs {manifest_path}/qunit.externs.js
+--externs src/binderjs/externs.js
