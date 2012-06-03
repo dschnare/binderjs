@@ -22,7 +22,7 @@
 				stack.addDependency = function (property) {
 					if (this.length) {
 						if (!strictDependencies || this["peek"]()["owner"] === property["owner"]) {
-							this["peek"]().dependencies()["add"](property);
+							this["peek"]()["dependencies"]()["add"](property);
 						}
 					}
 				};
