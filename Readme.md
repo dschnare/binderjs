@@ -122,8 +122,6 @@ Browsers will be added to the list as testing ensues:
 
 # Products
 
-Inside the `web/public/inc/scripts` directory you will find the following files:
-
 **src/xport** - The xport module that exports a function used to export symbols for the Closure Compiler (< 1Kb when compiled).
 
 - build/xport.js
