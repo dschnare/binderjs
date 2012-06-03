@@ -1935,7 +1935,7 @@
 		};
 	}
 
-	xport.module(['util'], module, function () {
+	xport.module(['utiljs'], module, function () {
 		xport('BINDER', module(UTIL));
 	});
 }());
