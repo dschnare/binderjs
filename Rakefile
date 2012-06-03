@@ -11,7 +11,7 @@ Paths = {
 	:src => 'src',
 	:tools => 'tools',
 	:build => 'build',
-	:web_inc_scripts => File.join('web', 'public', 'inc', 'scripts')
+	:web_inc_scripts => File.join('web', 'inc', 'scripts')
 }
 
 Tools = {
