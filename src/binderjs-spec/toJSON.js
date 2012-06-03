@@ -1,3 +1,5 @@
+	module('To JSON Tests');
+
 	test('simple toJSON test', function () {
 		var o,
 			model = {

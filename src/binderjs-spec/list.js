@@ -1,834 +1,960 @@
-(function (binder, unit) {
-	'use strict';
+	module('List Tests');
 
-	/*global 'BINDER', 'UNIT'*/
+	function setupListTest() {
+		return binder.makeList(1, 2, 3, 1);
+	}
+	function destroyListTest(list) {
+		list.clear();
+	}
 
-	return {
-		setupTest: function () {
-			this.list = binder.makeList(1, 2, 3, 1);
-		},
-		destroyTest: function () {
-			this.list.clear();
-			delete this.list;
-		},
-		adherenceTest: function () {
-			unit.expect('the list to be a native Array', Object.prototype.toString.call(this.list) === '[object Array]');
-		},
-		// EcmaScript 5 API
-		indexOfTest: function () {
-			unit.expect('list to have an indexOf() method', typeof this.list.indexOf === 'function');
-			unit.expect('index of 2 to be 1', this.list.indexOf(2) === 1);
-			unit.expect('index of 1 to be 0', this.list.indexOf(1) === 0);
-			unit.expect('index of 1 from index 1 to be 3', this.list.indexOf(1, 1) === 3);
-			unit.expect('index of 10 to be less than zero', this.list.indexOf(10) < 0);
-		},
-		lastIndexOfTest: function () {
-			unit.expect('list to have an lastIndexOf() method', typeof this.list.lastIndexOf === 'function');
-			unit.expect('last index of 2 to be 1', this.list.lastIndexOf(2) === 1);
-			unit.expect('last index of 1 to be 3', this.list.lastIndexOf(1) === 3);
-			unit.expect('last index of 1 from index 1 to be 0', this.list.lastIndexOf(1, 1) === 0);
-			unit.expect('last index of 10 to be less than zero', this.list.lastIndexOf(10) < 0);
-		},
-		reverseTest: function () {
-			unit.expect('list to have an reverse() method', typeof this.list.reverse === 'function');
-			var l = this.list.reverse();
-			unit.expect('"list.reverse()" to return the same list', l === this.list);
-			unit.expect('the list to be in reverse order', this.list.join(', ') === '1, 3, 2, 1');
-		},
-		mapTest: function () {
-			unit.expect('list to have an map() method', typeof this.list.map === 'function');
+	test('adherence test', function () {
+		var list = setupListTest();
 
-			var self = this,
-				o = {},
-				l = this.list.map(function (item, index, array) {
-					this.pass = array === self.list;
-					return index;
-				}, o);
+		ok(Object.prototype.toString.call(list), '[object Array]', 'Expect the list to be a native Array');
 
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-			unit.expect('the callback to be called with the correct scope and passed a reference to the list', o.pass);
-			unit.expect('"list.map()" to return a new list', l !== this.list);
-			unit.expect('the new list to be [0, 1, 2, 3]', l.join(', ') === '0, 1, 2, 3');
+		destroyListTest(list);
+	});
 
+	test('indexOf test', function () {
+		var list = setupListTest();
 
-			l = this.list.map(function (item, index, array) {
-				if (index === 0) {
-					self.list.push(4);
-				}
+		ok(typeof list.indexOf === 'function', 'Expect list to have an indexOf() method');
+		strictEqual(list.indexOf(2), 1, 'Expect index of 2 to be 1');
+		strictEqual(list.indexOf(1), 0, 'Expect index of 1 to be 0');
+		strictEqual(list.indexOf(1, 1), 3, 'Expect index of 1 from index 1 to be 3');
+		ok(list.indexOf(10) < 0, 'Expect index of 10 to be less than zero');
+
+		destroyListTest(list);
+	});
+
+	test('lastIndexOf test', function () {
+		var list = setupListTest();
+
+		ok(typeof list.lastIndexOf === 'function', 'Expect list to have an lastIndexOf() method');
+		strictEqual(list.lastIndexOf(2), 1, 'Expect last index of 2 to be 1');
+		strictEqual(list.lastIndexOf(1), 3, 'Expect last index of 1 to be 3');
+		strictEqual(list.lastIndexOf(1, 1), 0, 'Expect last index of 1 from index 1 to be 0');
+		ok(list.lastIndexOf(10) < 0, 'Expect last index of 10 to be less than zero');
+
+		destroyListTest(list);
+	});
+
+	test('reverse test', function () {
+		var list = setupListTest();
+
+		ok(typeof list.reverse === 'function', 'Expect list to have a reverse() method');
+		var l = list.reverse();
+		strictEqual(l, list, 'Expect "list.reverse()" to return the same list');
+		strictEqual(list.join(', '), '1, 3, 2, 1', 'Expect the list to be in reverse order');
+
+		destroyListTest(list);
+	});
+
+	test('map test', function () {
+		var list = setupListTest();
+
+		ok(typeof list.map === 'function', 'Expect list to have an map() method');
+
+		var o = {},
+			l = list.map(function (item, index, array) {
+				this.pass = array === list;
 				return index;
-			});
+			}, o);
 
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1, 4');
-			unit.expect('the new list to be [0, 1, 2, 3]', l.join(', ') === '0, 1, 2, 3');
-
-
-			l = this.list.map(function (item, index, array) {
-				if (index === 0) {
-					self.list.splice(4, 1);
-				}
-				if (index === 4) {
-					unit.fail('Did not expect the callback to be called with index 4');
-				}
-				return index;
-			});
-
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-			unit.expect('the new list to be [0, 1, 2, 3, ]', l.join(', ') === '0, 1, 2, 3, ');
-		},
-		filterTest: function () {
-			unit.expect('list to have an filter() method', typeof this.list.filter === 'function');
-
-			var self = this,
-				o = {},
-				l = this.list.filter(function (item, index, array) {
-					this.pass = array === self.list;
-					return item > 1;
-				}, o);
-
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-			unit.expect('the callback to be called with the correct scope and passed a reference to the list', o.pass);
-			unit.expect('"list.filter()" to return a new list', l !== this.list);
-			unit.expect('the new list to be [2, 3]', l.join(', ') === '2, 3');
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+		ok(o.pass, 'Expect the callback to be called with the correct scope and passed a reference to the list');
+		notStrictEqual(l, list, 'Do not expect "list.map()" to return a new list');
+		strictEqual(l.join(', '), '0, 1, 2, 3', 'Expect the new list to be [0, 1, 2, 3]');
 
 
-			l = this.list.filter(function (item, index, array) {
-				if (index === 0) {
-					self.list.push(4);
-				}
+		l = list.map(function (item, index, array) {
+			if (index === 0) {
+				list.push(4);
+			}
+			return index;
+		});
+
+		strictEqual(list.join(', '), '1, 2, 3, 1, 4', 'Expect the list to be unmodified');
+		strictEqual(l.join(', '), '0, 1, 2, 3', 'Expect the new list to be [0, 1, 2, 3]');
+
+
+		l = list.map(function (item, index, array) {
+			if (index === 0) {
+				list.splice(4, 1);
+			}
+			notStrictEqual(index, 4, 'Did not expect the callback to be called with index 4');
+			return index;
+		});
+
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+		strictEqual(l.join(', '), '0, 1, 2, 3, ', 'Expect the new list to be [0, 1, 2, 3, ]');
+
+		destroyListTest(list);
+	});
+
+	test('filter test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.filter, 'function', 'list to have an filter() method');
+
+		var o = {},
+			l = list.filter(function (item, index, array) {
+				this.pass = array === list;
 				return item > 1;
-			});
-
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1, 4');
-			unit.expect('the new list to be [2, 3]', l.join(', ') === '2, 3');
-
-
-			l = this.list.filter(function (item, index, array) {
-				if (index === 0) {
-					self.list.splice(4, 1);
-				}
-				return item > 1;
-			});
-
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-			unit.expect('the new list to be [2, 3]', l.join(', ') === '2, 3');
-		},
-		forEachTest: function () {
-			unit.expect('list to have an forEach() method', typeof this.list.forEach === 'function');
-
-			var self = this,
-				o = {},
-				l = [];
-
-			this.list.forEach(function (item, index, array) {
-				this.pass = array === self.list;
-				l[index] = item;
 			}, o);
 
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-			unit.expect('the callback to be called with the correct scope and passed a reference to the list', o.pass);
-			unit.expect('the new array to be [1, 2, 3, 1]', l.join(', ') === '1, 2, 3, 1');
-		},
-		reduceTest: function () {
-			unit.expect('list to have an reduce() method', typeof this.list.reduce === 'function');
-
-			var self = this,
-				total = this.list.reduce(function (total, item, index, array) {
-					return total + item;
-				}, 0);
-
-			unit.expect('total to be 7', total === 7);
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+		ok(o.pass, 'Expect the callback to be called with the correct scope and passed a reference to the list');
+		notStrictEqual(l, list, 'Do not expect "list.filter()" to return a new list');
+		strictEqual(l.join(', '), '2, 3', 'Expect the new list to be [2, 3]');
 
 
-			this.list[0] = 0;
-			total = this.list.reduce(function (total, item, index, array) {
+		l = list.filter(function (item, index, array) {
+			if (index === 0) {
+				list.push(4);
+			}
+			return item > 1;
+		});
+
+		strictEqual(list.join(', '), '1, 2, 3, 1, 4', 'Expect the list to be unmodified');
+		strictEqual(l.join(', '), '2, 3', 'Expect the new list to be [2, 3]');
+
+
+		l = list.filter(function (item, index, array) {
+			if (index === 0) {
+				list.splice(4, 1);
+			}
+			return item > 1;
+		});
+
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+		strictEqual(l.join(', '), '2, 3', 'Expect the new list to be [2, 3]');
+
+		destroyListTest(list);
+	});
+
+	test('forEach test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.forEach, 'function', 'Expect list to have an forEach() method');
+
+		var o = {},
+			l = [];
+
+		list.forEach(function (item, index, array) {
+			this.pass = array === list;
+			l[index] = item;
+		}, o);
+
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+		ok(o.pass, 'Expect the callback to be called with the correct scope and passed a reference to the list');
+		strictEqual(l.join(', '), '1, 2, 3, 1', 'Expect the new array to be [1, 2, 3, 1]');
+
+		destroyListTest(list);
+	});
+
+	test('reduce test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.reduce, 'function', 'Expect list to have an reduce() method');
+
+		var total = list.reduce(function (total, item, index, array) {
 				return total + item;
-			});
+			}, 0);
 
-			unit.expect('total to be 6', total === 6);
+		strictEqual(total, 7, 'Expect total to be 7');
 
 
-			delete this.list[0];
-			total = this.list.reduce(function (total, item, index, array) {
-				if (index === 2) {
-					self.list.splice(3, 1);
-				}
+		list[0] = 0;
+		total = list.reduce(function (total, item, index, array) {
+			return total + item;
+		});
+
+		strictEqual(total, 6, 'Expect total to be 6');
+
+
+		delete list[0];
+		total = list.reduce(function (total, item, index, array) {
+			if (index === 2) {
+				list.splice(3, 1);
+			}
+			return total + item;
+		});
+
+		strictEqual(total, 5, 'Expect total to be 5');
+
+
+		list[2] = undefined;
+		total = list.reduce(function (total, item, index, array) {
+			if (item === undefined) {
+				return total;
+			}
+			return total + item;
+		});
+
+		strictEqual(total, 2, 'Expect total to be 2');
+
+		destroyListTest(list);
+	});
+
+	test('reduceRight test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.reduceRight, 'function', 'Expect list to have an reduceRight() method');
+
+		var total = list.reduceRight(function (total, item, index, array) {
 				return total + item;
-			});
+			}, 0);
 
-			unit.expect('total to be 5', total === 5);
-
-
-			this.list[2] = undefined;
-			total = this.list.reduce(function (total, item, index, array) {
-				if (item === undefined) {
-					return total;
-				}
-				return total + item;
-			});
-
-			unit.expect('total to be 2', total === 2);
-		},
-		reduceRightTest: function () {
-			unit.expect('list to have an reduceRight() method', typeof this.list.reduceRight === 'function');
-
-			var self = this,
-				total = this.list.reduceRight(function (total, item, index, array) {
-					return total + item;
-				}, 0);
-
-			unit.expect('total to be 7', total === 7);
+		strictEqual(total, 7, 'Expect total to be 7');
 
 
-			this.list[0] = 0;
-			total = this.list.reduceRight(function (total, item, index, array) {
-				return total + item;
-			});
+		list[0] = 0;
+		total = list.reduceRight(function (total, item, index, array) {
+			return total + item;
+		});
 
-			unit.expect('total to be 6', total === 6);
+		strictEqual(total, 6, 'Expect total to be 6');
 
+		delete list[0];
+		total = list.reduceRight(function (total, item, index, array) {
+			if (index === 2) {
+				list.splice(1, 1);
+			}
+			return total + item;
+		});
 
-			delete this.list[0];
-			total = this.list.reduceRight(function (total, item, index, array) {
-				if (index === 2) {
-					self.list.splice(1, 1);
-				}
-				return total + item;
-			});
-
-			unit.expect('total to be 7', total === 7);
-
-
-			this.list[1] = undefined;
-			total = this.list.reduceRight(function (total, item, index, array) {
-				if (item === undefined) {
-					return total;
-				}
-				return total + item;
-			});
-
-			unit.expect('total to be 1', total === 1);
-		},
-		someTest: function () {
-			unit.expect('list to have an some() method', typeof this.list.some === 'function');
-
-			var o = {},
-				self = this,
-				value = this.list.some(function (item, index, array) {
-					this.pass = array === self.list;
-					return item === 2;
-				}, o);
+		strictEqual(total, 7, 'Expect total to be 7');
 
 
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-			unit.expect('the callback to be called with the correct scope and passed a reference to the list', o.pass);
-			unit.expect('"value" to be true', value);
+		list[1] = undefined;
+		total = list.reduceRight(function (total, item, index, array) {
+			if (item === undefined) {
+				return total;
+			}
+			return total + item;
+		});
 
+		strictEqual(total, 1, 'Expect total to be 1');
 
-			value = this.list.some(function (item, index, array) {
-				return false;
-			});
+		destroyListTest(list);
+	});
 
-			unit.expect('"value" to be false', !value);
+	test('some test', function () {
+		var list = setupListTest();
 
+		strictEqual(typeof list.some, 'function', 'Expect list to have an some() method');
 
-			value = this.list.some(function (item, index, array) {
-				if (index === 1) {
-					self.list.splice(3, 1);
-				}
-				if (index === 3) {
-					unit.fail('Did not expect index 3 to be visited');
-				}
-				return false;
-			});
-
-			unit.expect('"value" to be false', !value);
-		},
-		everyTest: function () {
-			unit.expect('list to have an every() method', typeof this.list.every === 'function');
-
-			var o = {},
-				self = this,
-				value = this.list.every(function (item, index, array) {
-					this.pass = array === self.list;
-					return item === 2;
-				}, o);
-
-
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-			unit.expect('the callback to be called with the correct scope and passed a reference to the list', o.pass);
-			unit.expect('"value" to be false', !value);
-
-
-			delete this.list[0];
-			value = this.list.every(function (item, index, array) {
-				if (index === 0) {
-					unit.fail('Did not expect index 0 to be visited');
-				}
-				return true;
-			});
-
-			unit.expect('"value" to be true', value);
-
-
-			value = this.list.every(function (item, index, array) {
-				if (index === 1) {
-					self.list.splice(3, 1);
-				}
-				if (index === 3) {
-					unit.fail('Did not expect index 3 to be visited');
-				}
-				return true;
-			});
-
-			unit.expect('"value" to be true', value);
-		},
-
-		// Custom Functionality.
-		containsTest: function () {
-			unit.expect('list to have an contains() method', typeof this.list.contains === 'function');
-
-			unit.expect('list to contain 1', this.list.contains(1));
-			unit.expect('list to contain 3', this.list.contains(3));
-			unit.dontExpect('list to contain 30', this.list.contains(30));
-
-
-			this.list.clear();
-			unit.dontExpect('list to contain 3', this.list.contains(3));
-		},
-		occurancesTest: function () {
-			unit.expect('list to have an occurances() method', typeof this.list.occurances === 'function');
-
-			unit.expect('list to contain 2 occurances of 1', this.list.occurances(1) === 2);
-			unit.expect('list to contain 1 occurances of 2', this.list.occurances(2) === 1);
-			unit.expect('list to contain 2 occurances of 3', this.list.occurances(3) === 1);
-			unit.expect('list to contain 0 occurances of 14', this.list.occurances(14) === 0);
-
-
-			this.list.pop();
-			unit.expect('list to contain 1 occurances of 1', this.list.occurances(1) === 1);
-		},
-		distinctTest: function () {
-			unit.expect('list to have an distinct() method', typeof this.list.distinct === 'function');
-
-			var l = this.list.distinct();
-
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-			unit.expect('the returned array to be [2, 3]', l.join(', ') === '2, 3');
-		},
-		firstTest: function () {
-			unit.expect('list to have an first() method', typeof this.list.first === 'function');
-
-			var o = {},
-				self = this,
-				value = this.list.first(function (item, index, array) {
-					this.pass = array === self.list;
-					if (index > 0) {
-						unit.fail('Did not expect indices above 0 to be visited');
-					}
-					return item === 1;
-				}, o);
-
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-			unit.expect('the callback to be called with the correct scope and passed a reference to the list', o.pass);
-			unit.expect('"value" to be equal to 1', value === 1);
-
-
-			value = this.list.first(function (item, index, array) {
-				return item === 31;
+		var o = {},
+			value = list.some(function (item, index, array) {
+				this.pass = array === list;
+				return item === 2;
 			}, o);
 
-			unit.expect('"value" to be equal to undefined', value === undefined);
-		},
-		lastTest: function () {
-			unit.expect('list to have an last() method', typeof this.list.last === 'function');
 
-			var o = {},
-				self = this,
-				value = this.list.last(function (item, index, array) {
-					this.pass = array === self.list;
-					if (index < self.list.length - 1) {
-						unit.fail('Did not expect indices below the last index to be visited');
-					}
-					return item === 1;
-				}, o);
-
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-			unit.expect('the callback to be called with the correct scope and passed a reference to the list', o.pass);
-			unit.expect('"value" to be equal to 1', value === 1);
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+		ok(o.pass, 'Expect the callback to be called with the correct scope and passed a reference to the list');
+		ok(value, 'Expect "value" to be true');
 
 
-			value = this.list.last(function (item, index, array) {
-				return item === 31;
+		value = list.some(function (item, index, array) {
+			return false;
+		});
+
+		ok(!value, 'Expect "value" to be false');
+
+
+		value = list.some(function (item, index, array) {
+			if (index === 1) {
+				list.splice(3, 1);
+			}
+			if (index === 3) {
+				notStrictEqual(index, 3, 'Did not expect index 3 to be visited');
+			}
+			return false;
+		});
+
+		ok(!value, 'Expect "value" to be false');
+
+		destroyListTest(list);
+	});
+
+	test('every test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.every, 'function', 'Expect list to have an every() method');
+
+		var o = {},
+			value = list.every(function (item, index, array) {
+				this.pass = array === list;
+				return item === 2;
 			}, o);
 
-			unit.expect('"value" to be equal to undefined', value === undefined);
-		},
-		findTest: function () {
-			unit.expect('list to have an find() method', typeof this.list.find === 'function');
 
-			var o = {},
-				self = this,
-				value = this.list.find(function (item, index, array) {
-					this.pass = array === self.list;
-					if (index > 0) {
-						unit.fail('Did not expect indices above 0 to be visited');
-					}
-					return item === 1;
-				}, o);
-
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-			unit.expect('the callback to be called with the correct scope and passed a reference to the list', o.pass);
-			unit.expect('"value" to have index 0', value.index === 0);
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+		ok(o.pass, 'Expect the callback to be called with the correct scope and passed a reference to the list');
+		ok(!value, 'Expect "value" to be false');
 
 
-			value = this.list.find(function (item, index, array) {
-				return item === 31;
+		delete list[0];
+		value = list.every(function (item, index, array) {
+			if (index === 0) {
+				notStrictEqual(index, 0, 'Did not expect index 0 to be visited');
+			}
+			return true;
+		});
+
+		ok(value, 'Expect "value" to be true');
+
+
+		value = list.every(function (item, index, array) {
+			if (index === 1) {
+				list.splice(3, 1);
+			}
+			if (index === 3) {
+				notStrictEqual(index, 3, 'Did not expect index 3 to be visited');
+			}
+			return true;
+		});
+
+		ok(value, 'Expect "value" to be true');
+
+		destroyListTest(list);
+	});
+
+	// Custom Functionality.
+
+	test('contains test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.contains, 'function', 'Expect list to have an contains() method');
+
+		ok(list.contains(1), 'Expect list to contain 1');
+		ok(list.contains(3), 'Expect list to contain 3');
+		ok(!list.contains(30), 'Expect list not to contain 30');
+
+
+		list.clear();
+		ok(!list.contains(3), 'Expect list not to contain 3');
+
+		destroyListTest(list);
+	});
+
+	test('occurances test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.occurances, 'function', 'Expect list to have an occurances() method');
+
+		strictEqual(list.occurances(1), 2, 'Expect list to contain 2 occurances of 1');
+		strictEqual(list.occurances(2), 1, 'Expect list to contain 1 occurances of 2');
+		strictEqual(list.occurances(3), 1, 'Expect list to contain 2 occurances of 3');
+		strictEqual(list.occurances(14), 0, 'Expect list to contain 0 occurances of 14');
+
+
+		list.pop();
+		strictEqual(list.occurances(1), 1, 'Expect list to contain 1 occurances of 1');
+
+		destroyListTest(list);
+	});
+
+	test('distinct test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.distinct, 'function', 'Expect list to have an distinct() method');
+
+		var l = list.distinct();
+
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+		strictEqual(l.join(', '), '2, 3', 'Expect the returned array to be [2, 3]');
+
+		destroyListTest(list);
+	});
+
+	test('first test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.first, 'function', 'Expect list to have an first() method');
+
+		var o = {},
+			value = list.first(function (item, index, array) {
+				this.pass = array === list;
+				ok(index <= 0, 'Expect only the first index to be visited');
+				return item === 1;
 			}, o);
 
-			unit.expect('"value" to have a negative index', value.index < 0);
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+		ok(o.pass, 'Expect the callback to be called with the correct scope and passed a reference to the list');
+		strictEqual(value, 1, 'Expect "value" to be equal to 1');
 
 
-			delete this.list[0];
-			value = this.list.find(function (item, index, array) {
-				if (index === 0) {
-					unit.fail('Did not expect index 0 to be visited');
+		value = list.first(function (item, index, array) {
+			return item === 31;
+		}, o);
+
+		strictEqual(value, undefined, 'Expect "value" to be equal to undefined');
+
+		destroyListTest(list);
+	});
+
+	test('last test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.last, 'function', 'Expect list to have an last() method');
+
+		var o = {},
+			value = list.last(function (item, index, array) {
+				this.pass = array === list;
+				ok(index === list.length - 1, 'Expect only the last index to be visited');
+				return item === 1;
+			}, o);
+
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+		ok(o.pass, 'Expect the callback to be called with the correct scope and passed a reference to the list');
+		strictEqual(value, 1, 'Expect "value" to be equal to 1');
+
+
+		value = list.last(function (item, index, array) {
+			return item === 31;
+		}, o);
+
+		strictEqual(value, undefined, 'Expect "value" to be equal to undefined');
+
+		destroyListTest(list);
+	});
+
+	test('find tets', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.find, 'function', 'Expect list to have an find() method');
+
+		var o = {},
+			value = list.find(function (item, index, array) {
+				this.pass = array === list;
+				if (index > 0) {
+					notStrictEqual(index, 0, 'Did not expect indices above 0 to be visited');
 				}
 				return item === 1;
 			}, o);
 
-			unit.expect('"value" to have index 3', value.index === 3);
-		},
-		equalsTest: function () {
-			unit.expect('list to have an equals() method', typeof this.list.equals === 'function');
-
-			var b = [1, 2, 3, 1];
-
-			unit.expect('the list to be equal to second list', this.list.equals(b));
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+		ok(o.pass, 'Expect the callback to be called with the correct scope and passed a reference to the list');
+		strictEqual(value.index, 0, 'Expect "value" to have index 0');
 
 
-			b.pop();
+		value = list.find(function (item, index, array) {
+			return item === 31;
+		}, o);
 
-			unit.dontExpect('the list to be equal to second list', this.list.equals(b));
-
-
-			b.push(1);
-
-			unit.expect('the list to be equal to second list', this.list.equals(b));
+		ok(value.index < 0, 'Expect "value" to have a negative index');
 
 
-			this.list.getItemOperators = function () {
-				return {
-					equals: function (a, b) {
-						return false;
-					},
-					changed: function (a, b) {
-						return a !== b;
-					}
-				};
+		delete list[0];
+		value = list.find(function (item, index, array) {
+			if (index === 0) {
+				notStrictEqual(index, 0, 'Did not expect index 0 to be visited');
+			}
+			return item === 1;
+		}, o);
+
+		strictEqual(value.index, 3, 'Expect "value" to have index 3');
+
+		destroyListTest(list);
+	});
+
+	test('equals test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.equals, 'function', 'Expect list to have an equals() method');
+
+		var b = [1, 2, 3, 1];
+
+		ok(list.equals(b), 'Expect the list to be equal to second list');
+
+
+		b.pop();
+
+		ok(!list.equals(b), 'Expect the list to not equal the second list');
+
+
+		b.push(1);
+
+		ok(list.equals(b), 'Expect the list to be equal to second list');
+
+
+		list.getItemOperators = function () {
+			return {
+				equals: function (a, b) {
+					return false;
+				},
+				changed: function (a, b) {
+					return a !== b;
+				}
 			};
+		};
 
-			unit.dontExpect('the list to be equal to second list', this.list.equals(b));
-		},
-		changedTest: function () {
-			unit.expect('list to have an changed() method', typeof this.list.changed === 'function');
+		ok(!list.equals(b), 'Expect the list to not equal the second list');
 
-			var b = [1, 2, 3, 1];
+		destroyListTest(list);
+	});
 
-			unit.dontExpect('the list to be different than the second list', this.list.changed(b));
+	test('changed test', function () {
+		var list = setupListTest();
 
+		strictEqual(typeof list.changed, 'function', 'Expect list to have an changed() method');
 
-			b.pop();
+		var b = [1, 2, 3, 1];
 
-			unit.expect('the list to be different than the second list', this.list.changed(b));
-
-
-			b.push(1);
-
-			unit.dontExpect('the list to be different than the second list', this.list.changed(b));
+		ok(!list.changed(b), 'Expect the list to be the same as the second list');
 
 
-			this.list.getItemOperators = function () {
-				return {
-					equals: function (a, b) {
-						return false;
-					},
-					changed: function (a, b) {
-						return true;
-					}
-				};
+		b.pop();
+
+		ok(list.changed(b), 'Expect the list to be different than the second list');
+
+
+		b.push(1);
+
+		ok(!list.changed(b), 'Expect the list to be the same as the second list');
+
+
+		list.getItemOperators = function () {
+			return {
+				equals: function (a, b) {
+					return false;
+				},
+				changed: function (a, b) {
+					return true;
+				}
 			};
+		};
 
-			unit.expect('the list to be different than the second list', this.list.changed(b));
-		},
-		compareTest: function () {
-			unit.expect('list to have an compare() method', typeof this.list.compare === 'function');
+		ok(list.changed(b), 'Expect the list to be different than the second list');
 
-			var l = [1, 2, 3, 1],
-				comparison = this.list.compare(l);
-
-			unit.expect('this list to not be the same list as the comparison result', this.list !== comparison);
-			unit.expect('the comparison result to have a length of 4', comparison.length === 4);
+		destroyListTest(list);
+	});
 
 
-			comparison = binder.makeList(comparison);
+	test('compare test', function () {
+		var list = setupListTest();
 
-			unit.expect('all comparison objects to have a status of "retained"', comparison.every(function (item) {
-				return item.status === 'retained';
-			}));
+		strictEqual(typeof list.compare, 'function', 'Expect list to have an compare() method');
 
+		var l = [1, 2, 3, 1],
+			comparison = list.compare(l);
 
-			l = [2, 3, 1];
-			comparison = binder.makeList(this.list.compare(l));
-
-			unit.expect('comparison object at index 0 to have a status of "retained"', comparison[0].status === 'retained');
-			unit.expect('comparison object at index 1 to have a status of "retained"', comparison[1].status === 'retained');
-			unit.expect('comparison object at index 2 to have a status of "retained"', comparison[2].status === 'retained');
-			unit.expect('comparison object at index 3 to have a status of "deleted"', comparison[3].status === 'deleted');
+		notStrictEqual(list, comparison, 'Expect this list to not be the same list as the comparison result');
+		strictEqual(comparison.length, 4, 'Expect the comparison result to have a length of 4');
 
 
-			l = [2, 4];
-			comparison = binder.makeList(this.list.compare(l));
+		comparison = binder.makeList(comparison);
 
-			unit.expect('comparison object at index 0 to have a status of "deleted"', comparison[0].status === 'deleted');
-			unit.expect('comparison object at index 1 to have a status of "retained"', comparison[1].status === 'retained');
-			unit.expect('comparison object at index 2 to have a status of "deleted"', comparison[2].status === 'deleted');
-			unit.expect('comparison object at index 3 to have a status of "deleted"', comparison[3].status === 'deleted');
-			unit.expect('comparison object at index 3 to have a status of "added"', comparison[4].status === 'added');
-			unit.expect('comparison object at index 3 to have an otherIndex equal to 1', comparison[4].otherIndex === 1);
+		ok(comparison.every(function (item) {
+			return item.status === 'retained';
+		}), 'Expect all comparison objects to have a status of "retained"');
 
 
-			this.list = binder.makeList(
-				{
-					id: 0,
-					type: 'fruit'
+		l = [2, 3, 1];
+		comparison = binder.makeList(list.compare(l));
+
+		strictEqual(comparison[0].status, 'retained', 'Expect comparison object at index 0 to have a status of "retained"');
+		strictEqual(comparison[1].status, 'retained', 'Expect comparison object at index 1 to have a status of "retained"');
+		strictEqual(comparison[2].status, 'retained', 'Expect comparison object at index 2 to have a status of "retained"');
+		strictEqual(comparison[3].status, 'deleted', 'Expect comparison object at index 3 to have a status of "deleted"');
+
+
+		l = [2, 4];
+		comparison = binder.makeList(list.compare(l));
+
+		strictEqual(comparison[0].status, 'deleted', 'Expected comparison object at index 0 to have a status of "deleted"');
+		strictEqual(comparison[1].status, 'retained', 'Expected comparison object at index 1 to have a status of "retained"');
+		strictEqual(comparison[2].status, 'deleted', 'Expected comparison object at index 2 to have a status of "deleted"');
+		strictEqual(comparison[3].status, 'deleted', 'Expected comparison object at index 3 to have a status of "deleted"');
+		strictEqual(comparison[4].status, 'added', 'Expected comparison object at index 3 to have a status of "added"');
+		strictEqual(comparison[4].otherIndex, 1, 'Expected comparison object at index 3 to have an otherIndex equal to 1');
+
+
+		list = binder.makeList(
+			{
+				id: 0,
+				type: 'fruit'
+			},
+			{
+				id: 1,
+				type: 'vegetable'
+			},
+			{
+				id: 2,
+				type: 'grains'
+			}
+		);
+
+		list.getItemOperators = function () {
+			return {
+				equals: function (a, b) {
+					return a.id === b.id;
 				},
-				{
-					id: 1,
-					type: 'vegetable'
-				},
-				{
-					id: 2,
-					type: 'grains'
+				changed: function (a, b) {
+					return a.type !== b.type;
 				}
-			);
-
-			this.list.getItemOperators = function () {
-				return {
-					equals: function (a, b) {
-						return a.id === b.id;
-					},
-					changed: function (a, b) {
-						return a.type !== b.type;
-					}
-				};
 			};
+		};
 
-			l = [
-				{
-					id: 0,
-					type: 'fruit'
-				},
-				{
-					id: 1,
-					type: 'Vegetable'
-				},
-				{
-					id: 3,
-					type: 'meat'
+		l = [
+			{
+				id: 0,
+				type: 'fruit'
+			},
+			{
+				id: 1,
+				type: 'Vegetable'
+			},
+			{
+				id: 3,
+				type: 'meat'
+			}
+		];
+
+		comparison = list.compare(l);
+
+		strictEqual(comparison[0].status, 'retained', 'Expect comparison object at index 0 to have a status of "retained"');
+		strictEqual(comparison[1].status, 'changed', 'Expect comparison object at index 1 to have a status of "changed"');
+		strictEqual(comparison[2].status, 'deleted', 'Expect comparison object at index 2 to have a status of "deleted"');
+		strictEqual(comparison[3].status, 'added', 'Expect comparison object at index 3 to have a status of "added"');
+
+		destroyListTest(list);
+	});
+
+	test('merge test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.merge, 'function', 'Expect list to have an merge() method');
+
+		var a = [1, 2, 3, 1],
+			l = list.merge(a);
+
+		notStrictEqual(list, l, 'Expect the merged list to not be the same list as the "list"');
+		strictEqual(l.join(', '), '1, 2, 3, 1', 'Expect the merged list to contain [1, 2, 3, 1]');
+
+
+		a = [2, 3];
+		l = list.merge(a);
+
+		strictEqual(l.join(', '), '2, 3', 'Expect the merged list to contain [2, 3]');
+
+
+		list = binder.makeList(
+			{
+				id: 0,
+				type: 'fruit',
+				toString: function () {
+					return this.type;
 				}
-			];
-
-			comparison = this.list.compare(l);
-
-			unit.expect('comparison object at index 0 to have a status of "retained"', comparison[0].status === 'retained');
-			unit.expect('comparison object at index 1 to have a status of "changed"', comparison[1].status === 'changed');
-			unit.expect('comparison object at index 2 to have a status of "deleted"', comparison[2].status === 'deleted');
-			unit.expect('comparison object at index 3 to have a status of "added"', comparison[3].status === 'added');
-		},
-		mergeTest: function () {
-			unit.expect('list to have an merge() method', typeof this.list.merge === 'function');
-
-			var a = [1, 2, 3, 1],
-				l = this.list.merge(a);
-
-			unit.expect('the merged list to not be the same list as the "this.list"', this.list !== l);
-			unit.expect('the merged list to contain [1, 2, 3, 1]', l.join(', ') === '1, 2, 3, 1');
-
-
-			a = [2, 3];
-			l = this.list.merge(a);
-
-			unit.expect('the merged list to contain [2, 3]', l.join(', ') === '2, 3');
-
-
-			this.list = binder.makeList(
-				{
-					id: 0,
-					type: 'fruit',
-					toString: function () {
-						return this.type;
-					}
-				},
-				{
-					id: 1,
-					type: 'vegetable',
-					toString: function () {
-						return this.type;
-					}
-				},
-				{
-					id: 2,
-					type: 'grains',
-					toString: function () {
-						return this.type;
-					}
+			},
+			{
+				id: 1,
+				type: 'vegetable',
+				toString: function () {
+					return this.type;
 				}
-			);
+			},
+			{
+				id: 2,
+				type: 'grains',
+				toString: function () {
+					return this.type;
+				}
+			}
+		);
 
-			this.list.getItemOperators = function () {
-				return {
-					equals: function (a, b) {
-						return a.id === b.id;
-					},
-					changed: function (a, b) {
-						return a.type !== b.type;
-					}
-				};
+		list.getItemOperators = function () {
+			return {
+				equals: function (a, b) {
+					return a.id === b.id;
+				},
+				changed: function (a, b) {
+					return a.type !== b.type;
+				}
 			};
+		};
 
-			a = [
-				{
-					id: 0,
-					type: 'fruit',
-					toString: function () {
-						return this.type;
-					}
-				},
-				{
-					id: 1,
-					type: 'Vegetable',
-					toString: function () {
-						return this.type;
-					}
-				},
-				{
-					id: 3,
-					type: 'meat',
-					toString: function () {
-						return this.type;
-					}
+		a = [
+			{
+				id: 0,
+				type: 'fruit',
+				toString: function () {
+					return this.type;
 				}
-			];
-
-			l = this.list.merge(a);
-
-			unit.expect('the merged list to contains [friuit, Vegetable, meat]', l.join(', ') === 'fruit, Vegetable, meat');
-		},
-		mergeWithTest: function () {
-			unit.expect('list to have an merveWith() method', typeof this.list.mergeWith === 'function');
-
-			var a = [1, 2, 3, 1],
-				l = this.list.mergeWith(a);
-
-			unit.expect('the result of merging to be undefined', l === undefined);
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
-
-
-			a = [2, 3];
-			this.list.mergeWith(a);
-
-			unit.expect('the list to contain [2, 3]', this.list.join(', ') === '2, 3');
-
-
-			this.list = binder.makeList(
-				{
-					id: 0,
-					type: 'fruit',
-					toString: function () {
-						return this.type;
-					}
-				},
-				{
-					id: 1,
-					type: 'vegetable',
-					toString: function () {
-						return this.type;
-					}
-				},
-				{
-					id: 2,
-					type: 'grains',
-					toString: function () {
-						return this.type;
-					}
+			},
+			{
+				id: 1,
+				type: 'Vegetable',
+				toString: function () {
+					return this.type;
 				}
-			);
+			},
+			{
+				id: 3,
+				type: 'meat',
+				toString: function () {
+					return this.type;
+				}
+			}
+		];
 
-			this.list.getItemOperators = function () {
-				return {
-					equals: function (a, b) {
-						return a.id === b.id;
-					},
-					changed: function (a, b) {
-						return a.type !== b.type;
-					}
-				};
+		l = list.merge(a);
+
+		strictEqual(l.join(', '), 'fruit, Vegetable, meat', 'Expect the merged list to contains [friuit, Vegetable, meat]');
+
+		destroyListTest(list);
+	});
+
+	test('mergeWith test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.mergeWith, 'function', 'Expect list to have an merveWith() method');
+
+		var a = [1, 2, 3, 1],
+			l = list.mergeWith(a);
+
+		strictEqual(l, undefined, 'Expect the result of merging to be undefined');
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
+
+
+		a = [2, 3];
+		list.mergeWith(a);
+
+		strictEqual(list.join(', '), '2, 3', 'Expect the list to contain [2, 3]');
+
+
+		list = binder.makeList(
+			{
+				id: 0,
+				type: 'fruit',
+				toString: function () {
+					return this.type;
+				}
+			},
+			{
+				id: 1,
+				type: 'vegetable',
+				toString: function () {
+					return this.type;
+				}
+			},
+			{
+				id: 2,
+				type: 'grains',
+				toString: function () {
+					return this.type;
+				}
+			}
+		);
+
+		list.getItemOperators = function () {
+			return {
+				equals: function (a, b) {
+					return a.id === b.id;
+				},
+				changed: function (a, b) {
+					return a.type !== b.type;
+				}
 			};
+		};
 
-			a = [
-				{
-					id: 0,
-					type: 'fruit',
-					toString: function () {
-						return this.type;
-					}
-				},
-				{
-					id: 1,
-					type: 'Vegetable',
-					toString: function () {
-						return this.type;
-					}
-				},
-				{
-					id: 3,
-					type: 'meat',
-					toString: function () {
-						return this.type;
-					}
+		a = [
+			{
+				id: 0,
+				type: 'fruit',
+				toString: function () {
+					return this.type;
 				}
-			];
+			},
+			{
+				id: 1,
+				type: 'Vegetable',
+				toString: function () {
+					return this.type;
+				}
+			},
+			{
+				id: 3,
+				type: 'meat',
+				toString: function () {
+					return this.type;
+				}
+			}
+		];
 
-			this.list.mergeWith(a);
+		list.mergeWith(a);
 
-			unit.expect('the list to contains [friuit, Vegetable, meat]', this.list.join(', ') === 'fruit, Vegetable, meat');
-		},
-		removeTest: function () {
-			unit.expect('list to have an remove() method', typeof this.list.remove === 'function');
+		strictEqual(list.join(', '), 'fruit, Vegetable, meat', 'Expect the list to contains [friuit, Vegetable, meat]');
 
-			this.list.remove(1);
+		destroyListTest(list);
+	});
 
-			unit.expect('the list to contain [2, 3]', this.list.join(', ') === '2, 3');
+	test('remove test', function () {
+		var list = setupListTest();
 
+		strictEqual(typeof list.remove, 'function', 'Expect list to have an remove() method');
 
-			this.list.remove(2, 3);
+		list.remove(1);
 
-			unit.expect('the list to be empty', this.list.join(', ') === '');
-		},
-		removeAtTest: function () {
-			unit.expect('list to have an removeAt() method', typeof this.list.removeAt === 'function');
-
-			unit.expect('the item that was removed to be equal to 0', this.list.removeAt(0) === 1);
-			unit.expect('the list to contain [2, 3, 1]', this.list.join(', ') === '2, 3, 1');
-
-
-			unit.expect('the item that was removed to be equal to 0', this.list.removeAt(1) === 3);
-			unit.expect('the list to contain [2, 1]', this.list.join(', ') === '2, 1');
-
-
-			unit.expect('the item that was removed to be equal to undefined', this.list.removeAt(20) === undefined);
-			unit.expect('the list to contain [2, 1]', this.list.join(', ') === '2, 1');
-		},
-		clearTest: function () {
-			unit.expect('list to have an clear() method', typeof this.list.clear === 'function');
-
-			this.list.clear();
-
-			unit.expect('list to have length 0', this.list.length === 0);
-			unit.expect('list to contain nothing', this.list.join(', ') === '');
-		},
-		collapseTest: function () {
-			unit.expect('list to have an collapse() method', typeof this.list.collapse === 'function');
-
-			this.list.collapse();
-
-			unit.expect('the list to be unmodified', this.list.join(', ') === '1, 2, 3, 1');
+		strictEqual(list.join(', '), '2, 3', 'Expect the list to contain [2, 3]');
 
 
-			delete this.list[0];
-			this.list[1] = undefined;
-			this.list.collapse();
+		list.remove(2, 3);
 
-			unit.expect('the list to contain [3, 1]', this.list.join(', ') === '3, 1');
-		},
-		replaceAtTest: function () {
-			unit.expect('list to have an replaceAt() method', typeof this.list.replaceAt === 'function');
+		strictEqual(list.join(', '), '', 'Expect the list to be empty');
 
-			this.list.replaceAt(0, 10);
+		destroyListTest(list);
+	});
 
-			unit.expect('index 0 to hold the value 10', this.list[0] === 10);
-			unit.expect('the list to contain [10, 2, 3, 1]', this.list.join(', ') === '10, 2, 3, 1');
+	test('removeAt test', function () {
+		var list = setupListTest();
 
+		strictEqual(typeof list.removeAt, 'function', 'Expect list to have an removeAt() method');
 
-			delete this.list[3];
-			this.list.replaceAt(3, 20);
-
-			unit.expect('index 3 to hold the value 20', this.list[3] === 20);
-			unit.expect('the list to contain [10, 2, 3, 20]', this.list.join(', ') === '10, 2, 3, 20');
-		},
-		isEmptyTest: function () {
-			unit.expect('list to have an isEmpty() method', typeof this.list.isEmpty === 'function');
-
-			unit.dontExpect('list to be empty', this.list.isEmpty());
+		strictEqual(list.removeAt(0), 1, 'Expect the item that was removed to be equal to 1');
+		strictEqual(list.join(', '), '2, 3, 1', 'Expect the list to contain [2, 3, 1]');
 
 
-			this.list.clear();
-
-			unit.expect('list to be empty', this.list.isEmpty());
-
-			this.list.push(1);
-
-			unit.dontExpect('list to be empty', this.list.isEmpty());
+		strictEqual(list.removeAt(1), 3, 'Expect the item that was removed to be equal to 3');
+		strictEqual(list.join(', '), '2, 1', 'Expect the list to contain [2, 1]');
 
 
-			this.list.pop();
-			this.list.pop();
+		strictEqual(list.removeAt(20), undefined, 'Expect the item that was removed to be equal to undefined');
+		strictEqual(list.join(', '), '2, 1', 'Expect the list to contain [2, 1]');
 
-			unit.expect('list to be empty', this.list.isEmpty());
+		destroyListTest(list);
+	});
 
+	test('clear test', function () {
+		var list = setupListTest();
 
-			this.list.splice(0, 0, 1, 2, 3);
+		strictEqual(typeof list.clear, 'function', 'Expect list to have an clear() method');
 
-			unit.dontExpect('list to be empty', this.list.isEmpty());
-		},
-		peekTest: function () {
-			unit.expect('list to have an peek() method', typeof this.list.peek === 'function');
+		list.clear();
 
-			unit.expect('the last item to be 1', this.list.peek() === 1);
-			unit.dontExpect('the list to be empty', this.list.isEmpty());
+		strictEqual(list.length, 0, 'Expect list to have length 0');
+		strictEqual(list.join(', '), '', 'Expect list to contain nothing');
 
+		destroyListTest(list);
+	});
 
-			this.list.pop();
+	test('collapse test', function () {
+		var list = setupListTest();
 
-			unit.expect('the last item to be 3', this.list.peek() === 3);
-		},
-		insertTest: function () {
-			unit.expect('list to have an insert() method', typeof this.list.insert === 'function');
+		strictEqual(typeof list.collapse, 'function', 'Expect list to have an collapse() method');
 
-			this.list.insert(0, 10);
+		list.collapse();
 
-			unit.expect('the list to contain [10, 1, 2, 3, 1]', this.list.join(', ') === '10, 1, 2, 3, 1');
-
-
-			this.list.insert(1, 20);
-
-			unit.expect('the list to contain [10, 20, 1, 2, 3, 1]', this.list.join(', ') === '10, 20, 1, 2, 3, 1');
+		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
 
 
-			this.list.insert(this.list.length, 30);
+		delete list[0];
+		list[1] = undefined;
+		list.collapse();
 
-			unit.expect('the list to contain [10, 20, 1, 2, 3, 1, 30]', this.list.join(', ') === '10, 20, 1, 2, 3, 1, 30');
+		strictEqual(list.join(', '), '3, 1', 'Expect the list to contain [3, 1]');
+
+		destroyListTest(list);
+	});
+
+	test('replaceAt test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.replaceAt, 'function', 'Expect list to have an replaceAt() method');
+
+		list.replaceAt(0, 10);
+
+		strictEqual(list[0], 10, 'Expect index 0 to hold the value 10');
+		strictEqual(list.join(', '), '10, 2, 3, 1', 'Expect the list to contain [10, 2, 3, 1]');
 
 
-			this.list.insert(40, 0);
+		delete list[3];
+		list.replaceAt(3, 20);
 
-			unit.expect('the list to contain [10, 20, 1, 2, 3, 1, 30, 0]', this.list.join(', ') === '10, 20, 1, 2, 3, 1, 30, 0');
+		strictEqual(list[3], 20, 'Expect index 3 to hold the value 20');
+		strictEqual(list.join(', '), '10, 2, 3, 20', 'Expect the list to contain [10, 2, 3, 20]');
+
+		destroyListTest(list);
+	});
+
+	test('isEmpty test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.isEmpty, 'function', 'Expect list to have an isEmpty() method');
+
+		ok(!list.isEmpty(), 'Expect list to not be empty');
 
 
-			delete this.list[0];
-			this.list.insert(0, 0);
+		list.clear();
 
-			unit.expect('the list to contain [0, 20, 1, 2, 3, 1, 30, 0]', this.list.join(', ') === '0, 20, 1, 2, 3, 1, 30, 0');
-		}
-	};
-}(BINDER, UNIT));
+		ok(list.isEmpty(), 'Expect list to be empty');
+
+		list.push(1);
+
+		ok(!list.isEmpty(), 'Expect list to not be empty');
+
+
+		list.pop();
+		list.pop();
+
+		ok(list.isEmpty(), 'Expect list to be empty');
+
+
+		list.splice(0, 0, 1, 2, 3);
+
+		ok(!list.isEmpty(), 'Expect list to not be empty');
+
+		destroyListTest(list);
+	});
+
+	test('peek test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.peek, 'function', 'Expect list to have an peek() method');
+
+		strictEqual(list.peek(), 1, 'Expect the last item to be 1');
+		ok(!list.isEmpty(), 'Expect the list to not be empty');
+
+
+		list.pop();
+
+		strictEqual(list.peek(), 3, 'Expect the last item to be 3');
+
+		destroyListTest(list);
+	});
+
+	test('insert test', function () {
+		var list = setupListTest();
+
+		strictEqual(typeof list.insert, 'function', 'Expect list to have an insert() method');
+
+		list.insert(0, 10);
+
+		strictEqual(list.join(', '), '10, 1, 2, 3, 1', 'Expect the list to contain [10, 1, 2, 3, 1]');
+
+
+		list.insert(1, 20);
+
+		strictEqual(list.join(', '), '10, 20, 1, 2, 3, 1', 'Expect the list to contain [10, 20, 1, 2, 3, 1]');
+
+
+		list.insert(list.length, 30);
+
+		strictEqual(list.join(', '), '10, 20, 1, 2, 3, 1, 30', 'Expect the list to contain [10, 20, 1, 2, 3, 1, 30]');
+
+
+		list.insert(40, 0);
+
+		strictEqual(list.join(', '), '10, 20, 1, 2, 3, 1, 30, 0', 'Expect the list to contain [10, 20, 1, 2, 3, 1, 30, 0]');
+
+
+		delete list[0];
+		list.insert(0, 0);
+
+		strictEqual(list.join(', '), '0, 20, 1, 2, 3, 1, 30, 0', 'Expect the list to contain [0, 20, 1, 2, 3, 1, 30, 0]');
+
+		destroyListTest(list);
+	});

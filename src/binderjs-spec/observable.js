@@ -1,3 +1,5 @@
+	module('Observable Tests');
+
 	test('adherence test', function () {
 		var ob = binder.makeObservable();
 
@@ -135,8 +137,7 @@
 			notified = false,
 			fn = function () {
 				notified = true;
-			},
-			promise = unit.util.promise.create();
+			};
 
 		ob.subscribe(fn);
 		ob.throttle(500);

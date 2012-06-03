@@ -1,3 +1,4 @@
+	module('Property Tests');
 
 	function testArrayProperty(p) {
 		strictEqual(p.toString(), '1,2,3', 'Expect "p.toString()" to be equal to "1,2,3"');
@@ -70,7 +71,6 @@
 		ok(notified, 'Expect the property to be notified when a sparse list is collapsed');
 	}
 
-
 	test('adherence test', function () {
 		var p = binder.makeProperty('value');
 
@@ -128,9 +128,9 @@
 		fullName.dispose();
 		fname.set('Super');
 
-		ok(notified, 'Expect "fullName" to be notified that "fname" has been changed');
-		ok(fullName.isDependent(), 'Expect "fullName" to be dependent');
-		ok(deps.contains(fname) && deps.contains(lname), 'Expect "fullName" to be dependent on "fname" and "lname"');
+		ok(!notified, 'Expect "fullName" not to be notified that "fname" has been changed');
+		ok(!fullName.isDependent(), 'Expect "fullName" not to be dependent');
+		ok(!deps.contains(fname) && !deps.contains(lname), 'Expect "fullName" not to be dependent on "fname" and "lname"');
 		strictEqual(fullName(), 'super Mario', 'Expect "fullName()" to be equal to "super Mario"');
 	});
 
@@ -141,7 +141,7 @@
 				return 'value';
 			});
 
-		ok(computed, 'Expect property to have been called',);
+		ok(computed, 'Expect property to have been called');
 
 
 		computed = false;
@@ -231,7 +231,7 @@
 
 		p('value');
 
-		notStrictEqual(set, false, 'Expect the custom setter to be called');
+		ok(!set, 'Expect the custom setter not to be called');
 
 
 		p('new value');
@@ -239,7 +239,7 @@
 		ok(set, 'Expect the custom setter to be called');
 	});
 
-	tset('custom getter/setter with laziness construction test', function () {
+	test('custom getter/setter with laziness construction test', function () {
 		var get = false,
 			set = false,
 			p = binder.makeProperty({
@@ -262,7 +262,7 @@
 		p('value');
 
 		ok(get, 'Expect the custom getter to be called');
-		notStrictEqual(set, false, 'Expect the custom setter to be called');
+		ok(!set, 'Expect the custom setter not to be called');
 
 
 		p('new value');

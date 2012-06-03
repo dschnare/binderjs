@@ -10,7 +10,8 @@ import 'rake/rakefile-js.rb'
 Paths = {
 	:src => 'src',
 	:tools => 'tools',
-	:build => 'build'
+	:build => 'build',
+	:web_inc_scripts => File.join('web', 'public', 'inc', 'scripts')
 }
 
 Tools = {
@@ -41,3 +42,11 @@ task :default
 
 desc "Runs the clean task in each namespace."
 task :clean
+
+task :deploy do
+	FileList["#{Paths[:build]}/*.js"].each do |filename|
+		FileUtils.cp(filename, Paths[:web_inc_scripts], :preserve => false)
+	end
+end
+
+task :deploy => :default

@@ -1298,7 +1298,6 @@
 
 
 				makeProperty["interfce"] = util.mixin({
-					"owner": '*',
 					"dependencies": 'function',
 					"isDependent": 'function',
 					"clearMemo": 'function',

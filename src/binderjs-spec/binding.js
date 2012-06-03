@@ -65,8 +65,8 @@
 
 		p1('Luigi');
 
-		unit.expect(p1(), 'Luigi', 'Expect p1 to have a value of "Luigi"');
-		unit.expect(p2(), 'Luigi', 'Expect p2 to have a value of "Luigi"');
+		strictEqual(p1(), 'Luigi', 'Expect p1 to have a value of "Luigi"');
+		strictEqual(p2(), 'Luigi', 'Expect p2 to have a value of "Luigi"');
 
 
 		p2('Princess');

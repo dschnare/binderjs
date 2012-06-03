@@ -7,8 +7,9 @@
 {manifest_path}/observable.js
 {manifest_path}/list.js
 {manifest_path}/observableList.js
+{manifest_path}/footer.js
 
 =compiler options=
---compilation_level ADVANCED_OPTIMIZATIONS
+--compilation_level SIMPLE_OPTIMIZATIONS
 --externs {manifest_path}/qunit.externs.js
---externs src/binderjs/externs.js
+--externs src/binder/externs.js

@@ -1,3 +1,5 @@
+	module('From JSON Tests');
+
 	test('simple fromJSON test', function () {
 		var model,
 			o = {
