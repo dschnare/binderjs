@@ -98,7 +98,7 @@ Binderjs is am object-oriented property-binding API. See the [reference](https:/
 
 Ruby Rake is used to build the purejs module. Use `rake -D` to list all the rake tasks. For more indepth details on the build system for the project see my [project template](https://github.com/dschnare/project-template) repo, of which this project is based.
 
-Use `rake deploy` to perform a build and to have all built files copied to 'web/public/inc/scripts'.
+Use `rake deploy` to perform a build and to have all built files copied to 'web/inc/scripts'. The web project is a unit testing project that uses Qunit.
 
 
 # Dependencies
