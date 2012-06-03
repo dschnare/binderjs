@@ -94,12 +94,11 @@ Binderjs is am object-oriented property-binding API. See the [reference](https:/
 	// the effect of completely replacing our list of skills with a new list.
 	person.skills().mergeWith(['saving princess toadstool', 'beating bowser to a pulp', 'plumbing']);
 
-# Build System Requirements
+# Building
 
-- Ruby 1.9.2
-- Rake
-- Java for running jslint
-- Bundler (only if you intend to run the Sinatra web app)
+Ruby Rake is used to build the purejs module. Use `rake -D` to list all the rake tasks. For more indepth details on the build system for the project see my [project template](https://github.com/dschnare/project-template) repo, of which this project is based.
+
+Use `rake deploy` to perform a build and to have all built files copied to 'web/public/inc/scripts'.
 
 
 # Dependencies
@@ -120,37 +119,31 @@ Browsers will be added to the list as testing ensues:
 - Can be loaded as an [AMD](https://github.com/amdjs/amdjs-api/wiki/AMD) module
 - Can be loaded as a [NodeJS](http://nodejs.org/docs/latest/api/modules.html)/[CommonJS](http://wiki.commonjs.org/wiki/Modules/1.1) module
 
-# Organization
-
-The structure of this project follows my [template-javascript](https://github.com/dschnare/template-javascript) project. Rake is used as the build system to compile all JavaScript modules and to test all source files via [jslint](http://www.jslint.com/). To see all the Rake tasks run `rake -D`.
-
-In the `web` directory you will find a simple [Sinatra](http://www.sinatrarb.com/) application that can be used for testing (although it isn't necessary since you can run the index.html page by opening it in your web browser).
-
-
-# Installing
-
-After installing the **Build System Requirements** you can install Sinatra and Foreman by running:
-
-`bundle install`
-
-To run the Sinatra application:
-
-Unix/Linux: `foreman start`
-Windows: `bundle exec ruby -Cweb app.rb -p 5000`
-
-Then point your browser to [localhost:5000](http://localhost:5000/).
-
 
 # Products
 
 Inside the `web/public/inc/scripts` directory you will find the following files:
 
-- util.min.js - Minified source of utiljs
-- binder.js - Full source of the binderjs module
-- binder.min.js - Minified source of the binderjs module
-- binder.all.js - Full source of the binderjs module that has utiljs baked-in
-- binder.all.min.js - Minified source of the binderjs module that has utiljs baked-in
+**src/xport** - The xport module that exports a function used to export symbols for the Closure Compiler (< 1Kb when compiled).
 
-`binder.js/binder.min.js` - Will produce the global object `BINDER` when loaded into a web page. If loaded using a module framework like AMD or CommonJS, then will attempt to require the following dependencies: `utiljs`
+- build/xport.js
+- build/xport.min.js
 
-`binder.all.js/binder.all.min.js` - Will produce the global object `BINDER` when loaded into a web page. If loaded using a module framework like AMD or CommonJS, then will not attempt to require any dependencies.
+**src/util** - The utiljs module that exports the utiljs API. Depends on the xport module.
+
+- build/util.js
+- build/util.min.js
+- build/util-complete.js (contains xport module)
+- build/util-complete.min.js (contains compiled xport module)
+
+**src/binder** - The binderjs module that exports the binderjs API. Depends on the xport and utiljs modules.
+
+- build/binder.js
+- build/binder.min.js
+- build/binder-complete.js (contains xport and utiljs modules)
+- build/binder-complete.min.js (contains compiled xport and utiljs modules)
+
+
+`buid/binder.js and build/binder.min.js` - Will produce the global object `BINDER` when loaded into a web page. If loaded using a module framework like AMD or CommonJS, then will attempt to require the following dependencies: `utiljs`
+
+`build/binder-complete.js and build/binder-complete.min.js` - Will produce the global object `BINDER` when loaded into a web page. If loaded using a module framework like AMD or CommonJS, then will not attempt to require any dependencies.
