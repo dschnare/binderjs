@@ -528,6 +528,12 @@ Example:
 		// Once for "2" being removed and once for the item "3" being moved.
 		// Changes for each item in the list are notified first then any additions
 		// to the list will be notified last.
+
+		// For "2" being removed:
+		// actionArgs: {action: "remove", oldStartingIndex: 1, oldItems: [2]}
+
+		// For "3" being moved:
+		// actionArgs: {action: "move", newStartingIndex: 1, newItems: [3], oldStartingIndex: 2, oldItems: [3]}
 	});
 	list.mergeWith([1, 3]);
 	list.join(','); // list is now [1,3]
