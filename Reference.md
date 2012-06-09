@@ -520,6 +520,18 @@ The actions have the following meaning:
 - move - One or more items were moved within the collection.
 - reset - The content of the collection changed dramatically.
 
+Example:
+
+	var list = BINDER.makeObservableList(1, 2, 3);
+	list.subscribe(function (observer, actionArgs) {
+		// Will receive two notifications (i.e. will be called twice).
+		// Once for "2" being removed and once for the item "3" being moved.
+		// Changes for each item in the list are notified first then any additions
+		// to the list will be notified last.
+	});
+	list.mergeWith([1, 3]);
+	list.join(','); // list is now [1,3]
+
 ---
 
 **binder.makeProperty()**
