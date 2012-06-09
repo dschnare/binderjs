@@ -25,10 +25,10 @@
 		strictEqual(typeof model.lastName, 'function', 'Expect model.lastName to be a function');
 		strictEqual(model.lastName(), 'Schnare', 'Expect model.lastName() to equal "Schnare"');
 		strictEqual(typeof model.skills, 'function', 'Expect model.skills to be a function');
-		ok(binder.utiljs.isArray(model.skills()), 'Expect model.skills() to be an Array');
+		ok(util.isArray(model.skills()), 'Expect model.skills() to be an Array');
 		strictEqual(model.skills().join(','), 'javascript,html,css,ruby', 'Expect model.skills() to equal [javascript, html, css, ruby]');
 		strictEqual(typeof model.team, 'function', 'Expect model.team to be a function');
-		ok(binder.utiljs.isArray(model.team()), 'Expect model.team() to be an Array');
+		ok(util.isArray(model.team()), 'Expect model.team() to be an Array');
 		strictEqual(model.team()[0].firstName(), 'Alex', 'Expect model.team()[0].firstName() to equal "Alex"');
 		strictEqual(model.team()[0].lastName(), 'Grendo', 'Expect model.team()[0].lastName() to equal "Grendo"');
 		strictEqual(model.team()[1].firstName(), 'Sam', 'Expect model.team()[1].firstName() to equal "Sam"');
@@ -82,10 +82,10 @@
 		strictEqual(model.lastName(), 'Schnare', 'Expect model.lastName() to equal "Schnare"');
 		strictEqual(model.fullName(), 'Darren Schnare', 'Expect model.fullName() to equal "Darren Schnare"');
 		strictEqual(typeof model.skills, 'function', 'Expect model.skills to be a function');
-		ok(binder.utiljs.isArray(model.skills()), 'Expect model.skills() to be an Array');
+		ok(util.isArray(model.skills()), 'Expect model.skills() to be an Array');
 		strictEqual(model.skills().join(','), 'Javascript,Html,Css,Ruby', 'Expect model.skills() to equal [Javascript, Html, Css, Ruby]');
 		strictEqual(typeof model.team, 'function', 'Expect model.team to be a function');
-		ok(binder.utiljs.isArray(model.team()), 'Expect model.team() to be an Array');
+		ok(util.isArray(model.team()), 'Expect model.team() to be an Array');
 		strictEqual(model.team()[0].name(), 'Alex Grendo', 'Expect model.team()[0].name() to equal "Alex Grendo"');
 		strictEqual(model.team()[0].firstName, undefined, 'Expect model.team()[0].firstName to equal undefined');
 		strictEqual(model.team()[0].lastName, undefined, 'Expect model.team()[0].lastName to equal undefined');

@@ -1,6 +1,5 @@
 
 		return {
-			"utiljs": util,
 			"makeList": makeList,
 			"makeObservable": makeObservable,
 			"makeObservableList": makeObservableList,

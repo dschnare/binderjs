@@ -27,9 +27,9 @@
 		strictEqual(o.firstName, 'Darren', 'Expect o.firstName to equal "Darren"');
 		strictEqual(o.lastName, 'Schnare', 'Expect o.lastName to equal "Schnare"');
 		strictEqual(o.fullName, 'Darren Schnare', 'Expect o.fullName to equal "Darren Schnare"');
-		ok(binder.utiljs.isArray(o.skills), 'Expect o.skills to be an Array');
+		ok(util.isArray(o.skills), 'Expect o.skills to be an Array');
 		strictEqual(o.skills.join(','), 'javascript,html,css,ruby', 'Expect o.skills to equal [javascript, html, css, ruby]');
-		ok(binder.utiljs.isArray(o.team), 'Expect o.team to be an Array');
+		ok(util.isArray(o.team), 'Expect o.team to be an Array');
 		strictEqual(o.team[0].firstName, 'Alex', 'Expect o.team[0].firstName to equal "Alex"');
 		strictEqual(o.team[0].lastName, 'Grendo', 'Expect o.team[0].lastName to equal "Grendo"');
 		strictEqual(o.team[1].firstName, 'Sam', 'Expect o.team[1].firstName to equal "Sam"');
@@ -79,9 +79,9 @@
 		strictEqual(o.firstName, 'Darren', 'Expect o.firstName to equal "Darren"');
 		strictEqual(o.lastName, 'Schnare', 'Expect o.lastName to equal "Schnare"');
 		strictEqual(o.fullName, undefined, 'Expect o.fullName to equal undefined');
-		ok(binder.utiljs.isArray(o.skills), 'Expect o.skills to be an Array');
+		ok(util.isArray(o.skills), 'Expect o.skills to be an Array');
 		strictEqual(o.skills.join(','), 'Javascript,Html,Css,Ruby', 'Expect o.skills to equal [Javascript, Html, Css, Ruby]');
-		ok(binder.utiljs.isArray(o.team), 'Expect o.team to be an Array');
+		ok(util.isArray(o.team), 'Expect o.team to be an Array');
 		strictEqual(o.team[0].name, 'Alex Grendo', 'Expect o.team[0].name to equal "Alex Grendo"');
 		strictEqual(o.team[0].firstName, undefined, 'Expect o.team[0].firstName to equal undefined');
 		strictEqual(o.team[0].lastName, undefined, 'Expect o.team[0].lastName to equal undefined');

@@ -4,7 +4,7 @@
 		var ob = binder.makeObservable();
 
 		ok(typeof binder.makeObservable.interfce === 'object' && binder.makeObservable.interfce, 'Expect binder.makeObservable to contain the property "interfce"');
-		ok(binder.utiljs.adheresTo(ob, binder.makeObservable.interfce), 'Expect "ob" to adhere to the "binder.makeObservable.interfce" interface');
+		ok(util.adheresTo(ob, binder.makeObservable.interfce), 'Expect "ob" to adhere to the "binder.makeObservable.interfce" interface');
 	});
 
 	test('subscription test', function () {

@@ -735,7 +735,7 @@
 		var a = [1, 2, 3, 1],
 			l = list.mergeWith(a);
 
-		strictEqual(observer.notifiedCount, 1, 'Expect observer to be notified once');
+		strictEqual(observer.notifiedCount, 0, 'Expect observer not to be notified when merging with identical lists');
 		strictEqual(l, undefined, 'Expect the result of merging to be undefined');
 		strictEqual(list.join(', '), '1, 2, 3, 1', 'Expect the list to be unmodified');
 
@@ -744,7 +744,7 @@
 		observer.reset();
 		list.mergeWith(a);
 
-		strictEqual(observer.notifiedCount, 1, 'Expect observer to be notified once');
+		strictEqual(observer.notifiedCount, 4, 'Expect observer to be notified four times');
 		strictEqual(list.join(', '), '2, 3', 'Expect the list to contain [2, 3]');
 
 
@@ -812,7 +812,7 @@
 		list.subscribe(observer);
 		list.mergeWith(a);
 
-		strictEqual(observer.notifiedCount, 1, 'Expect observer to be notified once');
+		strictEqual(observer.notifiedCount, 3, 'Expect observer to be notified three times');
 		strictEqual(list.join(', '), 'fruit, Vegetable, meat', 'Expect the list to contains [friuit, Vegetable, meat]');
 
 		destroyObservableListTest(list);
@@ -827,14 +827,14 @@
 
 		list.remove(1);
 
-		strictEqual(observer.notifiedCount, 1, 'Expect observer to be notified once');
+		strictEqual(observer.notifiedCount, 2, 'Expect observer to be notified twice');
 		strictEqual(list.join(', '), '2, 3', 'Expect the list to contain [2, 3]');
 
 
 		observer.reset();
 		list.remove(2, 3);
 
-		strictEqual(observer.notifiedCount, 1, 'Expect observer to be notified once');
+		strictEqual(observer.notifiedCount, 2, 'Expect observer to be notified twice');
 		strictEqual(list.join(', '), '', 'Expect the list to be empty');
 
 		destroyObservableListTest(list);

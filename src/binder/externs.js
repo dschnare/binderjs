@@ -71,6 +71,18 @@ Observable.prototype.notify = function () {};
 function ObservableList() {}
 
 /**
+ * @extends {ActionArgs}
+ * @constructor
+ */
+function ActionArgs() {}
+ActionArgs.prototype.action;
+ActionArgs.prototype.newStartingIndex;
+ActionArgs.prototype.newItems;
+ActionArgs.prototype.oldStartingIndex;
+ActionArgs.prototype.oldItems;
+
+
+/**
  * @extends {List}
  * @constructor
  */

@@ -7,6 +7,7 @@
 {manifest_path}/observable.js
 {manifest_path}/list.js
 {manifest_path}/observableList.js
+{manifest_path}/observableList-notificationArgs.js
 {manifest_path}/footer.js
 
 =compiler options=

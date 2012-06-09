@@ -74,7 +74,7 @@
 	test('adherence test', function () {
 		var p = binder.makeProperty('value');
 
-		ok(binder.utiljs.adheresTo(p, binder.makeProperty.interfce), 'Expect "p" to adhere to the "binder.makeProperty.interfce" interface');
+		ok(util.adheresTo(p, binder.makeProperty.interfce), 'Expect "p" to adhere to the "binder.makeProperty.interfce" interface');
 		notStrictEqual(p.isDependent(), true, 'Expect "p" to not be dependent');
 		strictEqual(p.dependencies().length, 0, 'Expect "p" to have no dependencies');
 		strictEqual(p.toString(), 'value', 'Expect "p.toString()" to be equal to "value"');

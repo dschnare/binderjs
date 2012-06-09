@@ -1,17 +1,22 @@
 			makeObservable = (function () {
-				var notify = function (self, observers) {
+				var slice = Array.prototype.slice,
+					notify = function (self, observers, args) {
 						var i,
 							observer,
-							len = observers.length;
+							len = observers.length,
+							temp;
+
+						args = args.slice();
+						args.unshift(self);
 
 						for (i = 0; i < len; i += 1) {
 							observer = observers[i];
 
 							if (observer) {
 								if (typeof observer === 'function') {
-									observer.call(observer["thisObj"], self);
+									observer.apply(observer["thisObj"], args);
 								} else if (typeof observer["onNotify"] === 'function') {
-									observer["onNotify"](self);
+									observer["onNotify"].apply(observer, args);
 								}
 							}
 						}
@@ -51,8 +56,9 @@
 									}
 									throttleDuration = durationInMilliseconds;
 								},
+								// Can specify any number of arguments.
 								"notify": function () {
-									var self = this;
+									var self = this, args = slice.call(arguments);
 
 									if (blockStack.length || notifying) {
 										return;
@@ -62,11 +68,11 @@
 
 									if (throttleDuration > 0) {
 										throttleId = setTimeout(function () {
-											notify(self, observers);
+											notify(self, observers, args);
 											notifying = false;
 										}, throttleDuration);
 									} else {
-										notify(self, observers);
+										notify(self, observers, args);
 										notifying = false;
 									}
 								},

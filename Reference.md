@@ -28,10 +28,6 @@
 
 # API
 
-**binder.utiljs**
-
-The exposed API for utiljs.
-
 **binder.toJSON()**
 
 Converts an object that contains binderjs properties into a plain-old-javascript-object (POJO) by performing a shallow copy of all properties and adding them to a new object. If the property is a binderjs property then the property's value will be copied.
@@ -110,7 +106,7 @@ Creates an observable object that can be observed for changes.
 
 **observable.subscribe()**
 
-Subscribes to the changes of an observable. When the callback or `onNotify` function are called the observable sending the notification will be passed as an argument. If an observer object does not have an `onNotify` method then the observer object will not subscribe to the observerable.
+Subscribes to the changes of an observable. When the callback or `onNotify` function are called the observable sending the notification will be passed as an argument along with any additional arguments specified for the notification. If an observer object does not have an `onNotify` method then the observer object will not subscribe to the observerable.
 
 	subscribe(fn)
 	subscribe(fn, thisObj)
@@ -121,11 +117,15 @@ Subscribes to the changes of an observable. When the callback or `onNotify` func
 	observer - An object with a onNotify() function.
 	return - A subscription object with a dispose() function.
 
-**observable.notify()**
+	Example Subscriber Signature:
 
-Notifies all observers if the observable is not blocked and not being throttled.
+	function (observer, arg1, arg2) {...}
 
-	notify()
+**observable.notify(...)**
+
+Notifies all observers if the observable is not blocked and not being throttled. Any arguments passed to this method will be passed along with the observer itself to each subscriber.
+
+	notify(...)
 
 **observable.throttle()**
 
@@ -375,7 +375,7 @@ Determines if all items in the `otherList` are in the same order and are equal t
 
 **list.compare()**
 
-Retrieves the comparison results by comparing this list against the `otherList`. The `equals` and `changed` operators from `getItemOperators` are used to determine if items are equal or have changed.
+Retrieves the comparison results by comparing this list against the `otherList`. The `equals` and `changed` operators from `getItemOperators` are used to determine if items are equal or have changed. If custom `equals` and `changed` operators are specified then these operators will be used instead.
 
 Returns a list with a comparison result for each item in this list. Comparison results have the following properties:
 
@@ -389,28 +389,31 @@ Returns a list with a comparison result for each item in this list. Comparison r
 
 
 	compare(otherList)
+	compare(otherList, equals, changed)
 
 	otherList - The other list (or Array) to compare against.
 	return - A new list with the comparison results for each item in this list.
 
 **list.merge()**
 
-Produces a new list with the results of merging this list with `otherList`. All items that are 'retained' are unmodified, all items that are 'added' are added, all items that are 'deleted' are removed, all items that are 'changed' are replaced with the newer item.
+Produces a new list with the results of merging this list with `otherList`. All items that are 'retained' are unmodified, all items that are 'added' are added, all items that are 'deleted' are removed, all items that are 'changed' are replaced with the newer item. If custom `equals` and `changed` operators are specified then these operators will be used instead of the operators retrieved from this list's `getItemOperators` method.
 
 All indices from `otherList` are kept in the resulting list.
 
 	merge(otherList)
+	merge(otherList, equals, changed)
 
 	otherList - The other list (or Array) to merge against.
 	return - A new collapsed list with the results of the merge.
 
 **list.mergeWith()**
 
-Merges the `otherList` into this list in-palce. All items that are 'retained' are unmodified, all items that are 'added' are added, all items that are 'deleted' are removed, all items that are 'changed' are replaced with the newer item.
+Merges the `otherList` into this list in-palce. All items that are 'retained' are unmodified, all items that are 'added' are added, all items that are 'deleted' are removed, all items that are 'changed' are replaced with the newer item. If custom `equals` and `changed` operators are specified then these operators will be used instead of the operators retrieved from this list's `getItemOperators` method.
 
 All indices from `otherList` are kept in the resulting list.
 
 	mergeWith(otherList)
+	mergeWith(otherList, equals, changed)
 
 	otherList - The other list (or Array) to merge against.
 
@@ -461,17 +464,16 @@ Retrieves the last item in the list without removing it.
 
 **list.insert()**
 
-Inserts an item at the specified index and increases the length of the list.
+Inserts an item at the specified index and increases the length of the list by one. Returns the index at which the insertion occured, false otherwise.
 
 If `index` is less than `0` then `index` is set to `0`.
 
-If `index` is greater than the list length then `index` is set to `length - 1`.
+If `index` is greater than the list length then `index` is set to `length`.
 
 	insert(index, item)
 
 	index - The index to insert at.
 	item - The item to insert.
-	return - True if the item was inserted, false otherwise.
 
 ---
 

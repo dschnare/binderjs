@@ -512,41 +512,55 @@
 							var operators,
 								d,
 								i,
+								len,
 								diff;
 
 							operators = makeList["getItemOperators"](this);
 							d = this["compare"](otherList, equals, changed);
-							i = d.length;
+							len = d.length;
 
-							this.length = otherList.length;
-
-							// For sanity we use the equality operator again on each item
-							// that has been marked as not being 'added'.
-
-							while (i) {
-								i -= 1;
+							for (i = 0; i < len; i += 1) {
 								diff = d[i];
 
 								switch (diff["status"]) {
 								case "added":
-									this[diff["otherIndex"]] = diff["otherItem"];
+									if (this[diff["otherIndex"]] === undefined) {
+										this[diff["otherIndex"]] = diff["otherItem"];
+									} else {
+										this.splice(diff["otherIndex"], 0, diff["otherItem"]);
+									}
 									break;
 								case "deleted":
-									if (operators["equals"](this[diff["index"]], diff["item"])) {
-										this[diff["index"]] = undefined;
-									}
+									this[diff["index"]] = undefined;
 									break;
 								case "changed":
-									if (operators["equals"](this[diff["index"]], diff["item"])) {
-										this[diff["index"]] = undefined;
+									// Move and a change.
+									if (diff["index"] !== diff["otherIndex"]) {
+										if (this[diff["otherIndex"]] === undefined) {
+											this[diff["index"]] = undefined;
+											this[diff["otherIndex"]] = diff["otherItem"];
+										} else {
+											this.splice(diff["index"], 1);
+											this.splice(diff["otherIndex"], 0, diff["item"]);
+										}
+									// Just a change.
+									} else {
+										this[diff["index"]] = diff["otherItem"];
 									}
-									this[diff["otherIndex"]] = diff["otherItem"];
 									break;
 								case "retained":
-									if (operators["equals"](this[diff["index"]], diff["item"])) {
-										this[diff["index"]] = undefined;
+									// Move.
+									if (diff["index"] !== diff["otherIndex"]) {
+										if (this[diff["otherIndex"]] === undefined) {
+											this[diff["index"]] = undefined;
+											this[diff["otherIndex"]] = diff["otherItem"];
+										} else {
+											this.splice(diff["index"], 1);
+											this.splice(diff["otherIndex"], 0, diff["item"]);
+										}
+									} else {
+										this[diff["index"]] = diff["otherItem"];
 									}
-									this[diff["otherIndex"]] = diff["item"];
 									break;
 								}
 							}
@@ -608,14 +622,14 @@
 							return this[this.length - 1];
 						};
 						list["insert"] = function (index, item) {
-							if (index > this.length + 1) {
-								index = this.length + 1;
+							if (index > this.length) {
+								index = this.length;
 							} else if (index < 0) {
 								index = 0;
 							}
 
-							if (index >= 0) {
-								if (index === this.length + 1) {
+							if (isFinite(parseInt(index, 10))) {
+								if (index === this.length) {
 									this.push(item);
 								} else if (this.hasOwnProperty(index)) {
 									this.splice(index, 0, item);
@@ -623,7 +637,7 @@
 									this[index] = item;
 								}
 
-								return true;
+								return index;
 							}
 
 							return false;
