@@ -501,6 +501,25 @@ ObservableList will notify all observers when the list has been modified via the
 - sort
 - splice
 
+Each subscriber notified of a change on an observable list will be passed an action argument that gives information regarding what items and action occured.
+The action argument is an object with the following properties:
+
+- action - The action that caused the change: add, remove, replace, move, reset
+- newStartingIndex - The index at which the change occured.
+- newItems - The new items involved in the change.
+- oldStartingIndex - The index at which a move, remove or replace action occured.
+- oldItems - The items affect by a replace, remove or move action.
+
+The properties for an action argument (and their meaning) are identical to the [NotifyCollectionChangedEventArgs](http://msdn.microsoft.com/en-us/library/system.collections.specialized.notifycollectionchangedeventargs.aspx) class in .NET.
+
+The actions have the following meaning:
+
+- add - One or more items were added to the collection.
+- remove - One or more items were removed from the collection.
+- replace - One or more items were replaced in the collection.
+- move - One or more items were moved within the collection.
+- reset - The content of the collection changed dramatically.
+
 ---
 
 **binder.makeProperty()**
