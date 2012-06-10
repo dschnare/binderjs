@@ -1163,6 +1163,8 @@
 				var makeObservableList = function () {
 					var slice = ([]).slice,
 						list = makeList.apply(undefined, slice.call(arguments)),
+						itemSubscriptions = makeList(),
+						observeItems = false,
 						makeActionArgs = function (action, newStartingIndex, newItems, oldStartingIndex, oldItems) {
 							newStartingIndex = parseInt(newStartingIndex, 10);
 							oldStartingIndex = parseInt(oldStartingIndex, 10);
@@ -1190,10 +1192,105 @@
 							},
 							reset: function () {
 								list["notify"](makeActionArgs('reset'));
+							},
+							change: function (index, item) {
+								list["notify"](makeActionArgs('change', index, item, index, item));
+							}
+						},
+						itemSubscriptionFindCallback = function (s) {
+							var item = itemSubscriptionFindCallback.item;
+
+							if (item !== null && item !== undefined) {
+								return s["item"] === item;
+							}
+						},
+						onItemChange = function (item) {
+							var i = list.indexOf(item);
+
+							if (i >= 0) {
+								actions.change(i, item);
+							}
+						},
+						subscribeToItems = function () {
+							var args = slice.call(arguments),
+								len = args.length,
+								isArray = util.isArray,
+								arg,
+								i;
+
+							for (i = 0; observeItems && i < len; i += 1) {
+								arg = args[i];
+
+								if (isArray(arg)) {
+									subscribeToItems.apply(undefined, arg);
+								} else if (typeof arg["subscribe"] === 'function') {
+									itemSubscriptions.push({"item": arg, "subscription": arg["subscribe"](onItemChange)});
+								}
+							}
+						},
+						unsubscribeFromItems = function () {
+							var args = slice.call(arguments),
+								len = args.length,
+								isArray = util.isArray,
+								arg,
+								s,
+								i;
+
+							for (i = 0; observeItems && i < len; i += 1) {
+								arg = args[i];
+
+								if (isArray(arg)) {
+									unsubscribeFromItems.apply(undefined, arg);
+								} else if (typeof arg["subscribe"] === 'function') {
+									itemSubscriptionFindCallback.item = arg;
+									s = itemSubscriptions["first"](itemSubscriptionFindCallback);
+
+									if (s !== undefined) {
+										itemSubscriptions["remove"](s);
+
+										if (s["subscription"] && typeof s["subscription"]["dispose"] === 'function') {
+											s["subscription"]["dispose"]();
+										}
+									}
+								}
+							}
+
+							itemSubscriptionFindCallback.item = null;
+						},
+						unsubscribeFromAllItems = function () {
+							var s;
+
+							while (itemSubscriptions.length) {
+								s = itemSubscriptions.pop();
+
+								if (s["subscription"] && typeof s["subscription"]["dispose"] === 'function') {
+									s["subscription"]["dispose"]();
+								}
+
+								s["item"] = null;
+								s["subscription"] = null;
 							}
 						};
 
 					util.mixin(list, makeObservable());
+
+					// Determines if the items in the list will be observed for changes.
+					// This only applies to items with a subscribe function (i.e. implements Observable).
+					list["observeItems"] = function (value) {
+						if (arguments.length && value !== observeItems) {
+							// For sanity we unsubscribe from all items first.
+							unsubscribeFromAllItems();
+
+							observeItems = value;
+
+							// After our flag has been set then we subscribe to our items.
+							// This is because the subscription functions won't do anything
+							// unless we are observing the items.
+							subscribeToItems(this);
+						}
+
+						return observeItems;
+					};
 
 					// remove() does not need to be overridden because internally it
 					// calls splice(), which will issue notifications. The remove()
@@ -1206,6 +1303,8 @@
 							if (index >= 0 && index < this.length) {
 								this["block"]();
 								oldItem = base.call(this, index, newItem);
+								unsubscribeFromItems(oldItem);
+								subscribeToItems(newItem);
 								this["unblock"]();
 
 								actions.replace(index, newItem, index, oldItem);
@@ -1223,6 +1322,7 @@
 							this["unblock"]();
 
 							if (origLen !== this.length) {
+								unsubscribeFromAllItems();
 								actions.reset();
 							}
 						};
@@ -1248,6 +1348,7 @@
 
 							if (insertedIndex !== false) {
 								actions.add(insertedIndex, item);
+								subscribeToItems(item);
 							}
 
 							return insertedIndex;
@@ -1273,6 +1374,7 @@
 
 								switch (diff["status"]) {
 								case "added":
+									subscribeToItems(diff["otherItem"]);
 									notifications.push(makeActionArgs('add', diff["otherIndex"], diff["otherItem"]));
 
 									if (this[diff["otherIndex"]] === undefined) {
@@ -1282,10 +1384,14 @@
 									}
 									break;
 								case "deleted":
+									unsubscribeFromItems(this[diff["index"]]);
 									notifications.push(makeActionArgs('remove', null, null, diff["index"], diff["item"]));
 									this[diff["index"]] = undefined;
 									break;
 								case "changed":
+									unsubscribeFromItems(diff["item"]);
+									subscribeToItems(diff["otherItem"]);
+
 									// Move and a change.
 									if (diff["index"] !== diff["otherIndex"]) {
 										notifications.push(makeActionArgs('move', diff["otherIndex"], diff["otherItem"], diff["index"], diff["item"]));
@@ -1304,6 +1410,9 @@
 									}
 									break;
 								case "retained":
+									unsubscribeFromItems(diff["item"]);
+									subscribeToItems(diff["otherItem"]);
+
 									// Move.
 									if (diff["index"] !== diff["otherIndex"]) {
 										notifications.push(makeActionArgs('move', diff["otherIndex"], diff["otherItem"], diff["index"], diff["item"]));
@@ -1351,6 +1460,7 @@
 							this["unblock"]();
 
 							if (origLen !== this.length) {
+								unsubscribeFromItems(oldItem);
 								actions.remove(origLen - 1, oldItem);
 							}
 
@@ -1368,6 +1478,7 @@
 							this["unblock"]();
 
 							if (origLen !== newLength) {
+								subscribeToItems(newItems);
 								actions.add(origLen, newItems);
 							}
 
@@ -1384,6 +1495,7 @@
 							this["unblock"]();
 
 							if (origLen !== this.length) {
+								unsubscribeFromItems(oldItem);
 								actions.remove(0, oldItem);
 							}
 
@@ -1401,6 +1513,7 @@
 							this["unblock"]();
 
 							if (origLen !== this.length) {
+								subscribeToItems(newItems);
 								actions.add(0, newItems);
 							}
 
@@ -1443,10 +1556,14 @@
 
 							if (origLen !== this.length) {
 								if (newItems.length === 0 && oldItems.length !== 0) {
+									unsubscribeFromItems(oldItems);
 									actions.remove(index, oldItems);
 								} else if (newItems.length !== 0 && oldItems.length === 0) {
+									subscribeToItems(newItems);
 									actions.add(index, newItems);
 								} else {
+									unsubscribeFromItems(oldItems);
+									subscribeToItems(newItems);
 									actions.replace(index, newItems, index, oldItems);
 								}
 							}

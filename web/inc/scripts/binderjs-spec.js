@@ -3293,4 +3293,51 @@
 		strictEqual(actionArgs.oldItems.join(','), '-1,1', "Expected the actionArgs oldItems to be [-1,1].");
 	});
 
+	test('observe items test', function () {
+		var list = BINDER.makeObservableList(),
+			subscription,
+			actions,
+			actionArgs;
+
+		list.push(BINDER.makeProperty(1), BINDER.makeProperty(2), BINDER.makeProperty(3));
+
+		list.subscribe(function (observer, actionArgs) {
+			actions.push(actionArgs);
+		});
+
+		actions = [];
+
+		strictEqual(list.join(','), '1,2,3', 'Expected list to be equal to the array [1,2,3]');
+
+
+		list.observeItems(true);
+		list[0].set(0);
+
+		strictEqual(actions.length, 1, 'Expected the list to notify when an item has changed.');
+
+		actionArgs = actions[0];
+		strictEqual(actionArgs.action, 'change', "Expected the actionArgs type to be 'change'.");
+		strictEqual(actionArgs.newStartingIndex, 0, "Expected the actionArgs newStartingIndex to be 0.");
+		strictEqual(actionArgs.newItems.join(','), '0', "Expected the actionArgs newItems to be [0].");
+		strictEqual(actionArgs.oldStartingIndex, 0, "Expected the actionArgs oldStartingIndex to be 0.");
+		strictEqual(actionArgs.oldItems.join(','), '0', "Expected the actionArgs oldItems to be [0].");
+
+		list.observeItems(false);
+
+		actions = [];
+		list[0].set(10);
+		list[1].set(100);
+
+		strictEqual(actions.length, 0, 'Expected the list to not notify when an item has changed and the list is not observing items for change.');
+
+
+		list.block();
+		list.observeItems(true);
+		var p = list.splice(2, 1).pop();
+		list.unblock();
+		p.set(1000);
+
+		strictEqual(actions.length, 0, 'Expected the list to not notify when an item has been removed from the list then changed.');
+	});
+
 }(UTIL, BINDER));
