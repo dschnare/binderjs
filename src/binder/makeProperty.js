@@ -211,7 +211,7 @@
 							}
 
 							// If the value is observable then we observe it for notifications.
-							if (value && typeof value["subscribe"] === 'function' && typeof value["dispose"] === 'function') {
+							if (value && typeof value["subscribe"] === 'function') {
 								subscriptions.push(value["subscribe"](observer));
 							}
 
