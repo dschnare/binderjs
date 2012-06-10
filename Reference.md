@@ -483,6 +483,19 @@ If `index` is greater than the list length then `index` is set to `length`.
 	makeObservableList(array)
 	makeObservableList(item,...,item)
 
+
+**observableList.observeItems()**
+
+Flag that determines if the items in the list will be observed for changes. When being set to true all items in the list will be observed, and when setting to false all items subscriptions will be disposed. In order for items to be observed they must have a `subscribe()` method that returns a subscription object. In other words the subscription model must adhere to the `observable` object interface.
+
+	observeItems()
+	observeItems(value)
+
+	[default false]
+
+	value - Boolean value to set the flag to.
+	return - The value of the flag.
+
 **ObservableLists have the same interface as Array, observable and list.**
 
 ObservableList will notify all observers when the list has been modified via the following methods:
@@ -507,8 +520,8 @@ The action argument is an object with the following properties:
 - action - The action that caused the change: add, remove, replace, move, reset
 - newStartingIndex - The index at which the change occured.
 - newItems - The new items involved in the change.
-- oldStartingIndex - The index at which a move, remove or replace action occured.
-- oldItems - The items affect by a replace, remove or move action.
+- oldStartingIndex - The index at which a move, remove, replace or change action occured.
+- oldItems - The items affected by a replace, remove, move or change action.
 
 The properties for an action argument (and their meaning) are identical to the [NotifyCollectionChangedEventArgs](http://msdn.microsoft.com/en-us/library/system.collections.specialized.notifycollectionchangedeventargs.aspx) class in .NET.
 
@@ -519,6 +532,7 @@ The actions have the following meaning:
 - replace - One or more items were replaced in the collection.
 - move - One or more items were moved within the collection.
 - reset - The content of the collection changed dramatically.
+- change - An item in the list has been has changed.
 
 Example:
 
