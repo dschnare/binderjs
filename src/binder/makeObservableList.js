@@ -256,11 +256,17 @@
 						};
 					}(list["sort"]));
 					list["splice"] = (function (base) {
-						return function (index, deleteCount) {
+						return function () {
 							var origLen = this.length,
-								newItems = slice.call(arguments, 2),
+								args = slice.call(arguments),
+								index = args.shift(),
+								newItems,
 								oldItems;
 
+							// Remove the deleteCount argument.
+							args.shift();
+
+							newItems = args;
 							index = parseInt(index, 10);
 							index = isFinite(index) ? index : 0;
 

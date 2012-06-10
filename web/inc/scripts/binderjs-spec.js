@@ -2953,7 +2953,7 @@
 		actions = [];
 		list.collapse();
 
-		strictEqual(list.join(','), '1,3', "Expected the sparse items to be removed.")
+		strictEqual(list.join(','), '1,3', "Expected the sparse items to be removed.");
 		strictEqual(actions.length, 1, "Expected the list to only notify once when collapsing.");
 
 		actionArgs = actions[0];
@@ -3022,13 +3022,13 @@
 		});
 
 		actions = [];
-		list.mergeWith([1,2,3]);
+		list.mergeWith([1, 2, 3]);
 
 		strictEqual(actions.length, 0, "Expected the list to not notify when merging identical lists.");
 
 
 		actions = [];
-		list.mergeWith([1,3,4]);
+		list.mergeWith([1, 3, 4]);
 
 		strictEqual(actions.length, 3, "Expected the list to notify three times.");
 
@@ -3067,7 +3067,7 @@
 		actions = [];
 		list.reverse();
 
-		strictEqual(list.join(','), '3,2,1', "Expected the list to be reversed.")
+		strictEqual(list.join(','), '3,2,1', "Expected the list to be reversed.");
 		strictEqual(actions.length, 1, "Expected the list to only notify once when reversing.");
 
 		actionArgs = actions[0];
@@ -3221,7 +3221,7 @@
 		actions = [];
 		list.sort();
 
-		strictEqual(list.join(','), '1,2,3', "Expected the list to be sorted.")
+		strictEqual(list.join(','), '1,2,3', "Expected the list to be sorted.");
 		strictEqual(actions.length, 1, "Expected the list to only notify once when sorting.");
 
 		actionArgs = actions[0];
@@ -3255,7 +3255,7 @@
 
 
 		actions = [];
-		list.splice(0, 0, -1,0);
+		list.splice(0, 0, -1, 0);
 
 		strictEqual(actions.length, 1, "Expected the list to notify once when splicing.");
 

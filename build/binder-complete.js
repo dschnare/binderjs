@@ -1417,11 +1417,17 @@
 						};
 					}(list["sort"]));
 					list["splice"] = (function (base) {
-						return function (index, deleteCount) {
+						return function () {
 							var origLen = this.length,
-								newItems = slice.call(arguments, 2),
+								args = slice.call(arguments),
+								index = args.shift(),
+								newItems,
 								oldItems;
 
+							// Remove the deleteCount argument.
+							args.shift();
+
+							newItems = args;
 							index = parseInt(index, 10);
 							index = isFinite(index) ? index : 0;
 
@@ -1494,8 +1500,9 @@
 						memo,
 						property,
 						observer = function () {
+							var args = Array.prototype.slice.call(arguments, 1);
 							memo = undefined;
-							property["notify"]();
+							property["notify"].apply(property, args);
 						};
 
 					dependencies["add"] = function (prop) {

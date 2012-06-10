@@ -36,8 +36,9 @@
 						memo,
 						property,
 						observer = function () {
+							var args = Array.prototype.slice.call(arguments, 1);
 							memo = undefined;
-							property["notify"]();
+							property["notify"].apply(property, args);
 						};
 
 					dependencies["add"] = function (prop) {
