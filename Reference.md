@@ -192,6 +192,8 @@ Converts a POJO object to an object with binderjs properties.
 
                 // All other properties are supported: include, exclude, copy, filter, properties.
             }
+            // NOTE: If the value of a property is a function instead of an object like described above, then it is
+            // treated like a filter function.
         }
 	}
 
