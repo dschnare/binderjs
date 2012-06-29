@@ -145,7 +145,7 @@ The result will be:
 
 **binder.fromJSON()**
 
-Converts a POJO object that to an object with binderjs properties by performing a shallow copy of all properties and adding them to a new object.
+Converts a POJO object to an object with binderjs properties.
 
 	fromJSON(o, options)
 	fromJSON(o, options, target)
