@@ -250,6 +250,9 @@ Using the same POJO we can change how the model object will be generated:
 		},
 		properties: {
 			skills: function (model, json) {
+				// Since our skills array contains strings it means we are filtering
+				// a native object. This means that model and json are equal. So
+				// we'll just return a new string.
 				return json.charAt(0).toUpperCase() + json.substring(1);
 			},
 			team: {
