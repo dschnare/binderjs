@@ -310,7 +310,7 @@ Creates an observable object that can be observed for changes.
 Subscribes to the changes of an observable. When the callback or `onNotify` function are called the observable sending the notification will be passed as an argument along with any additional arguments specified for the notification. If an observer object does not have an `onNotify` method then the observer object will not subscribe to the observerable.
 
 
-**observable.notify(...)**
+**observable.notify()**
 
 	notify(...)
 
@@ -693,6 +693,8 @@ If `index` is greater than the list length then `index` is set to `length`.
 	makeObservableList()
 	makeObservableList(array)
 	makeObservableList(item,...,item)
+
+Makes a list that can be observed for changes.
 
 
 **observableList.observeItems()**
