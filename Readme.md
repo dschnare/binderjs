@@ -1,6 +1,6 @@
 # Overview
 
-Binderjs is am object-oriented property-binding API. See the [reference](https://github.com/dschnare/binderjs/blob/master/Reference.md) for usage and API reference.
+Binderjs is an object-oriented property-binding API for JavaScript. See the [reference](https://github.com/dschnare/binderjs/blob/master/Reference.md) for usage and API reference.
 
 # Features
 
@@ -94,18 +94,33 @@ Binderjs is am object-oriented property-binding API. See the [reference](https:/
 	// the effect of completely replacing our list of skills with a new list.
 	person.skills().mergeWith(['saving princess toadstool', 'beating bowser to a pulp', 'plumbing']);
 
-# Building
 
-Ruby Rake is used to build the purejs module. Use `rake -D` to list all the rake tasks. For more indepth details on the build system for the project see my [project template](https://github.com/dschnare/project-template) repo, of which this project is based.
+# Installation
 
-Use `rake deploy` to perform a build and to have all built files copied to 'web/inc/scripts'. The web project is a unit testing project that uses Qunit.
+Install locally:
 
+	npm install git://github.com/dschnare/binderjs.git
 
-# Dependencies
+Or use as a dependency:
 
-**All dependencies are included with this project**
+	{
+		"dependencies": {
+			"binderjs": "git://github.com/dschnare/binderjs.git"
+		}
+	}
 
-- [Utiljs](https://github.com/dschnare/utiljs) for common utilitiy functions.
+If all you want is a minified version of this script and its dependencies so you can simply include it in your web page do the following:
+
+1. Install Node with NPM.
+2. Create an empty directory and run the following:
+
+		npm install git://github.com/dschnare/binderjs.git
+		cd node_modules/binderjs
+		npm install
+		npm run-script build-test
+
+3. Copy the source files you want from `node_modules/binderjs/test/js`. The combined script files contain binderjs and all its dependencies.
+4. Delete the directory you just created.
 
 
 # Support
@@ -120,28 +135,21 @@ Browsers will be added to the list as testing ensues:
 - Can be loaded as a [NodeJS](http://nodejs.org/docs/latest/api/modules.html)/[CommonJS](http://wiki.commonjs.org/wiki/Modules/1.1) module
 
 
-# Products
+# Testing
 
-**src/xport** - The xport module that exports a function used to export symbols for the Closure Compiler (< 1Kb when compiled).
+If you want to run the tests then you will need to do the following:
 
-- build/xport.js
-- build/xport.min.js
+	cd binderjs
+	npm install
+	npm run-script build-test
 
-**src/util** - The utiljs module that exports the utiljs API. Depends on the xport module.
+Then open `test/index.html` in a web browser. This web page uses QUnit to run several unit tests.
 
-- build/util.js
-- build/util.min.js
-- build/util-complete.js (contains xport module)
-- build/util-complete.min.js (contains compiled xport module)
-
-**src/binder** - The binderjs module that exports the binderjs API. Depends on the xport and utiljs modules.
-
-- build/binder.js
-- build/binder.min.js
-- build/binder-complete.js (contains xport and utiljs modules)
-- build/binder-complete.min.js (contains compiled xport and utiljs modules)
+**WARNING:** Do not run `npm install` with the `--dev` option on. This will result in an infinite dependency cycle. The cycle exists somewhere in the hierarchy, in some third-party module and I haven't been able to track it down to tell the author(s). Only run `npm install` with no arguments in the `binderjs` module directory.
 
 
-`buid/binder.js and build/binder.min.js` - Will produce the global object `BINDER` when loaded into a web page. If loaded using a module framework like AMD or CommonJS, then will attempt to require the following dependencies: `utiljs`
+# API
 
-`build/binder-complete.js and build/binder-complete.min.js` - Will produce the global object `BINDER` when loaded into a web page. If loaded using a module framework like AMD or CommonJS, then will not attempt to require any dependencies.
+If not loaded using a module framework then this module exports `BINDER` in the global namespace.
+
+See the [Reference](https://github.com/dschnare/binderjs/blob/master/Reference.md) file.
