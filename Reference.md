@@ -704,7 +704,7 @@ ObservableList will notify all observers when the list has been modified via the
 Each subscriber notified of a change on an observable list will be passed an action argument that gives information regarding what items and action occured.
 The action argument is an object with the following properties:
 
-- action - The action that caused the change: add, remove, replace, move, reset
+- action - The action that caused the change: add, remove, replace, move, reset, change
 - newStartingIndex - The index at which the change occured.
 - newItems - The new items involved in the change.
 - oldStartingIndex - The index at which a move, remove, replace or change action occured.
