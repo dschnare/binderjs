@@ -180,15 +180,15 @@ Converts a POJO object to an object with binderjs properties.
             property: {
                 create(model, owner): A function that returns an object that will be used
                 		to create a binder property via binder.makeProperty(). If the object returned is a POJO
-                		object then it will be used as the options for the call to makeProperty(). This function will be called when
-                		attaching properties for native values or arrays to a model. This will not be called
+                		object then it will be used as the options for the call to makeProperty(). This function will be
+                		called when attaching properties for native values or arrays to a model. This will not be called
                 		if the object being processed is a JSON/POJO object, instead the property will just be the object.
 
                 		Where model is equal to the value returned from calling fromJSON() recursively and owner is
                 		the owning model to wich the property will be attached.
 
-                		This method can be used to create a setter for a property or to spefify an 'equals' and 'changed' operators
-                		for a property.
+                		This method can be used to create a setter for a property or to spefify an 'equals' and 'changed'
+                		operators for a property.
 
                 // All other properties are supported: include, exclude, copy, filter, properties.
             }
