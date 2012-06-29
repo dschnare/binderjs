@@ -3,11 +3,11 @@
 **Standard HTML:**
 
 	<script type="text/javascript" src="pathto/util.min.js"></script>
-	<script type="text/javascript" src="pathto/binder.min.js"></script>
+	<script type="text/javascript" src="pathto/BINDER.min.js"></script>
 
 	// Or if you prefer to use the all-in-one script that already includes utiljs
 
-	<script type="text/javascript" src="pathto/binder.all.min.js"></script>
+	<script type="text/javascript" src="pathto/BINDER.all.min.js"></script>
 
 	// do stuff with BINDER
 
@@ -28,9 +28,7 @@
 
 # API
 
-**binder.toJSON()**
-
-Converts an object that contains binderjs properties into a plain-old-javascript-object (POJO) by performing a shallow copy of all properties and adding them to a new object. If the property is a binderjs property then the property's value will be copied.
+**BINDER.toJSON()**
 
 	toJSON(o, options)
 
@@ -64,27 +62,29 @@ Converts an object that contains binderjs properties into a plain-old-javascript
         }
 	}
 
+Converts an object that contains binderjs properties into a plain-old-javascript-object (POJO) by performing a shallow copy of all properties and adding them to a new object. If the property is a binderjs property then the property's value will be copied.
+
 Example:
 
 	var obj, model;
 
 	model = {
-		firstName: binder.makeProperty('Darren'),
-		lastName: binder.makeProperty('Schnare'),
-		skills: binder.makeProperty(['javascript', 'html', 'css', 'ruby']),
+		firstName: BINDER.makeProperty('Darren'),
+		lastName: BINDER.makeProperty('Schnare'),
+		skills: BINDER.makeProperty(['javascript', 'html', 'css', 'ruby']),
 		team: [{
-			firstName: binder.makeProperty('Alex'),
-			lastName: binder.makeProperty('Grendo')
+			firstName: BINDER.makeProperty('Alex'),
+			lastName: BINDER.makeProperty('Grendo')
 		}, {
-			firstName: binder.makeProperty('Sam'),
-			lastName: binder.makeProperty('Hilto')
+			firstName: BINDER.makeProperty('Sam'),
+			lastName: BINDER.makeProperty('Hilto')
 		}, {
-			firstName: binder.makeProperty('James'),
-			lastName: binder.makeProperty('Wazzabi')
+			firstName: BINDER.makeProperty('James'),
+			lastName: BINDER.makeProperty('Wazzabi')
 		}]
 	};
 
-	model.fullName = binder.makeProperty(function () {
+	model.fullName = BINDER.makeProperty(function () {
 		return model.firstName + ' ' + model.lastName;
 	});
 
@@ -143,9 +143,7 @@ The result will be:
 	}
 
 
-**binder.fromJSON()**
-
-Converts a POJO object to an object with binderjs properties.
+**BINDER.fromJSON()**
 
 	fromJSON(o, options)
 	fromJSON(o, options, target)
@@ -179,7 +177,7 @@ Converts a POJO object to an object with binderjs properties.
         properties: {
             property: {
                 create(model, owner): A function that returns an object that will be used
-                		to create a binder property via binder.makeProperty(). If the object returned is a POJO
+                		to create a binder property via BINDER.makeProperty(). If the object returned is a POJO
                 		object then it will be used as the options for the call to makeProperty(). This function will be
                 		called when attaching properties for native values or arrays to a model. This will not be called
                 		if the object being processed is a JSON/POJO object, instead the property will just be the object.
@@ -196,6 +194,8 @@ Converts a POJO object to an object with binderjs properties.
             // treated like a filter function.
         }
 	}
+
+Converts a POJO object to an object, making each property binderjs property. All property values are shallow copied unless overriden with the options.
 
 Example:
 
@@ -242,7 +242,7 @@ Using the same POJO we can change how the model object will be generated:
 
 	BINDER.fromJSON(o, {
 		filter: function (model, json) {
-			model.fullName = binder.makeProperty(function () {
+			model.fullName = BINDER.makeProperty(function () {
 				return model.firstName + ' ' + model.lastName;
 			});
 
@@ -258,7 +258,7 @@ Using the same POJO we can change how the model object will be generated:
 			team: {
 				exclude: ['firstName', 'lastName'],
 				filter: function (model, json) {
-					model.name = binder.makeProperty(json.firstName + ' ' + json.lastName);
+					model.name = BINDER.makeProperty(json.firstName + ' ' + json.lastName);
 					return model;
 				}
 			}
@@ -285,15 +285,14 @@ The result will be:
 
 ---
 
-**binder.makeObservable()**
-
-Creates an observable object that can be observed for changes.
+**BINDER.makeObservable()**
 
 	makeObservable()
 
-**observable.subscribe()**
+Creates an observable object that can be observed for changes.
 
-Subscribes to the changes of an observable. When the callback or `onNotify` function are called the observable sending the notification will be passed as an argument along with any additional arguments specified for the notification. If an observer object does not have an `onNotify` method then the observer object will not subscribe to the observerable.
+
+**observable.subscribe()**
 
 	subscribe(fn)
 	subscribe(fn, thisObj)
@@ -308,43 +307,48 @@ Subscribes to the changes of an observable. When the callback or `onNotify` func
 
 	function (observer, arg1, arg2) {...}
 
-**observable.notify(...)**
+Subscribes to the changes of an observable. When the callback or `onNotify` function are called the observable sending the notification will be passed as an argument along with any additional arguments specified for the notification. If an observer object does not have an `onNotify` method then the observer object will not subscribe to the observerable.
 
-Notifies all observers if the observable is not blocked and not being throttled. Any arguments passed to this method will be passed along with the observer itself to each subscriber.
+
+**observable.notify(...)**
 
 	notify(...)
 
-**observable.throttle()**
+Notifies all observers if the observable is not blocked and not being throttled. Any arguments passed to this method will be passed along with the observer itself to each subscriber.
 
-Throttles notifications sent to observers by placing a timeout between the first call to `notify()` and when the observers are actually notified. All subsequent calls to `notify()` will have no effect until the timeout has expired. When the timeout has expired then the observers will be notified.
+
+**observable.throttle()**
 
 	throttle(duration)
 
 	duration - The timeout duration in milliseconds.
 
-**observable.block()**
+Throttles notifications sent to observers by placing a timeout between the first call to `notify()` and when the observers are actually notified. All subsequent calls to `notify()` will have no effect until the timeout has expired. When the timeout has expired then the observers will be notified.
 
-Pushes a block state onto the internal block stack. While the block stack has at least one block state the observable is said to be blocked and subsequent calls to `notify()` will have no effect.
+
+**observable.block()**
 
 	block()
 
-**observable.unblock()**
+Pushes a block state onto the internal block stack. While the block stack has at least one block state the observable is said to be blocked and subsequent calls to `notify()` will have no effect.
 
-Removes a block state from the internal block stack. While the block stack has at least one block state the observable is said to be blocked and subsequent calls to `notify()` will have no effect.
+
+**observable.unblock()**
 
 	unblock()
 
-**observable.dispose()**
+Removes a block state from the internal block stack. While the block stack has at least one block state the observable is said to be blocked and subsequent calls to `notify()` will have no effect.
 
-Removes and disposes all observers.
+
+**observable.dispose()**
 
 	dispose()
 
+Removes all observers.
+
 ---
 
-**binder.makeList()**
-
-Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specification.
+**BINDER.makeList()**
 
 	makeList()
 	makeList(array)
@@ -352,6 +356,9 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 
 	array - An Array or another list to copy items from.
 	... - A variadic list of items to add to the list.
+
+Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specification.
+
 
 **The following [ES5](http://www.ecma-international.org/publications/standards/Ecma-262.htm) functions are implemented if not present on the native Array (without modifying the Array.prototype):**
 
@@ -436,41 +443,41 @@ Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specific
 
 **list.collapse()**
 
-Removes all sparce items in this list. A sparce item is any item that has the value of undefined or whose index does not exist in the list.
-
 	collapse()
 
-**list.contains()**
+Removes all sparce items in this list. A sparce item is any item that has the value of undefined or whose index does not exist in the list.
 
-Determines if the specified item is found in the list. The search is performed using strict equality.
+
+**list.contains()**
 
 	contains(item)
 
 	item - The item to test for containment.
 	return - True if the item is found in the list, false otherwise.
 
-**list.occurances()**
+Determines if the specified item is found in the list. The search is performed using strict equality.
 
-Determines the number of occurances an item occurs in the list. The search is performed using strict equality.
+
+**list.occurances()**
 
 	occurances(item)
 
 	item - The item to search for.
 	return - The number of times the item occurs in the list.
 
-**list.distinct()**
+Determines the number of occurances an item occurs in the list. The search is performed using strict equality.
 
-Produces an `Array` that contains all items that only occur once in the list.
+
+**list.distinct()**
 
 	distinct()
 
 	return - An Array with all items that occur once in the list.
 
+Produces an `Array` that contains all items that only occur once in the list.
+
+
 **list.first()**
-
-Retrieves the first item where the `callback` returns true. The order of the traversal is ascending order.
-
-`callback` will be called with the item, the index of the item and the object being traversed.
 
 	first(callback, [thisObj])
 
@@ -478,11 +485,12 @@ Retrieves the first item where the `callback` returns true. The order of the tra
 	thisObj - The context to call callback with.
 	return - The item where the callback returned true, undefined otherwise.
 
-**list.last()**
-
-Retrieves the last item where the `callback` returns true. The order of the traversal is descending order.
+Retrieves the first item where the `callback` returns true. The order of the traversal is ascending order.
 
 `callback` will be called with the item, the index of the item and the object being traversed.
+
+
+**list.last()**
 
 	last(callback, [thisObj])
 
@@ -490,13 +498,12 @@ Retrieves the last item where the `callback` returns true. The order of the trav
 	thisObj - The context to call callback with.
 	return - The item where the callback returned true, undefined otherwise.
 
-	last(callback, [thisOb])
-
-**list.find()**
-
-Retrieves the item and index where the `callback` returns true. The order of the traversal is ascending order.
+Retrieves the last item where the `callback` returns true. The order of the traversal is descending order.
 
 `callback` will be called with the item, the index of the item and the object being traversed.
+
+
+**list.find()**
 
 	find(callback)
 	find(callback, fromIndex)
@@ -508,9 +515,18 @@ Retrieves the item and index where the `callback` returns true. The order of the
 	fromIndex - The starting index of the traversal.
 	return - An object with the following properties: index, item.
 
+Retrieves the item and index where the `callback` returns true. The order of the traversal is ascending order.
+
+`callback` will be called with the item, the index of the item and the object being traversed.
+
+
 **list.getItemOperators**
 
-Method that can be overriden to provide `equals` and `changed` operators that are to be used when comparing items in the list. The operators have the following signature:
+	getItemOperators()
+
+	return - An object with the following properties: equals, changed.
+
+Retrieves the `equals` and `changed` operators used for the items in the list. This method can be overriden to provide `equals` and `changed` operators that are to be used when comparing items in the list. The operators have the following signature:
 
 		equals(a, b) - return true if a is equal to b
 		changed(a, b) - return true if a is equal to b but b has changes
@@ -537,30 +553,33 @@ For example:
 		};
 	};
 
-
-	getItemOperators()
-
-	return - An object with the following properties: equals, changed.
-
 **list.equals()**
-
-Determines if all items in the `otherList` are in the same order and are equal to the items in this list. Equality is performed by calling the `equals` operator from `getItemOperators`.
 
 	equals(otherList)
 
 	otherList - The other list (or Array) to compare against.
 	return - True if all items in the other list are equal to the this list, false otherwise.
 
-**list.changed()**
+Determines if all items in the `otherList` are in the same order and are equal to the items in this list. Equality is performed by calling the `equals` operator from `getItemOperators`.
 
-Determines if all items in the `otherList` are in the same order and are equal to the items in this list but have changed. Equality and changed is performed by calling the `equals` and `changed` operators respectively from `getItemOperators`.
+
+**list.changed()**
 
 	changed(otherList)
 
 	otherList - The other list (or Array) to compare against.
 	return - True if any item in the ohter list has changed or is not equal to the associated item in this list.
 
+Determines if all items in the `otherList` are in the same order and are equal to the items in this list but have changed. Equality and changed is performed by calling the `equals` and `changed` operators respectively from `getItemOperators`.
+
+
 **list.compare()**
+
+	compare(otherList)
+	compare(otherList, equals, changed)
+
+	otherList - The other list (or Array) to compare against.
+	return - A new list with the comparison results for each item in this list.
 
 Retrieves the comparison results by comparing this list against the `otherList`. The `equals` and `changed` operators from `getItemOperators` are used to determine if items are equal or have changed. If custom `equals` and `changed` operators are specified then these operators will be used instead.
 
@@ -575,17 +594,7 @@ Returns a list with a comparison result for each item in this list. Comparison r
 	toString - Custom toString() function.
 
 
-	compare(otherList)
-	compare(otherList, equals, changed)
-
-	otherList - The other list (or Array) to compare against.
-	return - A new list with the comparison results for each item in this list.
-
 **list.merge()**
-
-Produces a new list with the results of merging this list with `otherList`. All items that are 'retained' are unmodified, all items that are 'added' are added, all items that are 'deleted' are removed, all items that are 'changed' are replaced with the newer item. If custom `equals` and `changed` operators are specified then these operators will be used instead of the operators retrieved from this list's `getItemOperators` method.
-
-All indices from `otherList` are kept in the resulting list.
 
 	merge(otherList)
 	merge(otherList, equals, changed)
@@ -593,43 +602,52 @@ All indices from `otherList` are kept in the resulting list.
 	otherList - The other list (or Array) to merge against.
 	return - A new collapsed list with the results of the merge.
 
-**list.mergeWith()**
-
-Merges the `otherList` into this list in-palce. All items that are 'retained' are unmodified, all items that are 'added' are added, all items that are 'deleted' are removed, all items that are 'changed' are replaced with the newer item. If custom `equals` and `changed` operators are specified then these operators will be used instead of the operators retrieved from this list's `getItemOperators` method.
+Produces a new list with the results of merging this list with `otherList`. All items that are 'retained' are unmodified, all items that are 'added' are added, all items that are 'deleted' are removed, all items that are 'changed' are replaced with the newer item. If custom `equals` and `changed` operators are specified then these operators will be used instead of the operators retrieved from this list's `getItemOperators` method.
 
 All indices from `otherList` are kept in the resulting list.
+
+
+**list.mergeWith()**
 
 	mergeWith(otherList)
 	mergeWith(otherList, equals, changed)
 
 	otherList - The other list (or Array) to merge against.
+	equals - An optional equals operator to use when comparing.
+	changed - An optional changed operator to use when comparing.
+
+Merges the `otherList` into this list in-palce. All items that are 'retained' are unmodified, all items that are 'added' are added, all items that are 'deleted' are removed, all items that are 'changed' are replaced with the newer item. If custom `equals` and `changed` operators are specified then these operators will be used instead of the operators retrieved from this list's `getItemOperators` method.
+
+All indices from `otherList` are kept in the resulting list.
+
 
 **list.remove()**
-
-Removes the specified items from this list. The items are found by using strict equality.
 
 	remove(item,...,item)
 
 	... - A variadic list of items to remove.
 
-**list.removeAt()**
+Removes the specified items from this list. The items are found by using strict equality.
 
-Removes the item at the specified index.
+
+**list.removeAt()**
 
 	removeAt(index)
 
 	index - The index of the item to remove.
 	return - The item removed or undefined if index is out of bounds.
 
-**list.clear()**
+Removes the item at the specified index.
 
-Removes all items in the list.
+
+**list.clear()**
 
 	clear()
 
-**list.replaceAt()**
+Removes all items in the list.
 
-Replaces the item at the specified index.
+
+**list.replaceAt()**
 
 	replaceAt(index, item)
 
@@ -637,19 +655,29 @@ Replaces the item at the specified index.
 	item - The new item.
 	return - The item replaced.
 
-**list.isEmpty()**
+Replaces the item at the specified index.
 
-Determines if the list has a length of zero.
+
+**list.isEmpty()**
 
 	isEmpty()
 
-**list.peek()**
+Determines if the list has a length of zero.
 
-Retrieves the last item in the list without removing it.
+
+**list.peek()**
 
 	peek()
 
+Retrieves the last item in the list without removing it.
+
+
 **list.insert()**
+
+	insert(index, item)
+
+	index - The index to insert at.
+	item - The item to insert.
 
 Inserts an item at the specified index and increases the length of the list by one. Returns the index at which the insertion occured, false otherwise.
 
@@ -657,14 +685,10 @@ If `index` is less than `0` then `index` is set to `0`.
 
 If `index` is greater than the list length then `index` is set to `length`.
 
-	insert(index, item)
-
-	index - The index to insert at.
-	item - The item to insert.
 
 ---
 
-**binder.makeObservableList()**
+**BINDER.makeObservableList()**
 
 	makeObservableList()
 	makeObservableList(array)
@@ -673,8 +697,6 @@ If `index` is greater than the list length then `index` is set to `length`.
 
 **observableList.observeItems()**
 
-Flag that determines if the items in the list will be observed for changes. When being set to true all items in the list will be observed, and when setting to false all items subscriptions will be disposed. In order for items to be observed they must have a `subscribe()` method that returns a subscription object. In other words the subscription model must adhere to the `observable` object interface.
-
 	observeItems()
 	observeItems(value)
 
@@ -682,6 +704,9 @@ Flag that determines if the items in the list will be observed for changes. When
 
 	value - Boolean value to set the flag to.
 	return - The value of the flag.
+
+Flag that determines if the items in the list will be observed for changes. When being set to true all items in the list will be observed, and when setting to false all items subscriptions will be disposed. In order for items to be observed they must have a `subscribe()` method that returns a subscription object. In other words the subscription model must adhere to the `observable` object interface.
+
 
 **ObservableLists have the same interface as Array, observable and list.**
 
@@ -741,19 +766,7 @@ Example:
 
 ---
 
-**binder.makeProperty()**
-
-Makes an observable property that extends `function`. All properties will dynamically track any property that is accessed during a `get` operation as dependencies. If any dependencies change then this property will notify its observers of the change as well.
-
-Immediately after the property is created a `get` operation is called on the property in order to track any property dependencies accurately. This behaviour can be deferred until the property is first accessed by setting `lazy` to a truthy value.
-
-If the value of the property is an `Array` or `List` then it will be copied into an `ObservableList` and the new list will be the property's value. If the value is already an `ObservableList` then no new list will be created.
-
-If the value is an `Array` or `List` then the `equals` and `changed` operators must be item operators that accept two arguments as opposed to only one for typical property operators. See the `list.getItemOperators` method for more details on item operators. See the `property.equals` and `property.changed` methods for more details on property operators.
-
-If the value is `Observable` then the property will subscribe to the value for changes and relay any notifications.
-
-Properties work best when the value is not a `function`.
+**BINDER.makeProperty()**
 
 	makeProperty(value)
 	makeProperty(get)
@@ -770,6 +783,19 @@ Properties work best when the value is not a `function`.
 	changed - The changed operator. Defautlts to using strict inequality.
 	lazy - Flag indicating that dependencies shouldn't be tracked until first access. Defaults to false.
 	owner - The object the property belongs to. Defaults to undefined.
+
+Makes an observable property that extends `function`. All properties will dynamically track any property that is accessed during a `get` operation as dependencies. If any dependencies change then this property will notify its observers of the change as well.
+
+Immediately after the property is created a `get` operation is called on the property in order to track any property dependencies accurately. This behaviour can be deferred until the property is first accessed by setting `lazy` to a truthy value.
+
+If the value of the property is an `Array` or `List` then it will be copied into an `ObservableList` and the new list will be the property's value. If the value is already an `ObservableList` then no new list will be created.
+
+If the value is an `Array` or `List` then the `equals` and `changed` operators must be item operators that accept two arguments as opposed to only one for typical property operators. See the `list.getItemOperators` method for more details on item operators. See the `property.equals` and `property.changed` methods for more details on property operators.
+
+If the value is `Observable` then the property will subscribe to the value for changes and relay any notifications.
+
+Properties work best when the value is not a `function`.
+
 
 *Note About Context*
 
@@ -807,50 +833,58 @@ Properties work best when the value is not a `function`.
  	nameProperty.clearMemo();
  	nameProperty.get(); // Returns 'Apple'
 
-**binder.makeProperty.get()**
-
-A convenience method that will retrieve the value of the specified property if it is a binderjs property, otherwise returns property.
+**BINDER.makeProperty.get()**
 
 	get(property)
 
 	property - A binderjs property or any other value.
 	return - If property is a binderjs property then the value of the property, otherwise property.
 
+A convenience method that will retrieve the value of the specified property if it is a binderjs property, otherwise returns property.
+
 ---
 
 **property()**
 
-Retrieves the value of the property. Temporarily the `owner` property of the property is assigned the `this` object if `this` does not equal `undefined`. The custom `get` operator will be called with the `owner` property as the `this` object.
+	property()
+	property(value)
 
-**property(value)**
-
-Sets the value of the property. Temporarily the `owner` property of the property is assigned the `this` object if `this` does not equal `undefined`. The custom `set` operator will be called with the `owner` property as the `this` object.
+Retrieves or sets the value of the property. Temporarily the `owner` property of the property is assigned the `this` object if `this` does not equal `undefined`. The custom `get` operator will be called with the `owner` property as the `this` object.
 
 If the value of the property is a `List` and the value being set is not an `Array` then the list will be cleared and the value will be pushed onto the list, otherwise if the value being set is an `Array` then it will be merged with the list, potentially replacing the list's contents. While this occurs all notifications are temporarily blocked so that only one notification occurs.
+
 
 **property.get()**
 
-Retrieves the value of the property. The custom `get` operator will be called with the `owner` property as the `this` object.
-
 	get()
+
+Retrieves the value of the property. The custom `get` operator will be called with the `owner` property as the `this` object. This is an alias to the functional pattern to properties above.
+
 
 **property.set()**
 
-Sets the value of the property. The custom `set` operator will be called with the `owner` property as the `this` object.
-
-If the value of the property is a `List` and the value being set is not an `Array` then the list will be cleared and the value will be pushed onto the list, otherwise if the value being set is an `Array` then it will be merged with the list, potentially replacing the list's contents. While this occurs all notifications are temporarily blocked so that only one notification occurs.
-
 	set(value)
 
-**property.dependecnies()**
 
-Retrieves the reference to the list of properties this property is dependent on. This list should not be modified.
+Sets the value of the property. The custom `set` operator will be called with the `owner` property as the `this` object. This is an alias to the functional pattern to properties above.
+
+
+
+**property.dependecnies()**
 
 	dependencies()
 
 	return - List of properties.
 
+Retrieves the reference to the list of properties this property is dependent on. This list should not be modified.
+
+
 **property.equals()**
+
+	equals(value)
+
+	value - An object or binderjs property to compare.
+	return - True if the value is equal to the property's value.
 
 Determines if this property value equals the specified value.
 
@@ -864,12 +898,11 @@ For example:
 	};
 
 
-	equals(value)
+**property.changed()**
+
+	changed(value)
 
 	value - An object or binderjs property to compare.
-	return - True if the value is equal to the property's value.
-
-**property.changed()**
 
 Determines if this property value equals the specified value and the value represents a change.
 
@@ -888,38 +921,44 @@ For example:
 	};
 
 
-	changed(value)
-
-	value - An object or binderjs property to compare.
-
 **property.clearMemo()**
-
-Since all properties are memoized, repeated calls to the `get` operator will result in only one calculation. All other calls will return the memoized value. This method will clear the memoized value and force the next call to the `get` operator to perform a calculation.
 
 	clearMemo()
 
-**property.isDependent()**
+Since all properties are memoized, repeated calls to the `get` operator will result in only one calculation. All other calls will return the memoized value. This method will clear the memoized value and force the next call to the `get` operator to perform a calculation.
 
-Determines if the property is dependent on other properties.
+
+**property.isDependent()**
 
 	isDependent()
 
-**property.toString()**
+Determines if the property is dependent on other properties.
 
-Returs the value of calling `toString` on the property's value. If the value is `null` or `undefined` then returns the empty string.
+
+**property.toString()**
 
 	toString()
 
+Returs the value of calling `toString` on the property's value. If the value is `null` or `undefined` then returns the empty string.
+
+
 **property.valueOf()**
 
-Returns the value of calling `valueOf` on the property's value.
-
 	valueOf()
+
+Returns the value of calling `valueOf` on the property's value.
 
 
 ---
 
-**binder.makeBinding()**
+**BINDER.makeBinding()**
+
+	makeBinding(source, sink, [type])
+
+	source - The binderjs property that will be the source of the binding.
+	sink - The binderjs property that will be the sink of the binding.
+	type - The type of binding ('once', 'oneway', 'twoway'[default])
+	return - A new binding object.
 
 Creates a binding between two disjoint (i.e. completely independent) binderjs properties.
 
@@ -931,40 +970,36 @@ A binding alwyas flows data from source to sink when created, but the following 
 	twoway [default] - Flows data from source to sink if the source is modified,
 						and flows data from sink to source if the sink is modified.
 
-	makeBinding(source, sink, [type])
-
-	source - The binderjs property that will be the source of the binding.
-	sink - The binderjs property that will be the sink of the binding.
-	type - The type of binding ('once', 'oneway', 'twoway'[default])
-	return - A new binding object.
-
 
 **binding.type()**
-
-Retrieves the binding type.
 
 	type()
 
 	return - The type of the binding: 'once', 'oneway', 'twoway'
 
-**binding.source()**
+Retrieves the binding type.
 
-Retrieves the binding source.
+
+**binding.source()**
 
 	source()
 
 	return - The source binderjs property for this binding.
 
-**binding.sink()**
+Retrieves the binding source.
 
-Retrieves the binding sink.
+
+**binding.sink()**
 
 	sink()
 
 	return - The sink binderjs property for this binding.
 
+Retrieves the binding sink.
+
+
 **binding.dispose()**
 
-Disposes all subscriptions to the source and sink.
-
 	dispose()
+
+Disposes the subscription to the source and sink.
