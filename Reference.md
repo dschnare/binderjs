@@ -49,12 +49,99 @@ Converts an object that contains binderjs properties into a plain-old-javascript
         filter(json, original): A filter function called on the value just before returning from toJSON().
         						If the level this filter is specified at is an Array then the filter will be called
         						for each item in the array.
+
+        						Where json is the current POJO/JSON representation of the object being processed.
+        						Original is the original representation of the object being processed. If the object
+        						being processed is a native type then json and original will be equal.
+
+        						The return value of the filter function is the new JSON/POJO representation of the object
+        						being processed. If you just want to modifiy several properties then return the json argument,
+        						otherwise you can return an entirely new object.
         properties: {
             property: A filter function that will be called with the value
-                    of a property that must return a value, or a nested options object:
-                    include, exclude, filter, properties.
+                    of a property that must return a value. This value can also be a nested options object
+                    with the following properties: include, exclude, filter, properties.
         }
 	}
+
+Example:
+
+	var obj, model;
+
+	model = {
+		firstName: binder.makeProperty('Darren'),
+		lastName: binder.makeProperty('Schnare'),
+		skills: binder.makeProperty(['javascript', 'html', 'css', 'ruby']),
+		team: [{
+			firstName: binder.makeProperty('Alex'),
+			lastName: binder.makeProperty('Grendo')
+		}, {
+			firstName: binder.makeProperty('Sam'),
+			lastName: binder.makeProperty('Hilto')
+		}, {
+			firstName: binder.makeProperty('James'),
+			lastName: binder.makeProperty('Wazzabi')
+		}]
+	};
+
+	model.fullName = binder.makeProperty(function () {
+		return model.firstName + ' ' + model.lastName;
+	});
+
+	obj = BINDER.toJSON(model);
+
+The result is:
+
+	{
+		firstName: "Darren",
+		lastName: "Schnare",
+		fullName: "Darren Schnare",
+		skills: ['javascript', 'html', 'css', 'ruby'],
+		team: [{
+			firstName: "Alex",
+			lastName: "Grendo"
+		}, {
+			firstName: "Sam",
+			lastName: "Hilto"
+		}, {
+			firstName: "James",
+			lastName: "Wazzabi"
+		}]
+	}
+
+Using the same model we can change how the JSON/POJO object will be generated:
+
+	obj = BINDER.toJSON(model, {
+		exclude: ['fullName'],
+		properties: {
+			skills: function (skill) {
+				return skill.charAt(0).toUpperCase() + skill.substring(1);
+			},
+			team: {
+				exclude: ['firstName', 'lastName'],
+				filter: function (json, original) {
+					json.name = original.firstName + ' ' + original.lastName;
+					return json;
+				}
+			}
+		}
+	});
+
+The result will be:
+
+	{
+		firstName: "Darren",
+		lastName: "Schnare",
+		skills: ['Javascript', 'Html', 'Css', 'Ruby'],
+		team: [{
+			name: "Alex Grendo"
+		}, {
+			name: "Sam Hilto"
+		}, {
+			name: "James Wazzabi"
+		}]
+	}
+
 
 **binder.fromJSON()**
 
@@ -79,21 +166,116 @@ Converts a POJO object that to an object with binderjs properties by performing 
         		(applies to each item in an Array if the current level is an Array)]
         filter(model, json): A filter function called with the value just before returning from fromJSON().
         		This is typically used to format primitive values or add custom functions/properties
-        		to a model before returning. If filtering a primitive value then model and json will be equal.
-        		If the level this filter is specified at is an Array then the filter will be called
-        		for each item in the array.
+        		to a model before returning.
+
+        		Where model is the current model representation of the object being processed. Model may be an object
+        		with several properties defined, some might be binderjs properties. The json argument is the
+        		JSON/POJO represnetation of the object being processed. If the object being processed is a native type
+        		then mdoel and json will be equal.
+
+        		The return value of the filter function is the new model representation of the object
+        		being processed. If you just want to modifiy several properties then return the model argument,
+        		otherwise you can return an entirely new object.
         properties: {
             property: {
                 create(model, owner): A function that returns an object that will be used
-                		to create a binder property via binder.makeProperty(). Model is equal
-                		to the value returned from calling fromJSON() recursively and owner is
+                		to create a binder property via binder.makeProperty(). If the object returned is a POJO
+                		object then it will be used as the options for the call to makeProperty(). This function will be called when
+                		attaching properties for native values or arrays to a model. This will not be called
+                		if the object being processed is a JSON/POJO object, instead the property will just be the object.
+
+                		Where model is equal to the value returned from calling fromJSON() recursively and owner is
                 		the owning model to wich the property will be attached.
-                		This is typically used to specify a custom getter/setter
-                		for a binderjs property or a filter for a nested model/object that adds
-                		custom functions.
+
+                		This method can be used to create a setter for a property or to spefify an 'equals' and 'changed' operators
+                		for a property.
+
                 // All other properties are supported: include, exclude, copy, filter, properties.
             }
         }
+	}
+
+Example:
+
+	var obj, model;
+
+	obj = {
+		firstName: 'Darren',
+		lastName: 'Schnare',
+		skills: ['javascript', 'html', 'css', 'ruby'],
+		team: [{
+			firstName: 'Alex',
+			lastName: 'Grendo'
+		}, {
+			firstName: 'Sam',
+			lastName: 'Hilto'
+		}, {
+			firstName: 'James',
+			lastName: 'Wazzabi'
+		}]
+	}
+
+	model = BINDER.fromJSON(obj);
+
+The result is:
+
+	{
+		firstName: BINDER.makeProperty('Darren')
+		lastName: BINDER.makeProperty('Schnare'),
+		skills: BINDER.makePrpoperty(['javascript', 'html', 'css', 'ruby']),
+		team: BINDER.makeProperty([{
+			firstName: BINDER.makeProperty('Alex'),
+			lastName: BINDER.makeProperty('Grendo')
+		}, {
+			firstName: BINDER.makeProperty('Sam'),
+			lastName: BINDER.makeProperty('Hilto')
+		}, {
+			firstName: BINDER.makeProperty('James'),
+			lastName: BINDER.makeProperty('Wazzabi')
+		}])
+	}
+
+Using the same POJO we can change how the model object will be generated:
+
+
+	BINDER.fromJSON(o, {
+		filter: function (model, json) {
+			model.fullName = binder.makeProperty(function () {
+				return model.firstName + ' ' + model.lastName;
+			});
+
+			return model;
+		},
+		properties: {
+			skills: function (model, json) {
+				return json.charAt(0).toUpperCase() + json.substring(1);
+			},
+			team: {
+				exclude: ['firstName', 'lastName'],
+				filter: function (model, json) {
+					model.name = binder.makeProperty(json.firstName + ' ' + json.lastName);
+					return model;
+				}
+			}
+		}
+	});
+
+The result will be:
+
+	{
+		firstName: BINDER.makeProperty('Darren')
+		lastName: BINDER.makeProperty('Schnare'),
+		fullName: BINDER.makeProperty(function () {
+			return model.firstName + ' ' + model.lastName;
+		}),
+		skills: BINDER.makePrpoperty(['Javascript', 'Html', 'Css', 'Ruby']),
+		team: BINDER.makeProperty([{
+			name: BINDER.makeProperty('Alex Grendo')
+		}, {
+			name: BINDER.makeProperty('Sam Hilto')
+		}, {
+			name: BINDER.makeProperty('James Wazzabi')
+		}])
 	}
 
 ---
