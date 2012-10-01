@@ -1,14 +1,14 @@
 	module('Observable Tests');
 
 	test('adherence test', function () {
-		var ob = binder.makeObservable();
+		var ob = binder.mkObservable();
 
-		ok(typeof binder.makeObservable.interfce === 'object' && binder.makeObservable.interfce, 'Expect binder.makeObservable to contain the property "interfce"');
-		ok(util.adheresTo(ob, binder.makeObservable.interfce), 'Expect "ob" to adhere to the "binder.makeObservable.interfce" interface');
+		ok(typeof binder.mkObservable.interfce === 'object' && binder.mkObservable.interfce, 'Expect binder.mkObservable to contain the property "interfce"');
+		ok(util.adheresTo(ob, binder.mkObservable.interfce), 'Expect "ob" to adhere to the "binder.mkObservable.interfce" interface');
 	});
 
 	test('subscription test', function () {
-		var ob = binder.makeObservable(),
+		var ob = binder.mkObservable(),
 			notified = false,
 			fn = function () {
 				notified = true;
@@ -77,7 +77,7 @@
 	});
 
 	test('blocking test', function () {
-		var ob = binder.makeObservable(),
+		var ob = binder.mkObservable(),
 			notified = false,
 			fn = function () {
 				notified = true;
@@ -110,7 +110,7 @@
 	asyncTest('throttling test', function () {
 		expect(2);
 
-		var ob = binder.makeObservable(),
+		var ob = binder.mkObservable(),
 			notified = false,
 			fn = function () {
 				notified = true;
@@ -133,7 +133,7 @@
 	asyncTest('throttling and observable disposal test', function () {
 		expect(2);
 
-		var ob = binder.makeObservable(),
+		var ob = binder.mkObservable(),
 			notified = false,
 			fn = function () {
 				notified = true;

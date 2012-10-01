@@ -1,7 +1,7 @@
 	module('ObservableList Test');
 
 	function setupObservableListTest() {
-		var list = binder.makeObservableList(1, 2, 3, 1),
+		var list = binder.mkObservableList(1, 2, 3, 1),
 			observer = {
 				notifiedCount: 0,
 				onNotify: function (observable) {
@@ -563,7 +563,7 @@
 		strictEqual(comparison.length, 4, 'Expect the comparison result to have a length of 4');
 
 
-		comparison = binder.makeList(comparison);
+		comparison = binder.mkList(comparison);
 
 		ok(comparison.every(function (item) {
 			return item.status === 'retained';
@@ -571,7 +571,7 @@
 
 
 		l = [2, 3, 1];
-		comparison = binder.makeList(list.compare(l));
+		comparison = binder.mkList(list.compare(l));
 
 		strictEqual(comparison[0].status, 'retained', 'Expect comparison object at index 0 to have a status of "retained"');
 		strictEqual(comparison[1].status, 'retained', 'Expect comparison object at index 1 to have a status of "retained"');
@@ -580,7 +580,7 @@
 
 
 		l = [2, 4];
-		comparison = binder.makeList(list.compare(l));
+		comparison = binder.mkList(list.compare(l));
 
 		strictEqual(comparison[0].status, 'deleted', 'Expected comparison object at index 0 to have a status of "deleted"');
 		strictEqual(comparison[1].status, 'retained', 'Expected comparison object at index 1 to have a status of "retained"');
@@ -590,7 +590,7 @@
 		strictEqual(comparison[4].otherIndex, 1, 'Expected comparison object at index 3 to have an otherIndex equal to 1');
 
 
-		list = binder.makeObservableList(
+		list = binder.mkObservableList(
 			{
 				id: 0,
 				type: 'fruit'
@@ -659,7 +659,7 @@
 		strictEqual(l.join(', '), '2, 3', 'Expect the merged list to contain [2, 3]');
 
 
-		list = binder.makeObservableList(
+		list = binder.mkObservableList(
 			{
 				id: 0,
 				type: 'fruit',
@@ -749,7 +749,7 @@
 
 
 		list.dispose();
-		list = binder.makeObservableList(
+		list = binder.mkObservableList(
 			{
 				id: 0,
 				type: 'fruit',

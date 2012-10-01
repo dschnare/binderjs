@@ -1,7 +1,7 @@
 	module('ObservableList Notification Arguments Tests');
 
 	test('remove test', function () {
-		var list = BINDER.makeObservableList(1, 2, 3),
+		var list = BINDER.mkObservableList(1, 2, 3),
 			subscription,
 			actions,
 			actionArgs;
@@ -48,7 +48,7 @@
 	});
 
 	test('replaceAt test', function () {
-		var list = BINDER.makeObservableList(1, 2, 3),
+		var list = BINDER.mkObservableList(1, 2, 3),
 			subscription,
 			actions,
 			actionArgs;
@@ -73,7 +73,7 @@
 	});
 
 	test('clear test', function () {
-		var list = BINDER.makeObservableList(1, 2, 3),
+		var list = BINDER.mkObservableList(1, 2, 3),
 			subscription,
 			actions,
 			actionArgs;
@@ -101,7 +101,7 @@
 	});
 
 	test('collapse test', function () {
-		var list = BINDER.makeObservableList(1, undefined, 3, undefined),
+		var list = BINDER.mkObservableList(1, undefined, 3, undefined),
 			subscription,
 			actions,
 			actionArgs;
@@ -130,7 +130,7 @@
 	});
 
 	test('insert test', function () {
-		var list = BINDER.makeObservableList(1, 3),
+		var list = BINDER.mkObservableList(1, 3),
 			subscription,
 			actions,
 			actionArgs;
@@ -171,7 +171,7 @@
 	});
 
 	test('mergeWith test', function () {
-		var list = BINDER.makeObservableList(1, 2, 3),
+		var list = BINDER.mkObservableList(1, 2, 3),
 			subscription,
 			actions,
 			actionArgs,
@@ -215,7 +215,7 @@
 	});
 
 	test('reverse test', function () {
-		var list = BINDER.makeObservableList(1, 2, 3),
+		var list = BINDER.mkObservableList(1, 2, 3),
 			subscription,
 			actions,
 			actionArgs;
@@ -239,7 +239,7 @@
 	});
 
 	test('pop test', function () {
-		var list = BINDER.makeObservableList(1, 2, 3),
+		var list = BINDER.mkObservableList(1, 2, 3),
 			subscription,
 			actions,
 			actionArgs;
@@ -268,7 +268,7 @@
 	});
 
 	test('push test', function () {
-		var list = BINDER.makeObservableList(1, 2, 3),
+		var list = BINDER.mkObservableList(1, 2, 3),
 			subscription,
 			actions,
 			actionArgs;
@@ -304,7 +304,7 @@
 	});
 
 	test('shift test', function () {
-		var list = BINDER.makeObservableList(1, 2, 3),
+		var list = BINDER.mkObservableList(1, 2, 3),
 			subscription,
 			actions,
 			actionArgs;
@@ -333,7 +333,7 @@
 	});
 
 	test('unshift test', function () {
-		var list = BINDER.makeObservableList(1, 2, 3),
+		var list = BINDER.mkObservableList(1, 2, 3),
 			subscription,
 			actions,
 			actionArgs;
@@ -369,7 +369,7 @@
 	});
 
 	test('sort test', function () {
-		var list = BINDER.makeObservableList(3, 2, 1),
+		var list = BINDER.mkObservableList(3, 2, 1),
 			subscription,
 			actions,
 			actionArgs;
@@ -393,7 +393,7 @@
 	});
 
 	test('splice test', function () {
-		var list = BINDER.makeObservableList(1, 2, 3),
+		var list = BINDER.mkObservableList(1, 2, 3),
 			subscription,
 			actions,
 			actionArgs;
@@ -454,12 +454,12 @@
 	});
 
 	test('observe items test', function () {
-		var list = BINDER.makeObservableList(),
+		var list = BINDER.mkObservableList(),
 			subscription,
 			actions,
 			actionArgs;
 
-		list.push(BINDER.makeProperty(1), BINDER.makeProperty(2), BINDER.makeProperty(3));
+		list.push(BINDER.mkProperty(1), BINDER.mkProperty(2), BINDER.mkProperty(3));
 
 		list.subscribe(function (observer, actionArgs) {
 			actions.push(actionArgs);

@@ -3,22 +3,22 @@
 	test('simple toJSON test', function () {
 		var o,
 			model = {
-				firstName: binder.makeProperty('Darren'),
-				lastName: binder.makeProperty('Schnare'),
-				skills: binder.makeProperty(['javascript', 'html', 'css', 'ruby']),
+				firstName: binder.mkProperty('Darren'),
+				lastName: binder.mkProperty('Schnare'),
+				skills: binder.mkProperty(['javascript', 'html', 'css', 'ruby']),
 				team: [{
-					firstName: binder.makeProperty('Alex'),
-					lastName: binder.makeProperty('Grendo')
+					firstName: binder.mkProperty('Alex'),
+					lastName: binder.mkProperty('Grendo')
 				}, {
-					firstName: binder.makeProperty('Sam'),
-					lastName: binder.makeProperty('Hilto')
+					firstName: binder.mkProperty('Sam'),
+					lastName: binder.mkProperty('Hilto')
 				}, {
-					firstName: binder.makeProperty('James'),
-					lastName: binder.makeProperty('Wazzabi')
+					firstName: binder.mkProperty('James'),
+					lastName: binder.mkProperty('Wazzabi')
 				}]
 			};
 
-		model.fullName = binder.makeProperty(function () {
+		model.fullName = binder.mkProperty(function () {
 			return model.firstName + ' ' + model.lastName;
 		});
 
@@ -41,22 +41,22 @@
 	test('custom toJSON test', function () {
 		var o,
 			model = {
-				firstName: binder.makeProperty('Darren'),
-				lastName: binder.makeProperty('Schnare'),
-				skills: binder.makeProperty(['javascript', 'html', 'css', 'ruby']),
+				firstName: binder.mkProperty('Darren'),
+				lastName: binder.mkProperty('Schnare'),
+				skills: binder.mkProperty(['javascript', 'html', 'css', 'ruby']),
 				team: [{
-					firstName: binder.makeProperty('Alex'),
-					lastName: binder.makeProperty('Grendo')
+					firstName: binder.mkProperty('Alex'),
+					lastName: binder.mkProperty('Grendo')
 				}, {
-					firstName: binder.makeProperty('Sam'),
-					lastName: binder.makeProperty('Hilto')
+					firstName: binder.mkProperty('Sam'),
+					lastName: binder.mkProperty('Hilto')
 				}, {
-					firstName: binder.makeProperty('James'),
-					lastName: binder.makeProperty('Wazzabi')
+					firstName: binder.mkProperty('James'),
+					lastName: binder.mkProperty('Wazzabi')
 				}]
 			};
 
-		model.fullName = binder.makeProperty(function () {
+		model.fullName = binder.mkProperty(function () {
 			return model.firstName + ' ' + model.lastName;
 		});
 

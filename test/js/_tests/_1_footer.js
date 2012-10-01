@@ -1,2 +1,2 @@
 
-}(UTILJS, BINDER));
+}(UTIL, BINDER));

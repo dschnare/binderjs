@@ -1,6 +1,6 @@
 {
 	"name": "binderjs",
-	"version": "3.2.0",
+	"version": "4.0.0",
 	"description": "Binderjs is an object-oriented property-binding API for JavaScript.",
 	"keywords": ["javascript","binding","bind","property","list","observer","observable"],
 	"author": {
@@ -12,8 +12,7 @@
 		"url": "http://github.com/dschnare/utiljs.git"
 	},
 	"main": "./lib/main",
-	"interface": "interface.js",
-	"compilation_level": "ADVANCED_OPTIMIZATIONS",
+	"compilation_level": "SIMPLE_OPTIMIZATIONS",
 	"dependencies": {
 		"xport": "*",
 		"utiljs": "git://github.com/dschnare/utiljs.git"

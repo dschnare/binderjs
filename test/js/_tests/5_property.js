@@ -72,9 +72,9 @@
 	}
 
 	test('adherence test', function () {
-		var p = binder.makeProperty('value');
+		var p = binder.mkProperty('value');
 
-		ok(util.adheresTo(p, binder.makeProperty.interfce), 'Expect "p" to adhere to the "binder.makeProperty.interfce" interface');
+		ok(util.adheresTo(p, binder.mkProperty.interfce), 'Expect "p" to adhere to the "binder.mkProperty.interfce" interface');
 		notStrictEqual(p.isDependent(), true, 'Expect "p" to not be dependent');
 		strictEqual(p.dependencies().length, 0, 'Expect "p" to have no dependencies');
 		strictEqual(p.toString(), 'value', 'Expect "p.toString()" to be equal to "value"');
@@ -102,10 +102,10 @@
 	});
 
 	test('dependcies test', function () {
-		var fname = binder.makeProperty('Super'),
-			lname = binder.makeProperty('Mario'),
+		var fname = binder.mkProperty('Super'),
+			lname = binder.mkProperty('Mario'),
 			notified = false,
-			fullName = binder.makeProperty(function () {
+			fullName = binder.mkProperty(function () {
 				return fname + ' ' + lname;
 			}),
 			deps = fullName.dependencies();
@@ -136,7 +136,7 @@
 
 	test('memoization test', function () {
 		var computed = false,
-			p = binder.makeProperty(function () {
+			p = binder.mkProperty(function () {
 				computed = true;
 				return 'value';
 			});
@@ -158,7 +158,7 @@
 
 	test('lazy test', function () {
 		var computed = false,
-			p = binder.makeProperty({
+			p = binder.mkProperty({
 				lazy: true,
 				get: function () {
 					computed = true;
@@ -175,7 +175,7 @@
 	});
 
 	test('simple construction test', function () {
-		var p = binder.makeProperty('value');
+		var p = binder.mkProperty('value');
 
 		strictEqual(p.toString(), 'value', 'Expect "p.toString()" to be equal to "value"');
 		strictEqual(p.valueOf(), 'value', 'Expect "p.valueOf()" to be equal to "value"');
@@ -184,7 +184,7 @@
 	});
 
 	test('value parameterized construction test', function () {
-		var p = binder.makeProperty({
+		var p = binder.mkProperty({
 				value: 'value'
 			});
 
@@ -196,7 +196,7 @@
 
 	test('custom getter construction test', function () {
 		var get = false,
-			p = binder.makeProperty({
+			p = binder.mkProperty({
 				get: function () {
 					get = true;
 					return 'value';
@@ -213,7 +213,7 @@
 	test('custom getter/setter construction test', function () {
 		var get = false,
 			set = false,
-			p = binder.makeProperty({
+			p = binder.mkProperty({
 				get: function () {
 					get = true;
 					return 'value';
@@ -242,7 +242,7 @@
 	test('custom getter/setter with laziness construction test', function () {
 		var get = false,
 			set = false,
-			p = binder.makeProperty({
+			p = binder.mkProperty({
 				lazy: true,
 				get: function () {
 					get = true;
@@ -271,8 +271,8 @@
 	});
 
 	test('observable value property test', function () {
-		var o = binder.makeObservable(),
-			p = binder.makeProperty(o),
+		var o = binder.mkObservable(),
+			p = binder.mkProperty(o),
 			notified;
 
 		strictEqual(p.toString(), '', 'Expect "p.toString()" to be equal to the empty string');
@@ -285,7 +285,7 @@
 			return 'observable';
 		};
 		o.toString = o.valueOf;
-		p = binder.makeProperty({
+		p = binder.mkProperty({
 			value: o
 		});
 
@@ -310,7 +310,7 @@
 	test('operators test', function () {
 		var equals = false,
 			changed = false,
-			p = binder.makeProperty({
+			p = binder.mkProperty({
 				value: {
 					id: 0,
 					label: 'apple'
@@ -318,13 +318,13 @@
 				equals: function (b) {
 					equals = true;
 					var a = this.get();
-					b = binder.makeProperty.get(b);
+					b = binder.mkProperty.get(b);
 					return a.id === b.id;
 				},
 				changed: function (b) {
 					changed = true;
 					var a = this.get();
-					b = binder.makeProperty.get(b);
+					b = binder.mkProperty.get(b);
 					return a.label !== b.label;
 				}
 			});
@@ -339,21 +339,21 @@
 	test('array property value test', function () {
 		// When the value is an Array, the underlying value
 		// converted to an ObservableList.
-		var p = binder.makeProperty([1, 2, 3]);
+		var p = binder.mkProperty([1, 2, 3]);
 
 		testArrayProperty(p);
 	});
 
 	test('observable list property value test', function () {
-		var l = binder.makeObservableList([1, 2, 3]),
-			p = binder.makeProperty(l);
+		var l = binder.mkObservableList([1, 2, 3]),
+			p = binder.mkProperty(l);
 
 		testArrayProperty(p);
 	});
 
 	test('list operators test', function () {
-		var p = binder.makeProperty({
-				value: binder.makeList(
+		var p = binder.mkProperty({
+				value: binder.mkList(
 					{id: 0, label: 'apple'},
 					{id: 1, label: 'pear'},
 					{id: 2, label: 'orange'}
@@ -365,7 +365,7 @@
 					return a.label !== b.label;
 				}
 			}),
-			l = binder.makeList(
+			l = binder.mkList(
 				{id: 0, label: 'apple'},
 				{id: 1, label: 'pear'},
 				{id: 2, label: 'orange'}

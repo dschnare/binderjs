@@ -57,7 +57,7 @@
 
 		model = binder.fromJSON(o, {
 			filter: function (model, json) {
-				model.fullName = binder.makeProperty(function () {
+				model.fullName = binder.mkProperty(function () {
 					return model.firstName + ' ' + model.lastName;
 				});
 				return model;
@@ -69,7 +69,7 @@
 				team: {
 					exclude: ['firstName', 'lastName'],
 					filter: function (model, json) {
-						model.name = binder.makeProperty(json.firstName + ' ' + json.lastName);
+						model.name = binder.mkProperty(json.firstName + ' ' + json.lastName);
 						return model;
 					}
 				}

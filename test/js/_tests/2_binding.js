@@ -2,8 +2,8 @@
 
 	function bindingSetup() {
 		return {
-			p1: binder.makeProperty('Mario'),
-			p2: binder.makeProperty('Luigi')
+			p1: binder.mkProperty('Mario'),
+			p2: binder.mkProperty('Luigi')
 		};
 	}
 
@@ -13,21 +13,21 @@
 			p2 = o["p2"];
 
 		raises(function () {
-			binder.makeBinding(1, 2);
-		}, 'Expect makeBinding to throw an error when called with numbers.');
+			binder.mkBinding(1, 2);
+		}, 'Expect mkBinding to throw an error when called with numbers.');
 		raises(function () {
-			binder.makeBinding(1, p2);
-		}, 'Expect makeBinding to throw an error when called with a number and a property.');
+			binder.mkBinding(1, p2);
+		}, 'Expect mkBinding to throw an error when called with a number and a property.');
 		raises(function () {
-			binder.makeBinding(p1, 2);
-		}, 'Expect makeBinding to throw an error when called with a number and a property.');
+			binder.mkBinding(p1, 2);
+		}, 'Expect mkBinding to throw an error when called with a number and a property.');
 	});
 
 	test('oneWay binding test', function () {
 		var o = bindingSetup(),
 			p1 = o["p1"],
 			p2 = o["p2"],
-			binding = binder.makeBinding(p1, p2, 'oneway');
+			binding = binder.mkBinding(p1, p2, 'oneway');
 
 		strictEqual(binding.type(), 'oneway', 'Expect binding to have a type of "oneway"');
 		strictEqual(binding.source(), p1, 'Expect binding to have a source equal to p1');
@@ -56,7 +56,7 @@
 		var o = bindingSetup(),
 			p1 = o["p1"],
 			p2 = o["p2"],
-			binding = binder.makeBinding(p1, p2);
+			binding = binder.mkBinding(p1, p2);
 
 		strictEqual(binding.type(), 'twoway', 'Expect binding to have a type of "twoway"');
 		strictEqual(binding.source(), p1, 'Expect binding to have a source equal to p1');
@@ -85,7 +85,7 @@
 		var o = bindingSetup(),
 			p1 = o["p1"],
 			p2 = o["p2"],
-			binding = binder.makeBinding(p1, p2, 'once');
+			binding = binder.mkBinding(p1, p2, 'once');
 
 		strictEqual(binding.type(), 'once', 'Expect binding to have a type of "once"');
 		strictEqual(binding.source(), p1, 'Expect binding to have a source equal to p1');
