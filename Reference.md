@@ -69,22 +69,22 @@ Example:
 	var obj, model;
 
 	model = {
-		firstName: BINDER.makeProperty('Darren'),
-		lastName: BINDER.makeProperty('Schnare'),
-		skills: BINDER.makeProperty(['javascript', 'html', 'css', 'ruby']),
+		firstName: BINDER.mkProperty('Darren'),
+		lastName: BINDER.mkProperty('Schnare'),
+		skills: BINDER.mkProperty(['javascript', 'html', 'css', 'ruby']),
 		team: [{
-			firstName: BINDER.makeProperty('Alex'),
-			lastName: BINDER.makeProperty('Grendo')
+			firstName: BINDER.mkProperty('Alex'),
+			lastName: BINDER.mkProperty('Grendo')
 		}, {
-			firstName: BINDER.makeProperty('Sam'),
-			lastName: BINDER.makeProperty('Hilto')
+			firstName: BINDER.mkProperty('Sam'),
+			lastName: BINDER.mkProperty('Hilto')
 		}, {
-			firstName: BINDER.makeProperty('James'),
-			lastName: BINDER.makeProperty('Wazzabi')
+			firstName: BINDER.mkProperty('James'),
+			lastName: BINDER.mkProperty('Wazzabi')
 		}]
 	};
 
-	model.fullName = BINDER.makeProperty(function () {
+	model.fullName = BINDER.mkProperty(function () {
 		return model.firstName + ' ' + model.lastName;
 	});
 
@@ -177,8 +177,8 @@ The result will be:
         properties: {
             property: {
                 create(model, owner): A function that returns an object that will be used
-                		to create a binder property via BINDER.makeProperty(). If the object returned is a POJO
-                		object then it will be used as the options for the call to makeProperty(). This function will be
+                		to create a binder property via BINDER.mkProperty(). If the object returned is a POJO
+                		object then it will be used as the options for the call to mkProperty(). This function will be
                 		called when attaching properties for native values or arrays to a model. This will not be called
                 		if the object being processed is a JSON/POJO object, instead the property will just be the object.
 
@@ -222,18 +222,18 @@ Example:
 The result is:
 
 	{
-		firstName: BINDER.makeProperty('Darren')
-		lastName: BINDER.makeProperty('Schnare'),
-		skills: BINDER.makePrpoperty(['javascript', 'html', 'css', 'ruby']),
-		team: BINDER.makeProperty([{
-			firstName: BINDER.makeProperty('Alex'),
-			lastName: BINDER.makeProperty('Grendo')
+		firstName: BINDER.mkProperty('Darren')
+		lastName: BINDER.mkProperty('Schnare'),
+		skills: BINDER.mkPrpoperty(['javascript', 'html', 'css', 'ruby']),
+		team: BINDER.mkProperty([{
+			firstName: BINDER.mkProperty('Alex'),
+			lastName: BINDER.mkProperty('Grendo')
 		}, {
-			firstName: BINDER.makeProperty('Sam'),
-			lastName: BINDER.makeProperty('Hilto')
+			firstName: BINDER.mkProperty('Sam'),
+			lastName: BINDER.mkProperty('Hilto')
 		}, {
-			firstName: BINDER.makeProperty('James'),
-			lastName: BINDER.makeProperty('Wazzabi')
+			firstName: BINDER.mkProperty('James'),
+			lastName: BINDER.mkProperty('Wazzabi')
 		}])
 	}
 
@@ -242,7 +242,7 @@ Using the same POJO we can change how the model object will be generated:
 
 	BINDER.fromJSON(o, {
 		filter: function (model, json) {
-			model.fullName = BINDER.makeProperty(function () {
+			model.fullName = BINDER.mkProperty(function () {
 				return model.firstName + ' ' + model.lastName;
 			});
 
@@ -258,7 +258,7 @@ Using the same POJO we can change how the model object will be generated:
 			team: {
 				exclude: ['firstName', 'lastName'],
 				filter: function (model, json) {
-					model.name = BINDER.makeProperty(json.firstName + ' ' + json.lastName);
+					model.name = BINDER.mkProperty(json.firstName + ' ' + json.lastName);
 					return model;
 				}
 			}
@@ -268,26 +268,26 @@ Using the same POJO we can change how the model object will be generated:
 The result will be:
 
 	{
-		firstName: BINDER.makeProperty('Darren')
-		lastName: BINDER.makeProperty('Schnare'),
-		fullName: BINDER.makeProperty(function () {
+		firstName: BINDER.mkProperty('Darren')
+		lastName: BINDER.mkProperty('Schnare'),
+		fullName: BINDER.mkProperty(function () {
 			return model.firstName + ' ' + model.lastName;
 		}),
-		skills: BINDER.makePrpoperty(['Javascript', 'Html', 'Css', 'Ruby']),
-		team: BINDER.makeProperty([{
-			name: BINDER.makeProperty('Alex Grendo')
+		skills: BINDER.mkPrpoperty(['Javascript', 'Html', 'Css', 'Ruby']),
+		team: BINDER.mkProperty([{
+			name: BINDER.mkProperty('Alex Grendo')
 		}, {
-			name: BINDER.makeProperty('Sam Hilto')
+			name: BINDER.mkProperty('Sam Hilto')
 		}, {
-			name: BINDER.makeProperty('James Wazzabi')
+			name: BINDER.mkProperty('James Wazzabi')
 		}])
 	}
 
 ---
 
-**BINDER.makeObservable()**
+**BINDER.mkObservable()**
 
-	makeObservable()
+	mkObservable()
 
 Creates an observable object that can be observed for changes.
 
@@ -348,16 +348,16 @@ Removes all observers.
 
 ---
 
-**BINDER.makeList()**
+**BINDER.mkList()**
 
-	makeList()
-	makeList(array)
-	makeList(item,...,item)
+	mkList()
+	mkList(array)
+	mkList(item,...,item)
 
 	array - An Array or another list to copy items from.
 	... - A variadic list of items to add to the list.
 
-Makes a list that extends `Array` and adheres to the EcmaScript 5 Array specification.
+mks a list that extends `Array` and adheres to the EcmaScript 5 Array specification.
 
 
 **The following [ES5](http://www.ecma-international.org/publications/standards/Ecma-262.htm) functions are implemented if not present on the native Array (without modifying the Array.prototype):**
@@ -688,13 +688,13 @@ If `index` is greater than the list length then `index` is set to `length`.
 
 ---
 
-**BINDER.makeObservableList()**
+**BINDER.mkObservableList()**
 
-	makeObservableList()
-	makeObservableList(array)
-	makeObservableList(item,...,item)
+	mkObservableList()
+	mkObservableList(array)
+	mkObservableList(item,...,item)
 
-Makes a list that can be observed for changes.
+mks a list that can be observed for changes.
 
 
 **observableList.observeItems()**
@@ -750,7 +750,7 @@ The actions have the following meaning:
 
 Example:
 
-	var list = BINDER.makeObservableList(1, 2, 3);
+	var list = BINDER.mkObservableList(1, 2, 3);
 	list.subscribe(function (observer, actionArgs) {
 		// Will receive two notifications (i.e. will be called twice).
 		// Once for "2" being removed and once for the item "3" being moved.
@@ -768,15 +768,15 @@ Example:
 
 ---
 
-**BINDER.makeProperty()**
+**BINDER.mkProperty()**
 
-	makeProperty(value)
-	makeProperty(get)
-	makeProperty(get, owner)
-	makeProperty(get, set)
-	makeProperty(get, set, owner)
-	makeProperty({value, [equals, changed]})
-	makeProperty({get, [set, equals, changed, lazy, owner]})
+	mkProperty(value)
+	mkProperty(get)
+	mkProperty(get, owner)
+	mkProperty(get, set)
+	mkProperty(get, set, owner)
+	mkProperty({value, [equals, changed]})
+	mkProperty({get, [set, equals, changed, lazy, owner]})
 
 	value - The property value.
 	get - The custom get opertor.
@@ -786,7 +786,7 @@ Example:
 	lazy - Flag indicating that dependencies shouldn't be tracked until first access. Defaults to false.
 	owner - The object the property belongs to. Defaults to undefined.
 
-Makes an observable property that extends `function`. All properties will dynamically track any property that is accessed during a `get` operation as dependencies. If any dependencies change then this property will notify its observers of the change as well.
+mks an observable property that extends `function`. All properties will dynamically track any property that is accessed during a `get` operation as dependencies. If any dependencies change then this property will notify its observers of the change as well.
 
 Immediately after the property is created a `get` operation is called on the property in order to track any property dependencies accurately. This behaviour can be deferred until the property is first accessed by setting `lazy` to a truthy value.
 
@@ -806,7 +806,7 @@ Properties work best when the value is not a `function`.
  	var model = {
  		type: 'fruit'
  	};
-	var nameProperty = BINDER.makeProperty(function () {
+	var nameProperty = BINDER.mkProperty(function () {
 		return this.type === 'fruit' ? 'Apple' : 'Tomatoe';
 	}, model);
 
@@ -835,7 +835,7 @@ Properties work best when the value is not a `function`.
  	nameProperty.clearMemo();
  	nameProperty.get(); // Returns 'Apple'
 
-**BINDER.makeProperty.get()**
+**BINDER.mkProperty.get()**
 
 	get(property)
 
@@ -895,7 +895,7 @@ The `equals` operator will be called with a single argument to test against.
 For example:
 
 	property.equals = function (other) {
-		other = BINDER.makeProperty.get(other);
+		other = BINDER.mkProperty.get(other);
 		return this.get().id === other.id;
 	};
 
@@ -916,7 +916,7 @@ For example:
 
 	property.changed = function (other) {
 		if (this.equals(other)) {
-			other = BINDER.makeProperty.get(other);
+			other = BINDER.mkProperty.get(other);
 			return this.get().type !== other.type;
 		}
 		return false;
@@ -953,9 +953,9 @@ Returns the value of calling `valueOf` on the property's value.
 
 ---
 
-**BINDER.makeBinding()**
+**BINDER.mkBinding()**
 
-	makeBinding(source, sink, [type])
+	mkBinding(source, sink, [type])
 
 	source - The binderjs property that will be the source of the binding.
 	sink - The binderjs property that will be the sink of the binding.

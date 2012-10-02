@@ -12,14 +12,14 @@ Binderjs is an object-oriented property-binding API for JavaScript. See the [ref
 
 	// Create a person object that has a firstName and lastName property.
 	var person = {
-		firstName: BINDER.makeProperty('Darren'),
-		lastName: BINDER.makeProperty('Schnare'),
-		skills: BINDER.makeProperty(['javascript', 'html', 'css', 'ruby'])
+		firstName: BINDER.mkProperty('Darren'),
+		lastName: BINDER.mkProperty('Schnare'),
+		skills: BINDER.mkProperty(['javascript', 'html', 'css', 'ruby'])
 	};
 
 	// Now give our person object a readonly property, fullName, that
 	// depends on the values of firstName and lastName.
-	person.fullName = BINDER.makeProperty({
+	person.fullName = BINDER.mkProperty({
 		get: function () {
 			// We can treat properties like simple values
 			// when used in an expression because even
