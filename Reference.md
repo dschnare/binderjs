@@ -28,6 +28,27 @@
 
 # API
 
+**BINDER.run()**
+
+	run(fn)
+
+	fn - A function to run and observer all property access invocations.
+	return - An object with a subscribe() and dispose() method.
+		subscribe(observer) - Observes for changes. Observer can be an object with onNotify() or a function. The observer will be passed a function that when called will run the function passed to run(), and any arguments a property passes when notifying.
+		dispose() - Stops observing.
+
+	This method will run a function and observe all property access invocations.
+
+
+Example:
+
+	BINDER.run(function () {
+		document.getElementById('message').innerHTML = model.name();
+	}).subscribe(function (fn) {
+		fn();
+	});
+
+
 **BINDER.toJSON()**
 
 	toJSON(o, options)
@@ -321,7 +342,9 @@ Notifies all observers if the observable is not blocked and not being throttled.
 
 	throttle(duration)
 
-	duration - The timeout duration in milliseconds.
+	[default -1]
+
+	duration - The timeout duration in milliseconds. If 0 then all notifications will be asynchronous. Less than 0 for synchronous notifications.
 
 Throttles notifications sent to observers by placing a timeout between the first call to `notify()` and when the observers are actually notified. All subsequent calls to `notify()` will have no effect until the timeout has expired. When the timeout has expired then the observers will be notified.
 
