@@ -380,7 +380,7 @@ Removes all observers.
 	array - An Array or another list to copy items from.
 	... - A variadic list of items to add to the list.
 
-mks a list that extends `Array` and adheres to the EcmaScript 5 Array specification.
+makes a list that extends `Array` and adheres to the EcmaScript 5 Array specification.
 
 
 **The following [ES5](http://www.ecma-international.org/publications/standards/Ecma-262.htm) functions are implemented if not present on the native Array (without modifying the Array.prototype):**
@@ -717,7 +717,7 @@ If `index` is greater than the list length then `index` is set to `length`.
 	mkObservableList(array)
 	mkObservableList(item,...,item)
 
-mks a list that can be observed for changes.
+makes a list that can be observed for changes.
 
 
 **observableList.observeItems()**
@@ -809,7 +809,7 @@ Example:
 	lazy - Flag indicating that dependencies shouldn't be tracked until first access. Defaults to false.
 	owner - The object the property belongs to. Defaults to undefined.
 
-mks an observable property that extends `function`. All properties will dynamically track any property that is accessed during a `get` operation as dependencies. If any dependencies change then this property will notify its observers of the change as well.
+makes an observable property that extends `function`. All properties will dynamically track any property that is accessed during a `get` operation as dependencies. If any dependencies change then this property will notify its observers of the change as well.
 
 Immediately after the property is created a `get` operation is called on the property in order to track any property dependencies accurately. This behaviour can be deferred until the property is first accessed by setting `lazy` to a truthy value.
 
@@ -817,7 +817,7 @@ If the value of the property is an `Array` or `List` then it will be copied into
 
 If the value is an `Array` or `List` then the `equals` and `changed` operators must be item operators that accept two arguments as opposed to only one for typical property operators. See the `list.getItemOperators` method for more details on item operators. See the `property.equals` and `property.changed` methods for more details on property operators.
 
-If the value is `Observable` then the property will subscribe to the value for changes and relay any notifications.
+If the value is `Observable` then the property will subscribe to the value for changes and relay any notifications and any parameters.
 
 Properties work best when the value is not a `function`.
 
